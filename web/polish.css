@@ -1,0 +1,38 @@
+/* UnifiedProxy P4 finish. References: Vercel, Claude/Anthropic, Sentry,
+ * Supabase and Stripe via awesome-design-md (MIT); m-ui ancestry GPL-3.0.
+ * Uses established tokens only; geometry and palette contract stay shared. */
+html body :is(.general-menu,.inbound-popover,.settings-menu,.client-menu,.swift-picker-menu,.mui-combobox-menu){background:var(--surface-2);border:1px solid var(--hairline-strong);box-shadow:none;backdrop-filter:none;-webkit-backdrop-filter:none}
+html body :is(.modal-panel,.drawer,.settings-menu,.client-menu)::before,html body :is(.modal-panel,.drawer,.settings-menu,.client-menu)::after{box-shadow:none;background-image:none}
+html body :is(button,a,input,select,textarea,summary,[role=button],[role=option],.swift-picker-selection,.node,.url){transition:background-color var(--duration-fast) var(--easing-out),border-color var(--duration-fast) var(--easing-out),color var(--duration-fast) var(--easing-out),opacity var(--duration-fast) var(--easing-out)}
+html body :is(button,a,input,select,textarea,summary,[role=button],[tabindex]):focus-visible{outline:2px solid color-mix(in srgb,var(--primary-focus) 50%,transparent)!important;outline-offset:2px;box-shadow:none}
+html body :is(input:not([type=checkbox]):not([type=radio]),textarea,select):hover:not(:disabled){border-color:var(--ink-subtle)}
+html body :is(a,summary,[role=button]):hover:not([aria-disabled=true]){color:var(--primary-deep)}
+html body :is(a,summary,[role=button]):active:not([aria-disabled=true]){background-color:var(--surface-3)}
+html body :is([aria-disabled=true],button:disabled,input:disabled,select:disabled,textarea:disabled){cursor:not-allowed;opacity:.5}
+html body :is(.overview-action,.login-button,.code-card,.qr,.url,.client-btn,.node):is(:hover,:active){transform:none}
+html body .client-btn[aria-expanded=true]{background:var(--primary-soft);color:var(--primary-deep);border-color:var(--hairline-strong)}
+html body .client-item:is(:hover,:active,:focus-visible){background:var(--surface-3)!important;color:var(--ink)!important}
+html body :is(.client-menu,.settings-menu){border-radius:var(--rounded-md)!important}
+html body :is(.client-menu,.copy-toast){transition:opacity var(--duration-base) var(--easing-out),visibility var(--duration-base) var(--easing-out)}
+html body .client-menu{transform:translateX(-50%)}
+html body .copy-toast,html body .copy-toast.show{transform:translateX(-50%)}
+html body :is(.code-title,.node-title){color:var(--ink-muted);background:var(--surface-2);border-color:var(--hairline)}
+html body :is(.url,.node){color:var(--ink);background:var(--surface-1);border-color:var(--hairline-strong)}
+html body :is(.url,.node):hover{color:var(--ink);background:var(--surface-2);border-color:var(--hairline-strong)}
+html body :is(.stat-value,.metric-value,.gauge-value,.traffic-value,.duration-text,.traffic-pill,.tag,td:last-child,input[type=number],.ch-label){font-variant-numeric:tabular-nums;font-feature-settings:'tnum'}
+html body :is(.duration-text,.traffic-pill,input[type=number],.ch-label,.node,.url){font-family:var(--font-mono)}
+html body :is(.metric-value,.gauge-value,.stat-value){min-width:4ch;white-space:nowrap;line-height:1.2}
+html body .ch-line{stroke:var(--chart-line);fill:none;stroke-width:1.5}
+html body .ch-area{fill:var(--chart-fill);fill-opacity:.08;stroke:none}
+html body .ch-marker{fill:var(--chart-line);stroke:none}
+html body .ch-grid{stroke:var(--hairline)}
+html body .ch-label{fill:var(--ink-muted)}
+html body .chart-comparison{stroke:var(--chart-line-2);stroke-dasharray:4 4;fill:none}
+html body :is(.setting-row,.mihomo-actionbar,.inbounds-actions){gap:var(--spacing-sm)}
+html body :is(.setting-row,.mihomo-card,.card-body){padding-block:var(--spacing-md)}
+html body :is(.url,.node){padding:var(--spacing-sm) var(--spacing-md);margin-top:var(--spacing-sm)}
+html body :is(.code-title,.node-title){margin-bottom:var(--spacing-xs);padding:var(--spacing-xxs) var(--spacing-sm)}
+html body :is(.setting-row p,.metric-label,.stat-label){line-height:1.5}
+html body :is(.gauge-bar,.gauge-value){transition:color var(--duration-base) var(--easing-out),stroke var(--duration-base) var(--easing-out),opacity var(--duration-base) var(--easing-out)}
+html.up-theme-changing,html.up-theme-changing *,html.up-theme-changing *::before,html.up-theme-changing *::after{transition-property:background-color,border-color,color!important;transition-duration:var(--duration-theme)!important;transition-timing-function:var(--easing-out)!important}
+@media(prefers-reduced-motion:reduce){html *,html *::before,html *::after,html.up-theme-changing *{animation-duration:0ms!important;animation-delay:0ms!important;transition-duration:0ms!important;transition-delay:0ms!important;scroll-behavior:auto!important}}

@@ -491,6 +491,7 @@ func (a *App) handleSubscriptionRequest(w http.ResponseWriter, r *http.Request) 
 		"fonts.css":              "text/css; charset=utf-8",
 		"themes.css":             "text/css; charset=utf-8",
 		"components.css":         "text/css; charset=utf-8",
+		"polish.css":             "text/css; charset=utf-8",
 		"subscription.css":       "text/css; charset=utf-8",
 		"native-interactions.js": "text/javascript; charset=utf-8",
 		"appearance.js":          "text/javascript; charset=utf-8",

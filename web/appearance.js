@@ -10,6 +10,12 @@
   const put = (key, value) => { try { localStorage.setItem(key, value); } catch {} };
   const readModes = () => { try { return JSON.parse(get('up-appearance-modes') || '{}') || {}; } catch { return {}; } };
   let modes = readModes();
+  let transitionTimer;
+  function colorTransition() {
+    root.classList.add('up-theme-changing');
+    clearTimeout(transitionTimer);
+    transitionTimer=setTimeout(()=>root.classList.remove('up-theme-changing'),150);
+  }
   let color = valid(get('up-color-theme')) ? get('up-color-theme') : (valid(root.dataset.colorTheme) ? root.dataset.colorTheme : 't0');
   let theme = modes[color] || get('up-theme') || (get('mui-is-ultra-dark') === 'true' ? 'dark' : get('mui-theme')) || (color === 't2' ? 'dark' : 'light');
   theme = theme === 'dark' ? 'dark' : 'light';
@@ -26,12 +32,14 @@
     if (setting) setting.value = color;
   }
   function setMode(value, manual = true) {
+    colorTransition();
     theme = value === 'dark' || value === true ? 'dark' : 'light';
     if (manual) { modes[color] = theme; put('up-appearance-modes', JSON.stringify(modes)); }
     put('up-theme', theme); put('mui-theme', theme); sync();
   }
   function setColor(value) {
     if (!valid(value)) return;
+    colorTransition();
     const changed = value !== color;
     color = value;
     if (modes[color]) theme = modes[color];
