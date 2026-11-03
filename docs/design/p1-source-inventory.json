@@ -1,0 +1,3892 @@
+{
+  "web/client-schedule.js": {
+    "ids": [],
+    "controls": [],
+    "tabs": [],
+    "templateIDs": [],
+    "variables": [],
+    "assets": [],
+    "apiPaths": []
+  },
+  "web/cross-subscriptions.css": {
+    "ids": [],
+    "controls": [],
+    "tabs": [],
+    "templateIDs": [],
+    "variables": [],
+    "assets": [],
+    "apiPaths": []
+  },
+  "web/cross-subscriptions.js": {
+    "ids": [],
+    "controls": [],
+    "tabs": [],
+    "templateIDs": [
+      "cs-cache-list",
+      "cs-cache-summary",
+      "cs-clear",
+      "cs-close",
+      "cs-close-footer",
+      "cs-copy",
+      "cs-download",
+      "cs-error",
+      "cs-progress",
+      "cs-progress-bar",
+      "cs-progress-status",
+      "cs-progress-targets",
+      "cs-progress-title",
+      "cs-pull",
+      "cs-title",
+      "cs-urls"
+    ],
+    "variables": [],
+    "assets": [],
+    "apiPaths": [
+      "/api/cross-subscriptions",
+      "/api/cross-subscriptions?job"
+    ]
+  },
+  "web/dialog.js": {
+    "ids": [],
+    "controls": [],
+    "tabs": [],
+    "templateIDs": [],
+    "variables": [],
+    "assets": [],
+    "apiPaths": []
+  },
+  "web/fleet.js": {
+    "ids": [],
+    "controls": [],
+    "tabs": [],
+    "templateIDs": [
+      "view-fleet"
+    ],
+    "variables": [],
+    "assets": [],
+    "apiPaths": []
+  },
+  "web/fonts.css": {
+    "ids": [],
+    "controls": [],
+    "tabs": [],
+    "templateIDs": [],
+    "variables": [],
+    "assets": [],
+    "apiPaths": []
+  },
+  "web/i18n-locales.js": {
+    "ids": [],
+    "controls": [],
+    "tabs": [],
+    "templateIDs": [],
+    "variables": [],
+    "assets": [],
+    "apiPaths": []
+  },
+  "web/i18n.js": {
+    "ids": [],
+    "controls": [],
+    "tabs": [],
+    "templateIDs": [],
+    "variables": [],
+    "assets": [
+      "static/i18n.js",
+      "https://www.cloudflare.com/application/terms/",
+      "https://www.cloudflare.com/application/terms/"
+    ],
+    "apiPaths": []
+  },
+  "web/icons-lucide.js": {
+    "ids": [],
+    "controls": [],
+    "tabs": [],
+    "templateIDs": [],
+    "variables": [],
+    "assets": [
+      "#sf-..."
+    ],
+    "apiPaths": []
+  },
+  "web/icons-material.js": {
+    "ids": [],
+    "controls": [],
+    "tabs": [],
+    "templateIDs": [],
+    "variables": [],
+    "assets": [],
+    "apiPaths": []
+  },
+  "web/inbound-sync.css": {
+    "ids": [],
+    "controls": [],
+    "tabs": [],
+    "templateIDs": [],
+    "variables": [],
+    "assets": [],
+    "apiPaths": []
+  },
+  "web/inbound-sync.js": {
+    "ids": [],
+    "controls": [],
+    "tabs": [],
+    "templateIDs": [
+      "si-all-cells",
+      "si-all-panels",
+      "si-cancel",
+      "si-confirm-cancel",
+      "si-confirm-submit",
+      "si-confirm-summary",
+      "si-error",
+      "si-matrix",
+      "si-panels",
+      "si-progress-bar",
+      "si-progress-close",
+      "si-progress-error",
+      "si-progress-summary",
+      "si-results",
+      "si-retry",
+      "si-summary",
+      "si-sync"
+    ],
+    "variables": [],
+    "assets": [],
+    "apiPaths": [
+      "/api/inbound-sync",
+      "/api/inbound-sync?job"
+    ]
+  },
+  "web/index.html": {
+    "ids": [
+      "sidebar",
+      "nav",
+      "sidebar-theme-control",
+      "sidebar-theme",
+      "sidebar-dark-toggle",
+      "sidebar-ultra-row",
+      "sidebar-ultra-toggle",
+      "sidebar-logout",
+      "sider-trigger",
+      "sider-trigger-use",
+      "drawer-handle",
+      "drawer-handle-use",
+      "drawer-mask",
+      "crumb",
+      "theme-toggle",
+      "refresh",
+      "logout",
+      "panel-security-banner",
+      "dismiss-security-banner",
+      "panel-path-banner",
+      "dismiss-path-banner",
+      "view-dashboard",
+      "cpu-gauge",
+      "cpu-percent",
+      "cpu-caption",
+      "cpu-caption-text",
+      "cpu-info-tip",
+      "cpu-history-open",
+      "ram-gauge",
+      "ram-percent",
+      "ram-caption",
+      "ram-caption-text",
+      "swap-gauge",
+      "swap-percent",
+      "swap-caption",
+      "swap-caption-text",
+      "disk-gauge",
+      "disk-percent",
+      "disk-caption",
+      "disk-caption-text",
+      "overview-core-status",
+      "overview-core-toggle",
+      "overview-core-restart",
+      "overview-version",
+      "overview-core-version",
+      "overview-logs",
+      "overview-config",
+      "overview-backup",
+      "overview-import",
+      "overview-panel-version",
+      "core-uptime",
+      "os-uptime",
+      "system-load",
+      "panel-memory",
+      "panel-tasks",
+      "overview-upload",
+      "overview-download",
+      "overview-sent",
+      "overview-received",
+      "toggle-ip",
+      "overview-ipv4",
+      "overview-ipv6",
+      "overview-tcp",
+      "overview-udp",
+      "view-inbounds",
+      "inbound-metric-traffic",
+      "inbound-metric-usage",
+      "inbound-metric-all-time",
+      "inbound-metric-count",
+      "inbound-metric-clients",
+      "add-inbound",
+      "general-actions",
+      "general-menu",
+      "inbounds-refresh",
+      "inbounds-refresh-now",
+      "inbounds-auto-toggle",
+      "inbounds-auto-enabled",
+      "inbounds-auto-interval",
+      "inbounds-filterbar",
+      "inbounds-search-toggle",
+      "inbound-search",
+      "inbound-status-tabs",
+      "inbounds-table",
+      "view-subtemplates",
+      "subtpl-root",
+      "subtpl-import",
+      "subtpl-list",
+      "view-connections",
+      "close-all-connections",
+      "connection-count",
+      "connections-table",
+      "view-mihomo",
+      "mihomo-settings-root",
+      "mihomo-save",
+      "mihomo-restart",
+      "mihomo-basics-form",
+      "basics-mode",
+      "basics-directIpVersion",
+      "basics-outboundTestUrl",
+      "basics-ipv6",
+      "basics-tcpConcurrent",
+      "basics-unifiedDelay",
+      "basics-inbound-upload",
+      "basics-inbound-download",
+      "basics-outboundUploadStatistics",
+      "basics-outboundDownloadStatistics",
+      "basics-trafficSampleSeconds",
+      "basics-trafficSaveSeconds",
+      "basics-logLevel",
+      "basics-logBufferSize",
+      "basics-maskLogAddress",
+      "basics-dns-log",
+      "basics-mode-warning",
+      "basics-block-torrent",
+      "basics-blockIps-input",
+      "basics-blockDomains-input",
+      "basics-ipv4Domains-input",
+      "basics-warp",
+      "basics-warpDomains-input",
+      "basics-reset",
+      "basics-ip-options",
+      "basics-domain-options",
+      "basics-service-options",
+      "mihomo-add-outbound",
+      "mihomo-warp",
+      "mihomo-vpngate",
+      "mihomo-outbound-table",
+      "mihomo-add-rule",
+      "mihomo-rule-table",
+      "test-config",
+      "generate-config",
+      "copy-config",
+      "raw-config",
+      "view-logs",
+      "clear-log-view",
+      "logs-box",
+      "view-settings",
+      "save-settings",
+      "restart-panel",
+      "settings-tabbar",
+      "settings-ink",
+      "settings-pane-general",
+      "settings-form",
+      "remark-sample",
+      "remark-tokens",
+      "remark-separator",
+      "clear-ipinfo-token",
+      "ipinfo-token-status",
+      "time-location",
+      "settings-pane-authentication",
+      "credentials-form",
+      "save-credentials",
+      "inbound-popover",
+      "version-modal",
+      "release-list",
+      "update-geofiles",
+      "logs-modal",
+      "refresh-modal-logs",
+      "modal-log-content",
+      "config-modal",
+      "modal-config-content",
+      "copy-modal-config",
+      "config-test-error-modal",
+      "config-test-error-title",
+      "config-test-error-output",
+      "inbound-import-modal",
+      "inbound-import-title",
+      "inbound-import-form",
+      "inbound-import-yaml",
+      "inbound-import-error",
+      "import-inbound-submit",
+      "backup-modal",
+      "restore-identity",
+      "restore-backup-button",
+      "restore-backup-file",
+      "inbound-links-modal",
+      "inbound-links-content",
+      "download-inbound-links",
+      "copy-inbound-links",
+      "all-links-modal",
+      "all-links-content",
+      "download-all-links",
+      "copy-all-links",
+      "all-subscriptions-modal",
+      "all-subscriptions-content",
+      "download-all-subscriptions",
+      "copy-all-subscriptions",
+      "client-qr-modal",
+      "client-qr-name",
+      "client-qr-canvas",
+      "client-qr-link",
+      "cpu-history-modal",
+      "cpu-history-span",
+      "cpu-history-chart",
+      "cpu-history-note",
+      "client-modal",
+      "client-modal-title",
+      "client-form",
+      "client-schedule-fields",
+      "save-client",
+      "client-bulk-modal",
+      "client-bulk-form",
+      "drawer-backdrop",
+      "drawer-title",
+      "protocol-hint",
+      "close-drawer",
+      "inbound-form",
+      "inbound-client-summary",
+      "inbound-client-actions",
+      "inbound-add-client",
+      "inbound-add-bulk",
+      "inbound-client-list",
+      "vless-generate-keys",
+      "vless-clear-keys",
+      "anytls-default-padding",
+      "anytls-clear-padding",
+      "security-segmented",
+      "reality-random-shortids",
+      "reality-generate-keypair",
+      "reality-clear-keypair",
+      "delete-inbound",
+      "cancel-drawer",
+      "save-inbound",
+      "toast",
+      "back-top"
+    ],
+    "controls": [
+      {
+        "tag": "button",
+        "class": "theme-trigger",
+        "id": "sidebar-theme",
+        "type": "button",
+        "aria-expanded": "false"
+      },
+      {
+        "tag": "input",
+        "id": "sidebar-dark-toggle",
+        "type": "checkbox"
+      },
+      {
+        "tag": "input",
+        "id": "sidebar-ultra-toggle",
+        "type": "checkbox"
+      },
+      {
+        "tag": "button",
+        "data-view": "dashboard",
+        "class": "active"
+      },
+      {
+        "tag": "button",
+        "data-view": "inbounds"
+      },
+      {
+        "tag": "button",
+        "data-view": "subtemplates"
+      },
+      {
+        "tag": "button",
+        "data-view": "mihomo"
+      },
+      {
+        "tag": "button",
+        "data-view": "settings"
+      },
+      {
+        "tag": "button",
+        "id": "sidebar-logout"
+      },
+      {
+        "tag": "button",
+        "class": "sider-trigger",
+        "id": "sider-trigger",
+        "type": "button",
+        "title": "折叠/展开菜单"
+      },
+      {
+        "tag": "button",
+        "class": "drawer-handle",
+        "id": "drawer-handle",
+        "type": "button",
+        "title": "菜单"
+      },
+      {
+        "tag": "button",
+        "class": "outline-btn theme-toggle",
+        "id": "theme-toggle"
+      },
+      {
+        "tag": "button",
+        "class": "outline-btn",
+        "id": "refresh"
+      },
+      {
+        "tag": "button",
+        "class": "icon-btn",
+        "id": "logout",
+        "title": "退出登录"
+      },
+      {
+        "tag": "button",
+        "id": "dismiss-security-banner",
+        "type": "button",
+        "title": "关闭"
+      },
+      {
+        "tag": "button",
+        "id": "dismiss-path-banner",
+        "type": "button",
+        "title": "关闭"
+      },
+      {
+        "tag": "button",
+        "class": "cpu-history-open",
+        "id": "cpu-history-open",
+        "type": "button",
+        "title": "CPU History"
+      },
+      {
+        "tag": "button",
+        "class": "overview-action",
+        "id": "overview-core-toggle"
+      },
+      {
+        "tag": "button",
+        "class": "overview-action",
+        "id": "overview-core-restart"
+      },
+      {
+        "tag": "button",
+        "class": "overview-action",
+        "id": "overview-version"
+      },
+      {
+        "tag": "button",
+        "class": "overview-action",
+        "id": "overview-logs"
+      },
+      {
+        "tag": "button",
+        "class": "overview-action",
+        "id": "overview-config"
+      },
+      {
+        "tag": "button",
+        "class": "overview-action",
+        "id": "overview-backup"
+      },
+      {
+        "tag": "button",
+        "class": "overview-action",
+        "id": "overview-import"
+      },
+      {
+        "tag": "a",
+        "class": "tiny-tag",
+        "id": "overview-panel-version",
+        "rel": "noopener",
+        "target": "_blank",
+        "href": "https://github.com/RomanovCaesar/m-ui/releases"
+      },
+      {
+        "tag": "a",
+        "class": "tiny-tag",
+        "rel": "noopener",
+        "target": "_blank",
+        "href": "https://t.me/MihomoUI"
+      },
+      {
+        "tag": "a",
+        "class": "tiny-tag purple",
+        "rel": "noopener",
+        "target": "_blank",
+        "href": "https://github.com/RomanovCaesar/m-ui/wiki",
+        "data-i18n": "dash.documentation"
+      },
+      {
+        "tag": "button",
+        "class": "ip-card-header-action",
+        "id": "toggle-ip",
+        "title": "显示或隐藏 IP"
+      },
+      {
+        "tag": "button",
+        "class": "inbound-pill",
+        "id": "add-inbound"
+      },
+      {
+        "tag": "button",
+        "class": "inbound-pill",
+        "id": "general-actions"
+      },
+      {
+        "tag": "button",
+        "type": "button",
+        "data-general": "import"
+      },
+      {
+        "tag": "button",
+        "type": "button",
+        "data-general": "links"
+      },
+      {
+        "tag": "button",
+        "type": "button",
+        "data-general": "subscriptions"
+      },
+      {
+        "tag": "button",
+        "type": "button",
+        "data-general": "test-config"
+      },
+      {
+        "tag": "button",
+        "type": "button",
+        "data-general": "reset-inbounds"
+      },
+      {
+        "tag": "button",
+        "type": "button",
+        "data-general": "reset-clients"
+      },
+      {
+        "tag": "button",
+        "type": "button",
+        "data-general": "sync-inbound"
+      },
+      {
+        "tag": "button",
+        "type": "button",
+        "class": "danger",
+        "data-general": "delete-depleted"
+      },
+      {
+        "tag": "button",
+        "id": "inbounds-refresh-now",
+        "title": "Refresh"
+      },
+      {
+        "tag": "button",
+        "id": "inbounds-auto-toggle",
+        "title": "Auto refresh"
+      },
+      {
+        "tag": "input",
+        "id": "inbounds-auto-enabled",
+        "type": "checkbox"
+      },
+      {
+        "tag": "select",
+        "id": "inbounds-auto-interval"
+      },
+      {
+        "tag": "button",
+        "class": "search-toggle",
+        "id": "inbounds-search-toggle",
+        "title": "切换搜索或状态筛选"
+      },
+      {
+        "tag": "input",
+        "class": "inbounds-search",
+        "id": "inbound-search",
+        "placeholder": "Search"
+      },
+      {
+        "tag": "button",
+        "data-status": "all",
+        "class": "active"
+      },
+      {
+        "tag": "button",
+        "data-status": "disabled"
+      },
+      {
+        "tag": "button",
+        "data-status": "ended"
+      },
+      {
+        "tag": "button",
+        "data-status": "depleting"
+      },
+      {
+        "tag": "button",
+        "data-status": "online"
+      },
+      {
+        "tag": "button",
+        "class": "primary-btn",
+        "id": "subtpl-import",
+        "data-i18n": "subtpl.import"
+      },
+      {
+        "tag": "summary",
+        "data-i18n": "subtpl.listTitle"
+      },
+      {
+        "tag": "button",
+        "class": "danger-btn",
+        "id": "close-all-connections"
+      },
+      {
+        "tag": "button",
+        "class": "primary-btn",
+        "id": "mihomo-save",
+        "disabled": null
+      },
+      {
+        "tag": "button",
+        "class": "danger-btn",
+        "id": "mihomo-restart"
+      },
+      {
+        "tag": "button",
+        "type": "button",
+        "class": "mihomo-tab active",
+        "data-mihomo-tab": "basics"
+      },
+      {
+        "tag": "button",
+        "type": "button",
+        "class": "mihomo-tab",
+        "data-mihomo-tab": "outbounds"
+      },
+      {
+        "tag": "button",
+        "type": "button",
+        "class": "mihomo-tab",
+        "data-mihomo-tab": "routing"
+      },
+      {
+        "tag": "form",
+        "id": "mihomo-basics-form",
+        "autocomplete": "off"
+      },
+      {
+        "tag": "summary"
+      },
+      {
+        "tag": "select",
+        "id": "basics-mode",
+        "name": "mode"
+      },
+      {
+        "tag": "select",
+        "id": "basics-directIpVersion",
+        "name": "directIpVersion"
+      },
+      {
+        "tag": "input",
+        "id": "basics-outboundTestUrl",
+        "name": "outboundTestUrl",
+        "type": "url",
+        "placeholder": "https://www.gstatic.com/generate_204"
+      },
+      {
+        "tag": "input",
+        "id": "basics-ipv6",
+        "name": "ipv6",
+        "type": "checkbox"
+      },
+      {
+        "tag": "input",
+        "id": "basics-tcpConcurrent",
+        "name": "tcpConcurrent",
+        "type": "checkbox"
+      },
+      {
+        "tag": "input",
+        "id": "basics-unifiedDelay",
+        "name": "unifiedDelay",
+        "type": "checkbox"
+      },
+      {
+        "tag": "summary"
+      },
+      {
+        "tag": "input",
+        "id": "basics-inbound-upload",
+        "type": "checkbox",
+        "checked": null,
+        "disabled": null
+      },
+      {
+        "tag": "input",
+        "id": "basics-inbound-download",
+        "type": "checkbox",
+        "checked": null,
+        "disabled": null
+      },
+      {
+        "tag": "input",
+        "id": "basics-outboundUploadStatistics",
+        "name": "outboundUploadStatistics",
+        "type": "checkbox"
+      },
+      {
+        "tag": "input",
+        "id": "basics-outboundDownloadStatistics",
+        "name": "outboundDownloadStatistics",
+        "type": "checkbox"
+      },
+      {
+        "tag": "input",
+        "id": "basics-trafficSampleSeconds",
+        "name": "trafficSampleSeconds",
+        "type": "number",
+        "min": "1",
+        "max": "10"
+      },
+      {
+        "tag": "input",
+        "id": "basics-trafficSaveSeconds",
+        "name": "trafficSaveSeconds",
+        "type": "number",
+        "min": "1",
+        "max": "300"
+      },
+      {
+        "tag": "summary"
+      },
+      {
+        "tag": "select",
+        "id": "basics-logLevel",
+        "name": "logLevel"
+      },
+      {
+        "tag": "input",
+        "id": "basics-logBufferSize",
+        "name": "logBufferSize",
+        "type": "number",
+        "min": "100",
+        "max": "10000",
+        "step": "100"
+      },
+      {
+        "tag": "input",
+        "id": "basics-maskLogAddress",
+        "name": "maskLogAddress",
+        "type": "checkbox"
+      },
+      {
+        "tag": "input",
+        "id": "basics-dns-log",
+        "type": "checkbox",
+        "disabled": null
+      },
+      {
+        "tag": "summary"
+      },
+      {
+        "tag": "input",
+        "id": "basics-block-torrent",
+        "type": "checkbox",
+        "disabled": null
+      },
+      {
+        "tag": "input",
+        "id": "basics-blockIps-input",
+        "data-basics-list": "blockIps",
+        "list": "basics-ip-options",
+        "placeholder": "private / 10.0.0.0/8 / geoip:CN"
+      },
+      {
+        "tag": "input",
+        "id": "basics-blockDomains-input",
+        "data-basics-list": "blockDomains",
+        "list": "basics-domain-options",
+        "placeholder": "example.com / geosite:category-ads-all"
+      },
+      {
+        "tag": "input",
+        "id": "basics-ipv4Domains-input",
+        "data-basics-list": "ipv4Domains",
+        "list": "basics-service-options",
+        "placeholder": "example.com / geosite:netflix"
+      },
+      {
+        "tag": "button",
+        "class": "mihomo-tool",
+        "id": "basics-warp",
+        "type": "button"
+      },
+      {
+        "tag": "input",
+        "id": "basics-warpDomains-input",
+        "data-basics-list": "warpDomains",
+        "list": "basics-service-options",
+        "placeholder": "example.com / geosite:google"
+      },
+      {
+        "tag": "summary"
+      },
+      {
+        "tag": "button",
+        "class": "danger-btn",
+        "id": "basics-reset",
+        "type": "button"
+      },
+      {
+        "tag": "button",
+        "type": "button",
+        "class": "mihomo-primary",
+        "id": "mihomo-add-outbound"
+      },
+      {
+        "tag": "button",
+        "type": "button",
+        "class": "mihomo-tool",
+        "id": "mihomo-warp"
+      },
+      {
+        "tag": "button",
+        "type": "button",
+        "class": "mihomo-tool",
+        "id": "mihomo-vpngate"
+      },
+      {
+        "tag": "button",
+        "type": "button",
+        "class": "mihomo-primary",
+        "id": "mihomo-add-rule"
+      },
+      {
+        "tag": "button",
+        "id": "test-config"
+      },
+      {
+        "tag": "button",
+        "id": "generate-config"
+      },
+      {
+        "tag": "button",
+        "id": "copy-config"
+      },
+      {
+        "tag": "textarea",
+        "id": "raw-config"
+      },
+      {
+        "tag": "button",
+        "class": "outline-btn",
+        "id": "clear-log-view"
+      },
+      {
+        "tag": "button",
+        "class": "primary-btn",
+        "id": "save-settings",
+        "disabled": null
+      },
+      {
+        "tag": "button",
+        "class": "danger-btn",
+        "id": "restart-panel"
+      },
+      {
+        "tag": "button",
+        "type": "button",
+        "class": "active",
+        "data-settings-tab": "general"
+      },
+      {
+        "tag": "button",
+        "type": "button",
+        "data-settings-tab": "authentication"
+      },
+      {
+        "tag": "form",
+        "id": "settings-form",
+        "autocomplete": "off"
+      },
+      {
+        "tag": "summary"
+      },
+      {
+        "tag": "button",
+        "type": "button",
+        "data-remark-token": "i"
+      },
+      {
+        "tag": "button",
+        "type": "button",
+        "data-remark-token": "e"
+      },
+      {
+        "tag": "select",
+        "id": "remark-separator"
+      },
+      {
+        "tag": "input",
+        "type": "hidden",
+        "name": "remarkModel"
+      },
+      {
+        "tag": "input",
+        "name": "listenIp",
+        "placeholder": "0.0.0.0"
+      },
+      {
+        "tag": "input",
+        "name": "panelDomain",
+        "placeholder": "panel.example.com"
+      },
+      {
+        "tag": "input",
+        "name": "listenPort",
+        "type": "number",
+        "min": "1",
+        "max": "65535"
+      },
+      {
+        "tag": "input",
+        "name": "panelPath",
+        "placeholder": "/"
+      },
+      {
+        "tag": "input",
+        "name": "sessionMaxAge",
+        "type": "number",
+        "min": "60",
+        "step": "10"
+      },
+      {
+        "tag": "input",
+        "name": "pageSize",
+        "type": "number",
+        "min": "0",
+        "step": "5"
+      },
+      {
+        "tag": "input",
+        "name": "ipinfoToken",
+        "type": "password",
+        "autocomplete": "new-password",
+        "spellcheck": "false"
+      },
+      {
+        "tag": "button",
+        "type": "button",
+        "class": "outline-btn",
+        "id": "clear-ipinfo-token",
+        "data-i18n": "settings.clearIpinfoToken"
+      },
+      {
+        "tag": "input",
+        "name": "ipinfoTokenClear",
+        "type": "checkbox",
+        "style": "display:none"
+      },
+      {
+        "tag": "select",
+        "name": "language"
+      },
+      {
+        "tag": "select",
+        "name": "uiTheme"
+      },
+      {
+        "tag": "summary"
+      },
+      {
+        "tag": "input",
+        "name": "expireDiff",
+        "type": "number",
+        "min": "0"
+      },
+      {
+        "tag": "input",
+        "name": "trafficDiff",
+        "type": "number",
+        "min": "0",
+        "step": "1"
+      },
+      {
+        "tag": "summary"
+      },
+      {
+        "tag": "input",
+        "name": "panelCertFile",
+        "placeholder": "/etc/m-ui/fullchain.pem"
+      },
+      {
+        "tag": "input",
+        "name": "panelKeyFile",
+        "placeholder": "/etc/m-ui/privkey.pem"
+      },
+      {
+        "tag": "summary"
+      },
+      {
+        "tag": "input",
+        "name": "externalTrafficInformEnable",
+        "type": "checkbox"
+      },
+      {
+        "tag": "input",
+        "name": "externalTrafficInformURI",
+        "placeholder": "(http|https)://domain[:port]/path/"
+      },
+      {
+        "tag": "summary"
+      },
+      {
+        "tag": "select",
+        "name": "timeLocation",
+        "id": "time-location"
+      },
+      {
+        "tag": "summary"
+      },
+      {
+        "tag": "input",
+        "name": "corePath",
+        "placeholder": "C:\\\\path\\\\to\\\\mihomo.exe"
+      },
+      {
+        "tag": "input",
+        "name": "apiAddress",
+        "placeholder": "127.0.0.1:9090"
+      },
+      {
+        "tag": "input",
+        "name": "apiSecret",
+        "autocomplete": "new-password"
+      },
+      {
+        "tag": "select",
+        "name": "mode"
+      },
+      {
+        "tag": "select",
+        "name": "logLevel"
+      },
+      {
+        "tag": "input",
+        "name": "allowLan",
+        "type": "checkbox"
+      },
+      {
+        "tag": "form",
+        "id": "credentials-form",
+        "autocomplete": "off"
+      },
+      {
+        "tag": "summary"
+      },
+      {
+        "tag": "input",
+        "name": "oldUsername",
+        "autocomplete": "off"
+      },
+      {
+        "tag": "input",
+        "name": "oldPassword",
+        "type": "password",
+        "autocomplete": "new-password"
+      },
+      {
+        "tag": "input",
+        "name": "newUsername",
+        "autocomplete": "off"
+      },
+      {
+        "tag": "input",
+        "name": "newPassword",
+        "type": "password",
+        "autocomplete": "new-password"
+      },
+      {
+        "tag": "button",
+        "type": "button",
+        "class": "primary-btn",
+        "id": "save-credentials"
+      },
+      {
+        "tag": "button",
+        "class": "modal-close",
+        "data-close-modal": null
+      },
+      {
+        "tag": "button",
+        "class": "circle-action",
+        "id": "update-geofiles",
+        "title": "更新 Geofile"
+      },
+      {
+        "tag": "button",
+        "class": "icon-btn",
+        "id": "refresh-modal-logs",
+        "title": "刷新"
+      },
+      {
+        "tag": "button",
+        "class": "modal-close",
+        "data-close-modal": null
+      },
+      {
+        "tag": "a",
+        "class": "outline-btn",
+        "href": "api/logs/download",
+        "download": "mihomo.log",
+        "data-i18n-multi": "modal.downloadLogs"
+      },
+      {
+        "tag": "button",
+        "class": "modal-close",
+        "data-close-modal": null
+      },
+      {
+        "tag": "textarea",
+        "class": "modal-config",
+        "id": "modal-config-content",
+        "readonly": null,
+        "spellcheck": "false"
+      },
+      {
+        "tag": "a",
+        "class": "outline-btn",
+        "href": "api/config/download",
+        "download": "config.yaml"
+      },
+      {
+        "tag": "button",
+        "class": "primary-btn",
+        "id": "copy-modal-config"
+      },
+      {
+        "tag": "button",
+        "type": "button",
+        "class": "modal-close",
+        "data-close-modal": null,
+        "aria-label": "关闭"
+      },
+      {
+        "tag": "button",
+        "type": "button",
+        "class": "outline-btn",
+        "data-close-modal": null
+      },
+      {
+        "tag": "button",
+        "type": "button",
+        "class": "modal-close",
+        "data-close-modal": null,
+        "aria-label": "Close"
+      },
+      {
+        "tag": "form",
+        "id": "inbound-import-form"
+      },
+      {
+        "tag": "textarea",
+        "class": "inbound-import-editor",
+        "id": "inbound-import-yaml",
+        "required": null,
+        "spellcheck": "false",
+        "placeholder": "- name: my-inbound\n  type: vless\n  port: 20000\n  listen: 0.0.0.0",
+        "data-i18n-placeholder": "inbounds.importPlaceholder"
+      },
+      {
+        "tag": "button",
+        "type": "button",
+        "class": "outline-btn",
+        "data-close-modal": null,
+        "data-i18n": "common.cancel"
+      },
+      {
+        "tag": "button",
+        "type": "submit",
+        "class": "primary-btn",
+        "id": "import-inbound-submit",
+        "data-i18n": "common.import"
+      },
+      {
+        "tag": "button",
+        "class": "modal-close",
+        "data-close-modal": null
+      },
+      {
+        "tag": "a",
+        "class": "circle-action",
+        "style": "display:grid;place-items:center;text-decoration:none",
+        "href": "api/backup",
+        "download": null
+      },
+      {
+        "tag": "input",
+        "id": "restore-identity",
+        "type": "checkbox"
+      },
+      {
+        "tag": "button",
+        "class": "circle-action",
+        "id": "restore-backup-button"
+      },
+      {
+        "tag": "input",
+        "id": "restore-backup-file",
+        "type": "file",
+        "accept": ".zip,application/zip",
+        "hidden": null
+      },
+      {
+        "tag": "button",
+        "class": "modal-close",
+        "data-close-modal": null
+      },
+      {
+        "tag": "textarea",
+        "class": "share-url-list",
+        "id": "inbound-links-content",
+        "readonly": null
+      },
+      {
+        "tag": "button",
+        "class": "outline-btn share-file-name",
+        "id": "download-inbound-links",
+        "type": "button"
+      },
+      {
+        "tag": "button",
+        "class": "primary-btn",
+        "id": "copy-inbound-links",
+        "type": "button"
+      },
+      {
+        "tag": "button",
+        "class": "modal-close",
+        "data-close-modal": null
+      },
+      {
+        "tag": "textarea",
+        "class": "share-url-list",
+        "id": "all-links-content",
+        "readonly": null
+      },
+      {
+        "tag": "button",
+        "class": "outline-btn",
+        "id": "download-all-links",
+        "type": "button"
+      },
+      {
+        "tag": "button",
+        "class": "primary-btn",
+        "id": "copy-all-links",
+        "type": "button"
+      },
+      {
+        "tag": "button",
+        "class": "modal-close",
+        "data-close-modal": null
+      },
+      {
+        "tag": "textarea",
+        "class": "share-url-list",
+        "id": "all-subscriptions-content",
+        "readonly": null
+      },
+      {
+        "tag": "button",
+        "class": "outline-btn",
+        "id": "download-all-subscriptions",
+        "type": "button"
+      },
+      {
+        "tag": "button",
+        "class": "primary-btn",
+        "id": "copy-all-subscriptions",
+        "type": "button"
+      },
+      {
+        "tag": "button",
+        "class": "modal-close",
+        "data-close-modal": null
+      },
+      {
+        "tag": "textarea",
+        "class": "qr-link-preview",
+        "id": "client-qr-link",
+        "readonly": null
+      },
+      {
+        "tag": "select",
+        "id": "cpu-history-span",
+        "class": "cpu-history-span"
+      },
+      {
+        "tag": "button",
+        "class": "modal-close",
+        "data-close-modal": null
+      },
+      {
+        "tag": "button",
+        "class": "modal-close",
+        "data-close-modal": null
+      },
+      {
+        "tag": "form",
+        "id": "client-form"
+      },
+      {
+        "tag": "input",
+        "name": "inboundId",
+        "type": "hidden"
+      },
+      {
+        "tag": "input",
+        "name": "id",
+        "type": "hidden"
+      },
+      {
+        "tag": "input",
+        "name": "enabled",
+        "type": "checkbox",
+        "checked": null
+      },
+      {
+        "tag": "input",
+        "name": "name",
+        "required": null,
+        "placeholder": "client-name"
+      },
+      {
+        "tag": "input",
+        "name": "username",
+        "data-username-input": "1",
+        "autocomplete": "off",
+        "placeholder": "defaults to Email"
+      },
+      {
+        "tag": "input",
+        "name": "password",
+        "placeholder": "认证密码"
+      },
+      {
+        "tag": "input",
+        "name": "uuid",
+        "placeholder": "VMess / VLESS / TUIC UUID"
+      },
+      {
+        "tag": "select",
+        "name": "flow"
+      },
+      {
+        "tag": "input",
+        "name": "alterId",
+        "type": "number",
+        "min": "0",
+        "value": "0"
+      },
+      {
+        "tag": "input",
+        "name": "totalGB",
+        "type": "number",
+        "min": "0",
+        "step": "0.1",
+        "value": "0"
+      },
+      {
+        "tag": "input",
+        "name": "delayedStart",
+        "type": "checkbox"
+      },
+      {
+        "tag": "input",
+        "name": "expiryTime",
+        "type": "datetime-local"
+      },
+      {
+        "tag": "input",
+        "name": "expireAfterDays",
+        "type": "number",
+        "min": "0",
+        "value": "0"
+      },
+      {
+        "tag": "input",
+        "name": "notes",
+        "placeholder": "可选备注"
+      },
+      {
+        "tag": "button",
+        "class": "outline-btn",
+        "type": "button",
+        "data-close-modal": null
+      },
+      {
+        "tag": "button",
+        "class": "primary-btn",
+        "id": "save-client",
+        "type": "submit"
+      },
+      {
+        "tag": "button",
+        "class": "modal-close",
+        "data-close-modal": null
+      },
+      {
+        "tag": "form",
+        "id": "client-bulk-form"
+      },
+      {
+        "tag": "input",
+        "name": "inboundId",
+        "type": "hidden"
+      },
+      {
+        "tag": "input",
+        "name": "prefix",
+        "value": "client"
+      },
+      {
+        "tag": "input",
+        "name": "postfix"
+      },
+      {
+        "tag": "input",
+        "name": "first",
+        "type": "number",
+        "min": "1",
+        "value": "1"
+      },
+      {
+        "tag": "input",
+        "name": "last",
+        "type": "number",
+        "min": "1",
+        "value": "5"
+      },
+      {
+        "tag": "input",
+        "name": "totalGB",
+        "type": "number",
+        "min": "0",
+        "step": "0.1",
+        "value": "0"
+      },
+      {
+        "tag": "input",
+        "name": "expiryTime",
+        "type": "datetime-local"
+      },
+      {
+        "tag": "input",
+        "name": "enabled",
+        "type": "checkbox",
+        "checked": null
+      },
+      {
+        "tag": "button",
+        "class": "outline-btn",
+        "type": "button",
+        "data-close-modal": null
+      },
+      {
+        "tag": "button",
+        "class": "primary-btn",
+        "type": "submit"
+      },
+      {
+        "tag": "button",
+        "class": "icon-btn",
+        "id": "close-drawer",
+        "title": "关闭"
+      },
+      {
+        "tag": "form",
+        "id": "inbound-form"
+      },
+      {
+        "tag": "input",
+        "type": "hidden",
+        "name": "id"
+      },
+      {
+        "tag": "summary"
+      },
+      {
+        "tag": "input",
+        "name": "enabled",
+        "type": "checkbox",
+        "checked": null
+      },
+      {
+        "tag": "input",
+        "name": "name",
+        "required": null
+      },
+      {
+        "tag": "select",
+        "name": "type"
+      },
+      {
+        "tag": "input",
+        "name": "listen",
+        "value": "0.0.0.0"
+      },
+      {
+        "tag": "input",
+        "name": "port",
+        "type": "number",
+        "min": "1",
+        "max": "65535",
+        "required": null
+      },
+      {
+        "tag": "input",
+        "name": "totalGB",
+        "type": "number",
+        "min": "0",
+        "step": "0.1",
+        "value": "0"
+      },
+      {
+        "tag": "select",
+        "name": "trafficReset"
+      },
+      {
+        "tag": "input",
+        "name": "trafficResetDay",
+        "type": "number",
+        "min": "1",
+        "max": "31",
+        "value": "1"
+      },
+      {
+        "tag": "input",
+        "name": "expiryTime",
+        "type": "datetime-local"
+      },
+      {
+        "tag": "input",
+        "name": "notes"
+      },
+      {
+        "tag": "summary"
+      },
+      {
+        "tag": "button",
+        "class": "outline-btn",
+        "id": "inbound-add-client",
+        "type": "button"
+      },
+      {
+        "tag": "button",
+        "class": "outline-btn",
+        "id": "inbound-add-bulk",
+        "type": "button"
+      },
+      {
+        "tag": "summary"
+      },
+      {
+        "tag": "input",
+        "name": "udp",
+        "type": "checkbox",
+        "checked": null
+      },
+      {
+        "tag": "select",
+        "name": "cipher"
+      },
+      {
+        "tag": "select",
+        "name": "vlessAuthentication"
+      },
+      {
+        "tag": "input",
+        "name": "decryption",
+        "value": "none",
+        "readonly": null
+      },
+      {
+        "tag": "textarea",
+        "class": "generated-value",
+        "name": "encryption",
+        "rows": "2",
+        "readonly": null
+      },
+      {
+        "tag": "button",
+        "class": "primary-btn",
+        "id": "vless-generate-keys",
+        "type": "button"
+      },
+      {
+        "tag": "button",
+        "class": "outline-btn",
+        "id": "vless-clear-keys",
+        "type": "button"
+      },
+      {
+        "tag": "select",
+        "name": "hysteriaObfs"
+      },
+      {
+        "tag": "input",
+        "name": "hysteriaObfsPassword",
+        "placeholder": "Obfuscation password"
+      },
+      {
+        "tag": "input",
+        "name": "hysteriaObfsMinPacketSize",
+        "type": "number",
+        "min": "0",
+        "placeholder": "512"
+      },
+      {
+        "tag": "input",
+        "name": "hysteriaObfsMaxPacketSize",
+        "type": "number",
+        "min": "0",
+        "placeholder": "1200"
+      },
+      {
+        "tag": "input",
+        "name": "hysteriaMasqueradeEnabled",
+        "type": "checkbox"
+      },
+      {
+        "tag": "select",
+        "name": "hysteriaMasqueradeType"
+      },
+      {
+        "tag": "input",
+        "name": "hysteriaMasqueradeDir",
+        "placeholder": "/var/www"
+      },
+      {
+        "tag": "input",
+        "name": "hysteriaMasquerade",
+        "placeholder": "https://example.com"
+      },
+      {
+        "tag": "input",
+        "name": "hysteriaIgnoreClientBandwidth",
+        "type": "checkbox"
+      },
+      {
+        "tag": "input",
+        "name": "hysteriaUp",
+        "placeholder": "100 Mbps"
+      },
+      {
+        "tag": "input",
+        "name": "hysteriaDown",
+        "placeholder": "100 Mbps"
+      },
+      {
+        "tag": "input",
+        "name": "hysteriaALPN",
+        "placeholder": "h3"
+      },
+      {
+        "tag": "input",
+        "name": "hysteriaUdpMtu",
+        "type": "number",
+        "min": "0",
+        "placeholder": "1197"
+      },
+      {
+        "tag": "input",
+        "name": "hysteriaQuicParams",
+        "type": "checkbox"
+      },
+      {
+        "tag": "input",
+        "value": "bbr",
+        "readonly": null,
+        "title": "Mihomo hysteria2 listener 固定使用 BBR"
+      },
+      {
+        "tag": "select",
+        "name": "hysteriaBbrProfile"
+      },
+      {
+        "tag": "input",
+        "name": "hysteriaCwnd",
+        "type": "number",
+        "min": "0",
+        "placeholder": "32"
+      },
+      {
+        "tag": "input",
+        "name": "hysteriaInitStreamWindow",
+        "type": "number",
+        "min": "0",
+        "placeholder": "0 = default"
+      },
+      {
+        "tag": "input",
+        "name": "hysteriaMaxStreamWindow",
+        "type": "number",
+        "min": "0",
+        "placeholder": "0 = default"
+      },
+      {
+        "tag": "input",
+        "name": "hysteriaInitConnWindow",
+        "type": "number",
+        "min": "0",
+        "placeholder": "0 = default"
+      },
+      {
+        "tag": "input",
+        "name": "hysteriaMaxConnWindow",
+        "type": "number",
+        "min": "0",
+        "placeholder": "0 = default"
+      },
+      {
+        "tag": "select",
+        "name": "tuicCongestion"
+      },
+      {
+        "tag": "select",
+        "name": "tuicBbrProfile"
+      },
+      {
+        "tag": "input",
+        "name": "tuicCwnd",
+        "type": "number",
+        "min": "0",
+        "placeholder": "32"
+      },
+      {
+        "tag": "input",
+        "name": "tuicMaxIdle",
+        "type": "number",
+        "min": "0",
+        "value": "15000"
+      },
+      {
+        "tag": "input",
+        "name": "tuicAuthTimeout",
+        "type": "number",
+        "min": "0",
+        "value": "1000"
+      },
+      {
+        "tag": "input",
+        "name": "tuicALPN",
+        "value": "h3"
+      },
+      {
+        "tag": "input",
+        "name": "tuicMaxUdpRelayPacketSize",
+        "type": "number",
+        "min": "0",
+        "placeholder": "1500",
+        "title": "Mihomo 会把 QUIC 数据报帧限制在 1400 字节，超出的部分会被内核自动收敛"
+      },
+      {
+        "tag": "textarea",
+        "name": "anytlsPadding",
+        "rows": "4",
+        "placeholder": "stop=8\n0=30-30\n1=100-400",
+        "title": "每行写成 key=value；stop=N 表示第 N 个包之后不再填充，数字=范围 可用逗号分隔多段，c 表示在此处等待对端响应"
+      },
+      {
+        "tag": "button",
+        "class": "primary-btn",
+        "id": "anytls-default-padding",
+        "type": "button"
+      },
+      {
+        "tag": "button",
+        "class": "outline-btn",
+        "id": "anytls-clear-padding",
+        "type": "button"
+      },
+      {
+        "tag": "input",
+        "name": "simpleObfsEnabled",
+        "type": "checkbox"
+      },
+      {
+        "tag": "select",
+        "name": "simpleObfsMode"
+      },
+      {
+        "tag": "summary"
+      },
+      {
+        "tag": "select",
+        "name": "network"
+      },
+      {
+        "tag": "input",
+        "name": "wsPath",
+        "placeholder": "/path"
+      },
+      {
+        "tag": "input",
+        "name": "host"
+      },
+      {
+        "tag": "input",
+        "name": "grpcServiceName"
+      },
+      {
+        "tag": "input",
+        "name": "xhttpHost"
+      },
+      {
+        "tag": "input",
+        "name": "xhttpPath",
+        "value": "/"
+      },
+      {
+        "tag": "select",
+        "name": "xhttpMode"
+      },
+      {
+        "tag": "input",
+        "name": "xhttpPaddingBytes",
+        "placeholder": "100-1000"
+      },
+      {
+        "tag": "input",
+        "name": "xhttpPaddingObfs",
+        "type": "checkbox"
+      },
+      {
+        "tag": "input",
+        "name": "xhttpPaddingKey"
+      },
+      {
+        "tag": "input",
+        "name": "xhttpPaddingHeader",
+        "placeholder": "Referer"
+      },
+      {
+        "tag": "select",
+        "name": "xhttpPaddingPlacement"
+      },
+      {
+        "tag": "select",
+        "name": "xhttpPaddingMethod"
+      },
+      {
+        "tag": "select",
+        "name": "xhttpUplinkMethod"
+      },
+      {
+        "tag": "select",
+        "name": "xhttpSessionPlacement"
+      },
+      {
+        "tag": "input",
+        "name": "xhttpSessionKey"
+      },
+      {
+        "tag": "select",
+        "name": "xhttpSeqPlacement"
+      },
+      {
+        "tag": "input",
+        "name": "xhttpSeqKey"
+      },
+      {
+        "tag": "select",
+        "name": "xhttpDataPlacement"
+      },
+      {
+        "tag": "input",
+        "name": "xhttpDataKey"
+      },
+      {
+        "tag": "input",
+        "name": "xhttpChunkSize",
+        "placeholder": "0 or 64+"
+      },
+      {
+        "tag": "input",
+        "name": "xhttpNoSSE",
+        "type": "checkbox"
+      },
+      {
+        "tag": "input",
+        "name": "xhttpScStreamUp",
+        "placeholder": "20-80"
+      },
+      {
+        "tag": "input",
+        "name": "xhttpScMaxBufferedPosts",
+        "placeholder": "30"
+      },
+      {
+        "tag": "input",
+        "name": "xhttpScMaxEachPostBytes",
+        "placeholder": "1000000"
+      },
+      {
+        "tag": "summary"
+      },
+      {
+        "tag": "input",
+        "name": "rule"
+      },
+      {
+        "tag": "input",
+        "name": "proxy"
+      },
+      {
+        "tag": "input",
+        "name": "routingMark",
+        "type": "number",
+        "min": "0"
+      },
+      {
+        "tag": "input",
+        "name": "muxPadding",
+        "type": "checkbox"
+      },
+      {
+        "tag": "input",
+        "name": "muxBrutal",
+        "type": "checkbox"
+      },
+      {
+        "tag": "input",
+        "name": "muxUp",
+        "placeholder": "100 Mbps"
+      },
+      {
+        "tag": "input",
+        "name": "muxDown",
+        "placeholder": "100 Mbps"
+      },
+      {
+        "tag": "summary"
+      },
+      {
+        "tag": "select",
+        "name": "securityMode",
+        "hidden": null
+      },
+      {
+        "tag": "button",
+        "type": "button",
+        "data-security": "none"
+      },
+      {
+        "tag": "button",
+        "type": "button",
+        "data-security": "reality"
+      },
+      {
+        "tag": "button",
+        "type": "button",
+        "data-security": "tls"
+      },
+      {
+        "tag": "input",
+        "name": "tlsServerName",
+        "placeholder": "example.com",
+        "title": "握手用域名，Mihomo listener 不读取此字段，仅用于生成分享链接与二维码"
+      },
+      {
+        "tag": "input",
+        "name": "certificate"
+      },
+      {
+        "tag": "input",
+        "name": "privateKey"
+      },
+      {
+        "tag": "select",
+        "name": "clientAuthType"
+      },
+      {
+        "tag": "input",
+        "name": "clientAuthCert"
+      },
+      {
+        "tag": "textarea",
+        "name": "echKey",
+        "rows": "3"
+      },
+      {
+        "tag": "input",
+        "name": "allowInsecure",
+        "type": "checkbox",
+        "title": "AnyTLS/Trojan/VLESS 会写入 listener 的 allow-insecure；Hysteria2/TUIC 内核没有这个键，勾选后只在分享链接里标记跳过证书校验"
+      },
+      {
+        "tag": "select",
+        "name": "realityFingerprint"
+      },
+      {
+        "tag": "input",
+        "name": "realityDest",
+        "placeholder": "www.example.com:443"
+      },
+      {
+        "tag": "input",
+        "name": "realityServerNames",
+        "placeholder": "www.example.com"
+      },
+      {
+        "tag": "input",
+        "name": "realityMaxTime",
+        "type": "number",
+        "min": "0"
+      },
+      {
+        "tag": "textarea",
+        "class": "generated-value",
+        "name": "realityShortIds",
+        "rows": "2",
+        "placeholder": "0123456789abcdef"
+      },
+      {
+        "tag": "button",
+        "class": "input-tool",
+        "id": "reality-random-shortids",
+        "type": "button",
+        "title": "Generate new Short IDs"
+      },
+      {
+        "tag": "input",
+        "name": "realitySpiderX",
+        "value": "/"
+      },
+      {
+        "tag": "textarea",
+        "class": "generated-value",
+        "name": "realityPublicKey",
+        "rows": "2",
+        "readonly": null
+      },
+      {
+        "tag": "textarea",
+        "class": "generated-value",
+        "name": "realityPrivateKey",
+        "rows": "2"
+      },
+      {
+        "tag": "button",
+        "class": "primary-btn",
+        "id": "reality-generate-keypair",
+        "type": "button"
+      },
+      {
+        "tag": "button",
+        "class": "outline-btn",
+        "id": "reality-clear-keypair",
+        "type": "button"
+      },
+      {
+        "tag": "input",
+        "name": "realityProxy"
+      },
+      {
+        "tag": "select",
+        "name": "shadowTlsVersion"
+      },
+      {
+        "tag": "input",
+        "name": "shadowTlsPassword"
+      },
+      {
+        "tag": "input",
+        "name": "shadowTlsDest",
+        "placeholder": "example.com:443"
+      },
+      {
+        "tag": "input",
+        "name": "restlsDest"
+      },
+      {
+        "tag": "input",
+        "name": "restlsPassword"
+      },
+      {
+        "tag": "textarea",
+        "name": "restlsScript",
+        "rows": "3"
+      },
+      {
+        "tag": "input",
+        "name": "restlsMinRecord",
+        "type": "number",
+        "min": "0"
+      },
+      {
+        "tag": "input",
+        "name": "restlsRateLimit",
+        "type": "number",
+        "min": "0"
+      },
+      {
+        "tag": "button",
+        "type": "button",
+        "class": "danger-btn",
+        "id": "delete-inbound"
+      },
+      {
+        "tag": "button",
+        "type": "button",
+        "class": "outline-btn",
+        "id": "cancel-drawer"
+      },
+      {
+        "tag": "button",
+        "type": "submit",
+        "class": "primary-btn",
+        "id": "save-inbound"
+      },
+      {
+        "tag": "button",
+        "class": "back-top",
+        "id": "back-top",
+        "type": "button",
+        "title": "回到顶部"
+      }
+    ],
+    "tabs": [
+      {
+        "tag": "button",
+        "data-view": "dashboard",
+        "class": "active"
+      },
+      {
+        "tag": "button",
+        "data-view": "inbounds"
+      },
+      {
+        "tag": "button",
+        "data-view": "subtemplates"
+      },
+      {
+        "tag": "button",
+        "data-view": "mihomo"
+      },
+      {
+        "tag": "button",
+        "data-view": "settings"
+      },
+      {
+        "tag": "button",
+        "type": "button",
+        "data-general": "import"
+      },
+      {
+        "tag": "button",
+        "type": "button",
+        "data-general": "links"
+      },
+      {
+        "tag": "button",
+        "type": "button",
+        "data-general": "subscriptions"
+      },
+      {
+        "tag": "button",
+        "type": "button",
+        "data-general": "test-config"
+      },
+      {
+        "tag": "button",
+        "type": "button",
+        "data-general": "reset-inbounds"
+      },
+      {
+        "tag": "button",
+        "type": "button",
+        "data-general": "reset-clients"
+      },
+      {
+        "tag": "button",
+        "type": "button",
+        "data-general": "sync-inbound"
+      },
+      {
+        "tag": "button",
+        "type": "button",
+        "class": "danger",
+        "data-general": "delete-depleted"
+      },
+      {
+        "tag": "button",
+        "type": "button",
+        "class": "mihomo-tab active",
+        "data-mihomo-tab": "basics"
+      },
+      {
+        "tag": "button",
+        "type": "button",
+        "class": "mihomo-tab",
+        "data-mihomo-tab": "outbounds"
+      },
+      {
+        "tag": "button",
+        "type": "button",
+        "class": "mihomo-tab",
+        "data-mihomo-tab": "routing"
+      },
+      {
+        "tag": "button",
+        "type": "button",
+        "class": "active",
+        "data-settings-tab": "general"
+      },
+      {
+        "tag": "button",
+        "type": "button",
+        "data-settings-tab": "authentication"
+      }
+    ],
+    "templateIDs": [
+      "add-inbound",
+      "all-links-content",
+      "all-links-modal",
+      "all-subscriptions-content",
+      "all-subscriptions-modal",
+      "anytls-clear-padding",
+      "anytls-default-padding",
+      "back-top",
+      "backup-modal",
+      "basics-block-torrent",
+      "basics-blockDomains-input",
+      "basics-blockIps-input",
+      "basics-directIpVersion",
+      "basics-dns-log",
+      "basics-domain-options",
+      "basics-inbound-download",
+      "basics-inbound-upload",
+      "basics-ip-options",
+      "basics-ipv4Domains-input",
+      "basics-ipv6",
+      "basics-logBufferSize",
+      "basics-logLevel",
+      "basics-maskLogAddress",
+      "basics-mode",
+      "basics-mode-warning",
+      "basics-outboundDownloadStatistics",
+      "basics-outboundTestUrl",
+      "basics-outboundUploadStatistics",
+      "basics-reset",
+      "basics-service-options",
+      "basics-tcpConcurrent",
+      "basics-trafficSampleSeconds",
+      "basics-trafficSaveSeconds",
+      "basics-unifiedDelay",
+      "basics-warp",
+      "basics-warpDomains-input",
+      "cancel-drawer",
+      "clear-ipinfo-token",
+      "clear-log-view",
+      "client-bulk-form",
+      "client-bulk-modal",
+      "client-form",
+      "client-modal",
+      "client-modal-title",
+      "client-qr-canvas",
+      "client-qr-link",
+      "client-qr-modal",
+      "client-qr-name",
+      "client-schedule-fields",
+      "close-all-connections",
+      "close-drawer",
+      "config-modal",
+      "config-test-error-modal",
+      "config-test-error-output",
+      "config-test-error-title",
+      "connection-count",
+      "connections-table",
+      "copy-all-links",
+      "copy-all-subscriptions",
+      "copy-config",
+      "copy-inbound-links",
+      "copy-modal-config",
+      "core-uptime",
+      "cpu-caption",
+      "cpu-caption-text",
+      "cpu-gauge",
+      "cpu-history-chart",
+      "cpu-history-modal",
+      "cpu-history-note",
+      "cpu-history-open",
+      "cpu-history-span",
+      "cpu-info-tip",
+      "cpu-percent",
+      "credentials-form",
+      "cross-panel-subscription-path",
+      "crumb",
+      "delete-inbound",
+      "disk-caption",
+      "disk-caption-text",
+      "disk-gauge",
+      "disk-percent",
+      "dismiss-path-banner",
+      "dismiss-security-banner",
+      "download-all-links",
+      "download-all-subscriptions",
+      "download-inbound-links",
+      "drawer-backdrop",
+      "drawer-handle",
+      "drawer-handle-use",
+      "drawer-mask",
+      "drawer-title",
+      "ech-clear-key",
+      "ech-generate-key",
+      "general-actions",
+      "general-menu",
+      "generate-config",
+      "hysteria-realm-opts-fields",
+      "hysteria2-realm-clear-pattern",
+      "hysteria2-realm-default-pattern",
+      "hysteria2-realm-fields",
+      "import-inbound-submit",
+      "inbound-add-bulk",
+      "inbound-add-client",
+      "inbound-client-actions",
+      "inbound-client-list",
+      "inbound-client-summary",
+      "inbound-form",
+      "inbound-import-error",
+      "inbound-import-form",
+      "inbound-import-modal",
+      "inbound-import-title",
+      "inbound-import-yaml",
+      "inbound-links-content",
+      "inbound-links-modal",
+      "inbound-metric-all-time",
+      "inbound-metric-clients",
+      "inbound-metric-count",
+      "inbound-metric-traffic",
+      "inbound-metric-usage",
+      "inbound-popover",
+      "inbound-search",
+      "inbound-status-tabs",
+      "inbounds-auto-enabled",
+      "inbounds-auto-interval",
+      "inbounds-auto-toggle",
+      "inbounds-filterbar",
+      "inbounds-refresh",
+      "inbounds-refresh-now",
+      "inbounds-search-toggle",
+      "inbounds-table",
+      "ipinfo-token-status",
+      "logout",
+      "logs-box",
+      "logs-modal",
+      "manage-subscription-tokens",
+      "mieru-fields",
+      "mihomo-add-outbound",
+      "mihomo-add-rule",
+      "mihomo-basics-form",
+      "mihomo-outbound-table",
+      "mihomo-restart",
+      "mihomo-rule-table",
+      "mihomo-save",
+      "mihomo-settings-root",
+      "mihomo-vpngate",
+      "mihomo-warp",
+      "modal-config-content",
+      "modal-log-content",
+      "nav",
+      "os-uptime",
+      "overview-backup",
+      "overview-config",
+      "overview-core-restart",
+      "overview-core-status",
+      "overview-core-toggle",
+      "overview-core-version",
+      "overview-download",
+      "overview-import",
+      "overview-ipv4",
+      "overview-ipv6",
+      "overview-logs",
+      "overview-panel-version",
+      "overview-received",
+      "overview-sent",
+      "overview-tcp",
+      "overview-udp",
+      "overview-upload",
+      "overview-version",
+      "panel-memory",
+      "panel-path-banner",
+      "panel-security-banner",
+      "panel-tasks",
+      "protocol-hint",
+      "ram-caption",
+      "ram-caption-text",
+      "ram-gauge",
+      "ram-percent",
+      "raw-config",
+      "reality-clear-keypair",
+      "reality-fallback-fields",
+      "reality-generate-keypair",
+      "reality-random-shortids",
+      "refresh",
+      "refresh-modal-logs",
+      "release-list",
+      "remark-sample",
+      "remark-separator",
+      "remark-tokens",
+      "restart-panel",
+      "restore-backup-button",
+      "restore-backup-file",
+      "restore-identity",
+      "save-client",
+      "save-credentials",
+      "save-inbound",
+      "save-settings",
+      "security-extra-toggles",
+      "security-segmented",
+      "set-cert-from-panel",
+      "settings-form",
+      "settings-ink",
+      "settings-pane-authentication",
+      "settings-pane-general",
+      "settings-pane-subscription",
+      "settings-tabbar",
+      "shadowquic-fields",
+      "shadowsocks-fields",
+      "sidebar",
+      "sidebar-dark-toggle",
+      "sidebar-logout",
+      "sidebar-theme",
+      "sidebar-theme-control",
+      "sidebar-ultra-row",
+      "sidebar-ultra-toggle",
+      "sider-trigger",
+      "sider-trigger-use",
+      "simple-auth-add",
+      "simple-auth-fields",
+      "simple-auth-list",
+      "snell-fields",
+      "ss-kcptun-fields",
+      "subscription-client-toggles",
+      "subscription-settings-form",
+      "subscription-token-list",
+      "subscription-tokens-modal",
+      "subtpl-import",
+      "subtpl-list",
+      "subtpl-root",
+      "sudoku-fields",
+      "swap-caption",
+      "swap-caption-text",
+      "swap-gauge",
+      "swap-percent",
+      "system-load",
+      "test-config",
+      "theme-toggle",
+      "time-location",
+      "tls-certificate-mode",
+      "tls-certificate-mode-toggle",
+      "tlsmirror-clear-suites",
+      "tlsmirror-fields",
+      "tlsmirror-recommended-suites",
+      "toast",
+      "toggle-ip",
+      "trojan-mihomo-fields",
+      "trusttunnel-fields",
+      "update-geofiles",
+      "version-modal",
+      "view-connections",
+      "view-dashboard",
+      "view-inbounds",
+      "view-logs",
+      "view-mihomo",
+      "view-settings",
+      "view-subtemplates",
+      "vless-clear-keys",
+      "vless-generate-keys",
+      "vmess-mekya-fields",
+      "vmess-mkcp-fields"
+    ],
+    "variables": [
+      "--gauge-color",
+      "--percent"
+    ],
+    "assets": [
+      "static/liquid-glass.css",
+      "static/liquid-tabbar.css",
+      "static/mihomo-settings.css",
+      "static/multi-control.css",
+      "static/inbound-sync.css",
+      "static/cross-subscriptions.css",
+      "static/sub-templates.css",
+      "static/xray-import.css",
+      "static/liquid-optics.css",
+      "static/liquid-toggle.css",
+      "static/liquid-glass-gl.css",
+      "static/liquid-tabbar.css",
+      "static/liquid-button.css",
+      "static/liquid-sheet.css",
+      "static/liquid-toolbar.css",
+      "static/liquid-toggle.js",
+      "static/liquid-button.js",
+      "static/fonts.css",
+      "static/fonts.css",
+      "static/theme-shadcn.css",
+      "static/theme-md3.css",
+      "static/icons-lucide.js",
+      "static/icons-material.js",
+      "static/sf-symbols.js",
+      "static/i18n-locales.js",
+      "static/i18n.js",
+      "media/m-ui_logo.png",
+      "#sf-bulb",
+      "#sf-down",
+      "#sf-dashboard",
+      "#sf-user",
+      "#sf-file-text",
+      "#sf-tool",
+      "#sf-setting",
+      "#sf-logout",
+      "#sf-left",
+      "#sf-menu-fold",
+      "#sf-bulb",
+      "#sf-sync",
+      "#sf-logout",
+      "#sf-close",
+      "#sf-close",
+      "#sf-area-chart",
+      "#sf-history",
+      "#sf-poweroff",
+      "#sf-reload",
+      "#sf-tool",
+      "#sf-file-text",
+      "#sf-code",
+      "#sf-hdd",
+      "#sf-import",
+      "https://github.com/RomanovCaesar/m-ui/releases",
+      "https://t.me/MihomoUI",
+      "https://github.com/RomanovCaesar/m-ui/wiki",
+      "#sf-eye",
+      "#sf-swap",
+      "#sf-pie-chart",
+      "#sf-history",
+      "#sf-bars",
+      "#sf-team",
+      "#sf-plus",
+      "#sf-menu",
+      "#sf-import",
+      "#sf-export",
+      "#sf-export",
+      "#sf-experiment",
+      "#sf-reload",
+      "#sf-file-done",
+      "#sf-sync",
+      "#sf-rest",
+      "#sf-sync",
+      "#sf-down",
+      "#sf-filter",
+      "#sf-search",
+      "#sf-setting",
+      "#sf-cloud-upload",
+      "#sf-branches",
+      "#sf-cloud",
+      "#sf-plus",
+      "#sf-cloud",
+      "#sf-cloud",
+      "#sf-plus",
+      "#sf-setting",
+      "#sf-safety",
+      "#sf-close",
+      "#sf-warning",
+      "#sf-reload",
+      "#sf-reload",
+      "#sf-close",
+      "api/logs/download",
+      "#sf-download",
+      "#sf-close",
+      "api/config/download",
+      "#sf-download",
+      "#sf-copy",
+      "#sf-close",
+      "#sf-close",
+      "#sf-close",
+      "api/backup",
+      "#sf-download",
+      "#sf-upload",
+      "#sf-close",
+      "#sf-download",
+      "#sf-copy",
+      "#sf-close",
+      "#sf-download",
+      "#sf-copy",
+      "#sf-close",
+      "#sf-download",
+      "#sf-copy",
+      "#sf-close",
+      "#sf-close",
+      "#sf-close",
+      "#sf-close",
+      "#sf-close",
+      "#sf-plus",
+      "#sf-plus",
+      "#sf-thunderbolt",
+      "#sf-thunderbolt",
+      "#sf-sync",
+      "#sf-thunderbolt",
+      "static/qrious2.min.js",
+      "#sf-plus",
+      "#sf-thunderbolt",
+      "#sf-thunderbolt",
+      "#sf-thunderbolt",
+      "#sf-thunderbolt",
+      "#sf-close",
+      "static/liquid-optics.js",
+      "static/liquid-glass-gl.js",
+      "static/liquid-tabbar.js",
+      "static/swiftui-components.js",
+      "static/mihomo-settings.js",
+      "static/multi-control.js",
+      "static/fleet.js",
+      "static/inbound-sync.js",
+      "static/cross-subscriptions.js",
+      "static/sub-templates.js",
+      "static/dialog.js",
+      "static/client-schedule.js",
+      "static/xray-import.js"
+    ],
+    "apiPaths": [
+      "/api/...",
+      "/api/auth/credentials",
+      "/api/clients",
+      "/api/config",
+      "/api/core/",
+      "/api/core/connections",
+      "/api/core/connections?id",
+      "/api/core/install",
+      "/api/core/releases",
+      "/api/core/test",
+      "/api/geofiles/update",
+      "/api/inbounds",
+      "/api/inbounds/import",
+      "/api/inbounds?id",
+      "/api/panel/restart",
+      "/api/raw-config",
+      "/api/state",
+      "/api/subscriptions/token",
+      "/api/tools/cross-panel-subscription-path",
+      "/api/tools/ech-keypair",
+      "/api/tools/inbound-port",
+      "/api/tools/reality-keypair",
+      "/api/tools/subscription-path",
+      "/api/tools/uuid",
+      "/api/tools/vless-encryption",
+      "/api/traffic/reset"
+    ]
+  },
+  "web/liquid-button.css": {
+    "ids": [],
+    "controls": [],
+    "tabs": [],
+    "templateIDs": [],
+    "variables": [
+      "--lb-fill",
+      "--lb-rim",
+      "--lb-shadow",
+      "--lb-text"
+    ],
+    "assets": [],
+    "apiPaths": []
+  },
+  "web/liquid-button.js": {
+    "ids": [],
+    "controls": [],
+    "tabs": [],
+    "templateIDs": [],
+    "variables": [],
+    "assets": [],
+    "apiPaths": []
+  },
+  "web/liquid-glass-gl.css": {
+    "ids": [],
+    "controls": [],
+    "tabs": [],
+    "templateIDs": [],
+    "variables": [
+      "--lg-filter"
+    ],
+    "assets": [],
+    "apiPaths": []
+  },
+  "web/liquid-glass-gl.js": {
+    "ids": [],
+    "controls": [],
+    "tabs": [],
+    "templateIDs": [],
+    "variables": [],
+    "assets": [],
+    "apiPaths": []
+  },
+  "web/liquid-glass.css": {
+    "ids": [],
+    "controls": [],
+    "tabs": [],
+    "templateIDs": [],
+    "variables": [
+      "--accent",
+      "--back-top",
+      "--back-top-hover",
+      "--bg",
+      "--blue",
+      "--code-bg",
+      "--code-color",
+      "--ctl",
+      "--ctl-lg",
+      "--ctl-sm",
+      "--cyan",
+      "--danger",
+      "--danger-hover",
+      "--ease",
+      "--ease-modal",
+      "--ease-spring",
+      "--font",
+      "--font-mono",
+      "--gauge-trail",
+      "--glass-bg",
+      "--glass-blur",
+      "--glass-border",
+      "--glass-caustic",
+      "--glass-specular",
+      "--green",
+      "--indigo",
+      "--line",
+      "--login-wave",
+      "--mint",
+      "--muted",
+      "--muted-2",
+      "--orange",
+      "--pink",
+      "--purple",
+      "--radius",
+      "--radius-lg",
+      "--radius-pill",
+      "--radius-sm",
+      "--radius-xl",
+      "--radius-xs",
+      "--red",
+      "--row-selected",
+      "--scrollbar",
+      "--scrollbar-hover",
+      "--scrollbar-webkit",
+      "--scrollbar-webkit-hover",
+      "--select-bg",
+      "--select-hover",
+      "--select-item-color",
+      "--select-item-hover",
+      "--select-item-selected",
+      "--shadow",
+      "--shadow-btn",
+      "--shadow-btn-primary",
+      "--shadow-hover",
+      "--shadow-modal",
+      "--shadow-pop",
+      "--sider-trigger-bg",
+      "--sider-trigger-color",
+      "--stroke",
+      "--stroke-2",
+      "--surface",
+      "--surface-2",
+      "--surface-3",
+      "--surface-4",
+      "--surface-glass",
+      "--surface-glass-heavy",
+      "--surface-modal",
+      "--table-hover",
+      "--table-ring",
+      "--tag-bg",
+      "--tag-blue-bg",
+      "--tag-blue-border",
+      "--tag-blue-color",
+      "--tag-border",
+      "--tag-color",
+      "--tag-green-bg",
+      "--tag-green-border",
+      "--tag-green-color",
+      "--tag-orange-bg",
+      "--tag-orange-border",
+      "--tag-orange-color",
+      "--tag-purple-bg",
+      "--tag-purple-border",
+      "--tag-purple-color",
+      "--tag-red-bg",
+      "--tag-red-border",
+      "--tag-red-color",
+      "--teal",
+      "--teal-2",
+      "--teal-3",
+      "--teal-soft",
+      "--text",
+      "--text-strong",
+      "--tooltip"
+    ],
+    "assets": [],
+    "apiPaths": []
+  },
+  "web/liquid-optics.css": {
+    "ids": [],
+    "controls": [],
+    "tabs": [],
+    "templateIDs": [],
+    "variables": [
+      "--glass-blur",
+      "--glass-fill",
+      "--glass-highlight",
+      "--glass-rim",
+      "--glass-shade",
+      "--glass-shadow",
+      "--glass-tint",
+      "--lg-frost",
+      "--muted",
+      "--radius-lg",
+      "--surface",
+      "--surface-2",
+      "--surface-hover",
+      "--surface-subtle"
+    ],
+    "assets": [],
+    "apiPaths": []
+  },
+  "web/liquid-optics.js": {
+    "ids": [],
+    "controls": [],
+    "tabs": [],
+    "templateIDs": [],
+    "variables": [],
+    "assets": [],
+    "apiPaths": []
+  },
+  "web/liquid-sheet.css": {
+    "ids": [],
+    "controls": [],
+    "tabs": [],
+    "templateIDs": [],
+    "variables": [
+      "--lg-accent",
+      "--lg-destructive",
+      "--lg-ease-sheet",
+      "--lg-menu-fill",
+      "--lg-menu-filter",
+      "--lg-menu-rim",
+      "--lg-scrim",
+      "--lg-sheet-fill",
+      "--lg-sheet-filter",
+      "--lg-sheet-line",
+      "--lg-sheet-radius",
+      "--lg-sheet-rim"
+    ],
+    "assets": [],
+    "apiPaths": []
+  },
+  "web/liquid-tabbar.css": {
+    "ids": [],
+    "controls": [],
+    "tabs": [],
+    "templateIDs": [],
+    "variables": [
+      "--lt-seg-h",
+      "--lt-seg-pad",
+      "--lt-text"
+    ],
+    "assets": [],
+    "apiPaths": []
+  },
+  "web/liquid-tabbar.js": {
+    "ids": [],
+    "controls": [],
+    "tabs": [],
+    "templateIDs": [],
+    "variables": [],
+    "assets": [],
+    "apiPaths": []
+  },
+  "web/liquid-toggle.css": {
+    "ids": [],
+    "controls": [],
+    "tabs": [],
+    "templateIDs": [],
+    "variables": [
+      "--lt-height",
+      "--lt-width"
+    ],
+    "assets": [],
+    "apiPaths": []
+  },
+  "web/liquid-toggle.js": {
+    "ids": [],
+    "controls": [],
+    "tabs": [],
+    "templateIDs": [],
+    "variables": [],
+    "assets": [],
+    "apiPaths": []
+  },
+  "web/liquid-toolbar.css": {
+    "ids": [],
+    "controls": [],
+    "tabs": [],
+    "templateIDs": [],
+    "variables": [
+      "--lg-bar-fill",
+      "--lg-bar-filter",
+      "--lg-bar-gutter",
+      "--lg-bar-rim",
+      "--lg-bar-shadow",
+      "--lg-bar-top",
+      "--lg-edge-tint"
+    ],
+    "assets": [],
+    "apiPaths": []
+  },
+  "web/login.html": {
+    "ids": [
+      "settings-button",
+      "settings-menu",
+      "dark-mode",
+      "ultra-row",
+      "ultra-dark",
+      "language-select",
+      "login-form",
+      "username",
+      "password",
+      "password-toggle",
+      "login-button",
+      "error"
+    ],
+    "controls": [
+      {
+        "tag": "button",
+        "class": "settings-button",
+        "id": "settings-button",
+        "type": "button",
+        "aria-label": "面板设置",
+        "aria-expanded": "false"
+      },
+      {
+        "tag": "input",
+        "id": "dark-mode",
+        "type": "checkbox",
+        "aria-label": "暗色"
+      },
+      {
+        "tag": "input",
+        "id": "ultra-dark",
+        "type": "checkbox",
+        "aria-label": "超暗色"
+      },
+      {
+        "tag": "select",
+        "class": "language-select",
+        "id": "language-select",
+        "aria-label": "语言"
+      },
+      {
+        "tag": "form",
+        "id": "login-form"
+      },
+      {
+        "tag": "input",
+        "id": "username",
+        "name": "username",
+        "type": "text",
+        "autocomplete": "username",
+        "placeholder": "用户名",
+        "aria-label": "用户名",
+        "required": null,
+        "autofocus": null
+      },
+      {
+        "tag": "input",
+        "id": "password",
+        "name": "password",
+        "type": "password",
+        "autocomplete": "current-password",
+        "placeholder": "密码",
+        "aria-label": "密码",
+        "required": null
+      },
+      {
+        "tag": "button",
+        "class": "password-toggle",
+        "id": "password-toggle",
+        "type": "button",
+        "aria-label": "显示密码"
+      },
+      {
+        "tag": "button",
+        "class": "login-button",
+        "id": "login-button",
+        "type": "submit"
+      }
+    ],
+    "tabs": [],
+    "templateIDs": [
+      "dark-mode",
+      "error",
+      "language-select",
+      "login-button",
+      "login-form",
+      "password",
+      "password-toggle",
+      "settings-button",
+      "settings-menu",
+      "ultra-dark",
+      "ultra-row",
+      "username"
+    ],
+    "variables": [
+      "--card-bg",
+      "--card-border",
+      "--card-stroke",
+      "--checkbox-bg",
+      "--input-bg",
+      "--input-bg-focus",
+      "--line",
+      "--muted",
+      "--page-bg",
+      "--primary",
+      "--primary-active",
+      "--primary-hover",
+      "--shadow-card",
+      "--switch-off",
+      "--text",
+      "--text-strong"
+    ],
+    "assets": [
+      "static/liquid-glass.css",
+      "static/liquid-optics.css",
+      "static/liquid-toggle.css",
+      "static/liquid-glass-gl.css",
+      "static/liquid-button.css",
+      "static/liquid-sheet.css",
+      "static/liquid-toggle.js",
+      "static/liquid-button.js",
+      "static/fonts.css",
+      "static/fonts.css",
+      "static/theme-shadcn.css",
+      "static/theme-md3.css",
+      "#sf-setting",
+      "media/m-ui_logo.png",
+      "static/icons-lucide.js",
+      "static/icons-material.js",
+      "static/sf-symbols.js",
+      "static/liquid-optics.js",
+      "static/liquid-glass-gl.js",
+      "static/swiftui-components.js"
+    ],
+    "apiPaths": []
+  },
+  "web/mihomo-settings.css": {
+    "ids": [],
+    "controls": [],
+    "tabs": [],
+    "templateIDs": [],
+    "variables": [],
+    "assets": [],
+    "apiPaths": []
+  },
+  "web/mihomo-settings.js": {
+    "ids": [],
+    "controls": [],
+    "tabs": [],
+    "templateIDs": [
+      "mihomo-generate-uuid",
+      "mihomo-no-resolve-field",
+      "mihomo-outbound-form",
+      "mihomo-outbound-modal",
+      "mihomo-outbound-title",
+      "mihomo-rule-form",
+      "mihomo-rule-hint",
+      "mihomo-rule-modal",
+      "mihomo-rule-payload-field",
+      "mihomo-rule-title",
+      "outbound-apply",
+      "outbound-form-panel",
+      "outbound-form-tab",
+      "outbound-import-error",
+      "outbound-parse-link",
+      "outbound-share-link",
+      "outbound-yaml",
+      "outbound-yaml-lines",
+      "outbound-yaml-panel",
+      "outbound-yaml-tab",
+      "vpngate-add",
+      "vpngate-cancel",
+      "vpngate-close",
+      "vpngate-error",
+      "vpngate-form",
+      "vpngate-install",
+      "vpngate-install-button",
+      "vpngate-install-error",
+      "vpngate-install-message",
+      "vpngate-isp-note",
+      "vpngate-modal",
+      "vpngate-slot-preview",
+      "vpngate-status-list",
+      "vpngate-title",
+      "warp-access-token",
+      "warp-account-role",
+      "warp-account-type",
+      "warp-add",
+      "warp-close",
+      "warp-config-error",
+      "warp-create",
+      "warp-delete",
+      "warp-details",
+      "warp-device-enabled",
+      "warp-device-id",
+      "warp-device-model",
+      "warp-device-name",
+      "warp-empty",
+      "warp-error",
+      "warp-license-form",
+      "warp-license-input",
+      "warp-license-update",
+      "warp-license-value",
+      "warp-loading",
+      "warp-modal",
+      "warp-outbound-status",
+      "warp-pending",
+      "warp-premium",
+      "warp-private-key",
+      "warp-quota",
+      "warp-refresh",
+      "warp-title",
+      "warp-usage"
+    ],
+    "variables": [],
+    "assets": [
+      "https://www.cloudflare.com/application/terms/"
+    ],
+    "apiPaths": [
+      "/api/mihomo/outbound/delay",
+      "/api/mihomo/outbound/parse",
+      "/api/mihomo/settings",
+      "/api/mihomo/vpngate",
+      "/api/mihomo/vpngate/install",
+      "/api/mihomo/vpngate/outbound",
+      "/api/mihomo/vpngate/reconnect",
+      "/api/mihomo/warp",
+      "/api/tools/uuid"
+    ]
+  },
+  "web/multi-control.css": {
+    "ids": [],
+    "controls": [],
+    "tabs": [],
+    "templateIDs": [],
+    "variables": [],
+    "assets": [],
+    "apiPaths": []
+  },
+  "web/multi-control.js": {
+    "ids": [],
+    "controls": [],
+    "tabs": [],
+    "templateIDs": [
+      "mc-add-toggle",
+      "mc-blocked-list",
+      "mc-blocked-section",
+      "mc-client-file",
+      "mc-connect-form",
+      "mc-connect-submit",
+      "mc-connections-modal",
+      "mc-connections-open",
+      "mc-connections-title",
+      "mc-device-list",
+      "mc-devices-modal",
+      "mc-devices-open",
+      "mc-devices-title",
+      "mc-endpoint",
+      "mc-error",
+      "mc-id",
+      "mc-local-form",
+      "mc-local-save",
+      "mc-local-status",
+      "mc-name",
+      "mc-peer-list",
+      "mc-refresh",
+      "mc-summary",
+      "mc-token",
+      "mc-token-copy",
+      "mc-token-disable",
+      "mc-token-generate",
+      "mc-token-modal",
+      "mc-token-open",
+      "mc-token-save",
+      "mc-token-title",
+      "settings-pane-multi-control"
+    ],
+    "variables": [],
+    "assets": [],
+    "apiPaths": [
+      "/api/client-mesh/devices",
+      "/api/client-mesh/devices/revoke",
+      "/api/multi-control",
+      "/api/multi-control/connect",
+      "/api/multi-control/disconnect",
+      "/api/multi-control/settings",
+      "/api/multi-control/sync",
+      "/api/multi-control/token",
+      "/api/multi-control/unblock"
+    ]
+  },
+  "web/qrious2.min.js": {
+    "ids": [],
+    "controls": [],
+    "tabs": [],
+    "templateIDs": [],
+    "variables": [],
+    "assets": [],
+    "apiPaths": []
+  },
+  "web/sf-symbols.js": {
+    "ids": [],
+    "controls": [],
+    "tabs": [],
+    "templateIDs": [],
+    "variables": [],
+    "assets": [
+      "#sf-...",
+      "#sf-' + name + '"
+    ],
+    "apiPaths": []
+  },
+  "web/sub-templates.css": {
+    "ids": [],
+    "controls": [],
+    "tabs": [],
+    "templateIDs": [],
+    "variables": [],
+    "assets": [],
+    "apiPaths": []
+  },
+  "web/sub-templates.js": {
+    "ids": [],
+    "controls": [],
+    "tabs": [],
+    "templateIDs": [
+      "subtpl-builtin-meta",
+      "subtpl-import-cleaned",
+      "subtpl-import-content",
+      "subtpl-import-error",
+      "subtpl-import-file",
+      "subtpl-import-file-button",
+      "subtpl-import-file-name",
+      "subtpl-import-name",
+      "subtpl-import-preview",
+      "subtpl-import-preview-button",
+      "subtpl-import-save",
+      "subtpl-import-stats",
+      "subtpl-import-title",
+      "subtpl-variants",
+      "subtpl-view-code",
+      "subtpl-view-copy",
+      "subtpl-view-download",
+      "subtpl-view-title"
+    ],
+    "variables": [],
+    "assets": [],
+    "apiPaths": [
+      "/api/sub-templates",
+      "/api/sub-templates/",
+      "/api/sub-templates/active",
+      "/api/sub-templates/content?id",
+      "/api/sub-templates/import"
+    ]
+  },
+  "web/subscription-themes.css": {
+    "ids": [],
+    "controls": [],
+    "tabs": [],
+    "templateIDs": [],
+    "variables": [
+      "--card",
+      "--card-border",
+      "--card-hover-shadow",
+      "--card-shadow",
+      "--checkbox-bg",
+      "--checkbox-border",
+      "--font",
+      "--green",
+      "--green-soft",
+      "--line",
+      "--line-strong",
+      "--menu-shadow",
+      "--msg-bg",
+      "--msg-border",
+      "--msg-color",
+      "--muted",
+      "--muted-2",
+      "--node-bg",
+      "--node-border",
+      "--node-color",
+      "--node-hover-bg",
+      "--node-hover-border",
+      "--page",
+      "--primary",
+      "--primary-hover",
+      "--primary-soft",
+      "--primary-soft-hover",
+      "--purple",
+      "--purple-line",
+      "--purple-soft",
+      "--qr-plate",
+      "--radius",
+      "--radius-lg",
+      "--radius-sm",
+      "--radius-xl",
+      "--radius-xs",
+      "--select-bg",
+      "--select-hover",
+      "--select-item-color",
+      "--select-item-hover",
+      "--select-item-selected",
+      "--shadow",
+      "--shadow-pop",
+      "--stroke",
+      "--surface",
+      "--surface-hover",
+      "--surface-strong",
+      "--surface-subtle",
+      "--switch-off",
+      "--teal",
+      "--teal-3",
+      "--teal-soft",
+      "--text",
+      "--text-strong"
+    ],
+    "assets": [],
+    "apiPaths": []
+  },
+  "web/subscription.html": {
+    "ids": [
+      "settings-button",
+      "settings-menu",
+      "dark-mode",
+      "ultra-dark-row",
+      "ultra-dark",
+      "language-select",
+      "sub-qr",
+      "sub-url",
+      "clash-qr",
+      "clash-url",
+      "caesar-import",
+      "android-btn",
+      "android-menu",
+      "ios-btn",
+      "ios-menu",
+      "mac-btn",
+      "mac-menu",
+      "status-value",
+      "last-online-value",
+      "expiry-value",
+      "copy-toast"
+    ],
+    "controls": [
+      {
+        "tag": "button",
+        "class": "gear icon-btn",
+        "id": "settings-button",
+        "type": "button",
+        "aria-label": "Panel Settings",
+        "aria-controls": "settings-menu",
+        "aria-expanded": "false"
+      },
+      {
+        "tag": "input",
+        "id": "dark-mode",
+        "type": "checkbox"
+      },
+      {
+        "tag": "input",
+        "id": "ultra-dark",
+        "type": "checkbox"
+      },
+      {
+        "tag": "select",
+        "class": "language-select",
+        "id": "language-select",
+        "aria-label": "Language"
+      },
+      {
+        "tag": "button",
+        "class": "client-btn caesar-btn",
+        "id": "caesar-import",
+        "type": "button",
+        "data-name": "{{.Username}}"
+      },
+      {
+        "tag": "button",
+        "class": "client-btn",
+        "id": "android-btn",
+        "type": "button",
+        "aria-haspopup": "true",
+        "aria-controls": "android-menu",
+        "aria-expanded": "false"
+      },
+      {
+        "tag": "button",
+        "class": "client-btn",
+        "id": "ios-btn",
+        "type": "button",
+        "aria-haspopup": "true",
+        "aria-controls": "ios-menu",
+        "aria-expanded": "false"
+      },
+      {
+        "tag": "button",
+        "class": "client-btn",
+        "id": "mac-btn",
+        "type": "button",
+        "aria-haspopup": "true",
+        "aria-controls": "mac-menu",
+        "aria-expanded": "false"
+      }
+    ],
+    "tabs": [],
+    "templateIDs": [
+      "android-btn",
+      "android-menu",
+      "caesar-import",
+      "clash-qr",
+      "clash-url",
+      "copy-toast",
+      "dark-mode",
+      "expiry-value",
+      "ios-btn",
+      "ios-menu",
+      "language-select",
+      "last-online-value",
+      "mac-btn",
+      "mac-menu",
+      "settings-button",
+      "settings-menu",
+      "status-value",
+      "sub-qr",
+      "sub-url",
+      "ultra-dark",
+      "ultra-dark-row"
+    ],
+    "variables": [
+      "--btn-bg",
+      "--btn-border",
+      "--btn-color",
+      "--btn-hover-bg",
+      "--btn-hover-border",
+      "--btn-hover-color",
+      "--card",
+      "--card-border",
+      "--card-hover-shadow",
+      "--card-shadow",
+      "--checkbox-bg",
+      "--checkbox-border",
+      "--ease",
+      "--font",
+      "--font-mono",
+      "--green",
+      "--green-soft",
+      "--lb-fill",
+      "--lb-text",
+      "--line",
+      "--line-strong",
+      "--menu-shadow",
+      "--msg-bg",
+      "--msg-border",
+      "--msg-color",
+      "--muted",
+      "--muted-2",
+      "--node-bg",
+      "--node-border",
+      "--node-color",
+      "--node-hover-bg",
+      "--node-hover-border",
+      "--orange",
+      "--orange-soft",
+      "--page",
+      "--primary",
+      "--primary-hover",
+      "--primary-soft",
+      "--primary-soft-hover",
+      "--purple",
+      "--purple-line",
+      "--purple-soft",
+      "--qr-cv",
+      "--qr-plate",
+      "--qr-plate-active",
+      "--qr-plate-hover",
+      "--radius",
+      "--radius-lg",
+      "--radius-pill",
+      "--radius-sm",
+      "--radius-xl",
+      "--radius-xs",
+      "--scrollbar",
+      "--scrollbar-hover",
+      "--select-bg",
+      "--select-hover",
+      "--select-item-color",
+      "--select-item-hover",
+      "--select-item-selected",
+      "--shadow",
+      "--shadow-pop",
+      "--stroke",
+      "--surface",
+      "--surface-hover",
+      "--surface-strong",
+      "--surface-subtle",
+      "--switch-off",
+      "--teal",
+      "--teal-3",
+      "--teal-soft",
+      "--text",
+      "--text-strong"
+    ],
+    "assets": [],
+    "apiPaths": []
+  },
+  "web/swiftui-components.js": {
+    "ids": [],
+    "controls": [],
+    "tabs": [],
+    "templateIDs": [],
+    "variables": [],
+    "assets": [],
+    "apiPaths": []
+  },
+  "web/theme-md3.css": {
+    "ids": [],
+    "controls": [],
+    "tabs": [],
+    "templateIDs": [],
+    "variables": [
+      "--accent",
+      "--back-top",
+      "--back-top-hover",
+      "--bg",
+      "--blue",
+      "--card-bg",
+      "--card-border",
+      "--card-stroke",
+      "--checkbox-bg",
+      "--code-bg",
+      "--code-color",
+      "--ctl",
+      "--ctl-lg",
+      "--ctl-sm",
+      "--cyan",
+      "--danger",
+      "--danger-hover",
+      "--ease",
+      "--ease-modal",
+      "--ease-spring",
+      "--font",
+      "--font-mono",
+      "--gauge-trail",
+      "--glass-bg",
+      "--glass-blur",
+      "--glass-border",
+      "--glass-caustic",
+      "--glass-specular",
+      "--green",
+      "--indigo",
+      "--input-bg",
+      "--input-bg-focus",
+      "--line",
+      "--login-wave",
+      "--m3-elev-1",
+      "--m3-elev-2",
+      "--m3-elev-3",
+      "--m3-error",
+      "--m3-error-container",
+      "--m3-inverse-on-surface",
+      "--m3-inverse-primary",
+      "--m3-inverse-surface",
+      "--m3-on-error",
+      "--m3-on-error-container",
+      "--m3-on-primary",
+      "--m3-on-primary-container",
+      "--m3-on-secondary-container",
+      "--m3-on-surface",
+      "--m3-on-surface-variant",
+      "--m3-outline",
+      "--m3-outline-variant",
+      "--m3-primary",
+      "--m3-primary-container",
+      "--m3-secondary-container",
+      "--m3-shadow-rgb",
+      "--m3-surface",
+      "--m3-surface-container",
+      "--m3-surface-high",
+      "--m3-surface-highest",
+      "--m3-surface-low",
+      "--m3-surface-lowest",
+      "--m3-tertiary",
+      "--mint",
+      "--muted",
+      "--muted-2",
+      "--orange",
+      "--page-bg",
+      "--pink",
+      "--primary",
+      "--primary-active",
+      "--primary-hover",
+      "--purple",
+      "--radius",
+      "--radius-lg",
+      "--radius-sm",
+      "--radius-xl",
+      "--radius-xs",
+      "--red",
+      "--row-selected",
+      "--scrollbar",
+      "--scrollbar-hover",
+      "--scrollbar-webkit",
+      "--scrollbar-webkit-hover",
+      "--select-bg",
+      "--select-hover",
+      "--select-item-color",
+      "--select-item-hover",
+      "--select-item-selected",
+      "--shadow",
+      "--shadow-btn",
+      "--shadow-btn-primary",
+      "--shadow-card",
+      "--shadow-hover",
+      "--shadow-modal",
+      "--shadow-pop",
+      "--sider-trigger-bg",
+      "--sider-trigger-color",
+      "--stroke",
+      "--stroke-2",
+      "--surface",
+      "--surface-2",
+      "--surface-3",
+      "--surface-4",
+      "--surface-glass",
+      "--surface-glass-heavy",
+      "--surface-modal",
+      "--switch-off",
+      "--table-hover",
+      "--table-ring",
+      "--tag-bg",
+      "--tag-blue-bg",
+      "--tag-blue-border",
+      "--tag-blue-color",
+      "--tag-border",
+      "--tag-color",
+      "--tag-green-bg",
+      "--tag-green-border",
+      "--tag-green-color",
+      "--tag-orange-bg",
+      "--tag-orange-border",
+      "--tag-orange-color",
+      "--tag-purple-bg",
+      "--tag-purple-border",
+      "--tag-purple-color",
+      "--tag-red-bg",
+      "--tag-red-border",
+      "--tag-red-color",
+      "--teal",
+      "--teal-2",
+      "--teal-3",
+      "--teal-soft",
+      "--text",
+      "--text-strong",
+      "--tooltip"
+    ],
+    "assets": [],
+    "apiPaths": []
+  },
+  "web/theme-shadcn.css": {
+    "ids": [],
+    "controls": [],
+    "tabs": [],
+    "templateIDs": [],
+    "variables": [
+      "--accent",
+      "--back-top",
+      "--back-top-hover",
+      "--bg",
+      "--blue",
+      "--card-bg",
+      "--card-border",
+      "--card-stroke",
+      "--checkbox-bg",
+      "--code-bg",
+      "--code-color",
+      "--ctl",
+      "--ctl-lg",
+      "--ctl-sm",
+      "--cyan",
+      "--danger",
+      "--danger-hover",
+      "--ease",
+      "--ease-modal",
+      "--ease-spring",
+      "--font",
+      "--font-mono",
+      "--gauge-trail",
+      "--glass-bg",
+      "--glass-blur",
+      "--glass-border",
+      "--glass-caustic",
+      "--glass-specular",
+      "--green",
+      "--indigo",
+      "--input-bg",
+      "--input-bg-focus",
+      "--line",
+      "--login-wave",
+      "--mint",
+      "--muted",
+      "--muted-2",
+      "--orange",
+      "--page-bg",
+      "--pink",
+      "--primary",
+      "--primary-active",
+      "--primary-hover",
+      "--purple",
+      "--radius",
+      "--radius-lg",
+      "--radius-sm",
+      "--radius-xl",
+      "--radius-xs",
+      "--red",
+      "--row-selected",
+      "--sc-accent",
+      "--sc-bg",
+      "--sc-border",
+      "--sc-card",
+      "--sc-destructive",
+      "--sc-destructive-fg",
+      "--sc-fg",
+      "--sc-input",
+      "--sc-muted",
+      "--sc-muted-fg",
+      "--sc-primary",
+      "--sc-primary-fg",
+      "--sc-ring",
+      "--sc-sidebar",
+      "--scrollbar",
+      "--scrollbar-hover",
+      "--scrollbar-webkit",
+      "--scrollbar-webkit-hover",
+      "--select-bg",
+      "--select-hover",
+      "--select-item-color",
+      "--select-item-hover",
+      "--select-item-selected",
+      "--shadow",
+      "--shadow-btn",
+      "--shadow-btn-primary",
+      "--shadow-card",
+      "--shadow-hover",
+      "--shadow-modal",
+      "--shadow-pop",
+      "--sider-trigger-bg",
+      "--sider-trigger-color",
+      "--stroke",
+      "--stroke-2",
+      "--surface",
+      "--surface-2",
+      "--surface-3",
+      "--surface-4",
+      "--surface-glass",
+      "--surface-glass-heavy",
+      "--surface-modal",
+      "--switch-off",
+      "--table-hover",
+      "--table-ring",
+      "--tag-bg",
+      "--tag-blue-bg",
+      "--tag-blue-border",
+      "--tag-blue-color",
+      "--tag-border",
+      "--tag-color",
+      "--tag-green-bg",
+      "--tag-green-border",
+      "--tag-green-color",
+      "--tag-orange-bg",
+      "--tag-orange-border",
+      "--tag-orange-color",
+      "--tag-purple-bg",
+      "--tag-purple-border",
+      "--tag-purple-color",
+      "--tag-red-bg",
+      "--tag-red-border",
+      "--tag-red-color",
+      "--teal",
+      "--teal-2",
+      "--teal-3",
+      "--teal-soft",
+      "--text",
+      "--text-strong",
+      "--tooltip"
+    ],
+    "assets": [],
+    "apiPaths": []
+  },
+  "web/xray-import.css": {
+    "ids": [],
+    "controls": [],
+    "tabs": [],
+    "templateIDs": [],
+    "variables": [],
+    "assets": [],
+    "apiPaths": []
+  },
+  "web/xray-import.js": {
+    "ids": [],
+    "controls": [],
+    "tabs": [],
+    "templateIDs": [
+      "ximport-again",
+      "ximport-content",
+      "ximport-download",
+      "ximport-file",
+      "ximport-file-name",
+      "ximport-form",
+      "ximport-pick",
+      "ximport-restart",
+      "ximport-result",
+      "ximport-start",
+      "ximport-title"
+    ],
+    "variables": [],
+    "assets": [],
+    "apiPaths": []
+  }
+}
