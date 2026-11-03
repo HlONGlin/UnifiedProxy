@@ -5,15 +5,16 @@ import (
 	"strings"
 )
 
-// The panel, the login page and the subscription page come in three looks:
-// shadcn (default), Material Design 3 and the original Liquid Glass. The theme
-// is written into <html data-ui-theme> when a page is served, so the first
-// paint is already right; the Liquid Glass runtime (WebGL wallpaper, lenses,
-// liquid switches and buttons) is only sent to pages that use it.
-var uiThemes = map[string]bool{"shadcn": true, "md3": true, "liquid": true}
+// The persisted field remains compatible with old backups and API clients.
+// All three former skins migrate to T0. Appearance now has one component
+// system and five color palettes; light/dark is a browser preference.
+var uiThemes = map[string]bool{"t0": true, "t1": true, "t2": true, "t3": true, "t4": true, "shadcn": true, "md3": true, "liquid": true}
 
 func normalizeUITheme(theme string) string {
 	theme = strings.TrimSpace(theme)
+	if theme == "shadcn" || theme == "md3" || theme == "liquid" {
+		return "t0"
+	}
 	if uiThemes[theme] {
 		return theme
 	}
@@ -28,7 +29,7 @@ var themeOnlyAsset = regexp.MustCompile(`(?s)<(?:link|script)\b[^>]*\bdata-ui-on
 // scripts of the other themes.
 func themedPage(page, theme string) string {
 	theme = normalizeUITheme(theme)
-	page = strings.Replace(page, `data-ui-theme="shadcn"`, `data-ui-theme="`+theme+`"`, 1)
+	page = strings.Replace(page, `data-color-theme="t0"`, `data-color-theme="`+theme+`"`, 1)
 	return themeOnlyAsset.ReplaceAllStringFunc(page, func(tag string) string {
 		if themeOnlyAsset.FindStringSubmatch(tag)[1] == theme {
 			return tag

@@ -1002,10 +1002,10 @@ func TestSubscriptionPageSettingsMenuWiring(t *testing.T) {
 	}
 	content := string(page)
 	for _, needle := range []string{
-		`id="settings-button"`, `id="settings-menu"`, `id="dark-mode"`, `id="ultra-dark"`, `id="language-select"`,
-		`data-theme="dark"`, `data-ultra-dark="true"`, `html[data-theme="dark"]`, `html[data-theme="dark"][data-ultra-dark="true"]`,
-		"function toggleSettings()", "function closeSettings(", "function applyTheme(", "function applyUltraDark(", "function applyLanguage(",
-		"mui-theme", "mui-is-ultra-dark", "mui-language", "Panel Settings", "Ultra Dark", "面板设置", "超暗色",
+		`id="settings-button"`, `id="settings-menu"`, `id="dark-mode"`, `data-appearance-slot`, `id="language-select"`,
+		`data-theme="light"`, `data-color-theme="{{.UITheme}}`, `appearance.js`, `themes.css`,
+		"function toggleSettings()", "function closeSettings(", "function applyTheme(", "function applyLanguage(",
+		"UPTheme.sync()", "mui-language", "Panel Settings", "面板设置",
 		`id="android-btn"`, `id="ios-btn"`, `id="mac-btn"`, `class="client-menu"`, "function closeClientMenus(", "'/sing-box'", "'/v2box'", "'/shadowrocket'", "'/streisand'",
 		"'/surge'", "'/surgemac'", "'/surfboard'", "'/loon'", "'/qx'", "'/stash'", "'/egern'",
 	} {

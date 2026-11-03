@@ -57,7 +57,7 @@ const (
 	defaultTrafficDiff   = 1
 	defaultTimeLocation  = "Local"
 	defaultLanguage      = "zh-CN"
-	defaultUITheme       = "shadcn"
+	defaultUITheme       = "t0"
 	minSessionMaxAge     = 60
 	maxPageSize          = 500
 )
@@ -95,7 +95,7 @@ type Settings struct {
 	ExternalTrafficInformURI    string `json:"externalTrafficInformURI"`
 	TimeLocation                string `json:"timeLocation"`
 	Language                    string `json:"language"`
-	// UITheme 是面板、登录页和订阅页的外观：shadcn（默认）、md3 或 liquid。
+	// UITheme selects t0–t4; legacy appearance values remain accepted on input.
 	UITheme string `json:"uiTheme"`
 	// VPNGate 的 ASN 归属查询用。留空时用 IPinfo 免费接口，额度耗尽后退回 ip-api；
 	// 填写后只发给 IPinfo，绝不转发给备用服务。
@@ -2016,6 +2016,7 @@ func (m *CoreManager) updateSettings(input Settings) error {
 	if !uiThemes[input.UITheme] {
 		return fmt.Errorf("面板外观主题无效")
 	}
+	input.UITheme = normalizeUITheme(input.UITheme)
 	if _, err := resolveTimeLocation(input.TimeLocation); err != nil {
 		return fmt.Errorf("时区无效: %w", err)
 	}

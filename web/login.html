@@ -1,383 +1,14 @@
 <!doctype html>
-<html lang="zh-CN" data-default-language="zh-CN" data-ui-theme="shadcn">
+<html lang="zh-CN" data-default-language="zh-CN" data-theme="light" data-color-theme="t0">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="color-scheme" content="light dark">
   <title>m-ui | 登录</title>
-  <link rel="stylesheet" href="static/liquid-glass.css">
-  <style>
-    /* ===== m-ui Apple SwiftUI / macOS Sequoia 锁屏风格登录页 =====
-       - 材质：高透磨砂玻璃 (Liquid Frosted Glass Material)、动态景深微光背景
-       - 布局：居中 Apple ID 风格卡片、纯净平滑圆角、精准排版
-       - 动效：原生微动效与顺滑弹簧阻尼 */
-    :root {
-      color-scheme: light;
-      --page-bg: #f2f2f7;
-      --card-bg: rgba(255, 255, 255, 0.58);
-      --card-border: rgba(255, 255, 255, 0.85);
-      --card-stroke: rgba(60, 60, 67, 0.12);
-      --input-bg: rgba(120, 120, 128, 0.09);
-      --input-bg-focus: rgba(255, 255, 255, 0.95);
-      --text: rgba(0, 0, 0, 0.85);
-      --text-strong: rgba(0, 0, 0, 0.95);
-      --muted: rgba(60, 60, 67, 0.55);
-      --line: rgba(60, 60, 67, 0.12);
-      --primary: #0071e3;
-      --primary-hover: #0077ed;
-      --primary-active: #005bb5;
-      --shadow-card: 0 32px 84px rgba(0, 0, 0, 0.10), 0 4px 20px rgba(0, 0, 0, 0.04);
-      --switch-off: rgba(120, 120, 128, 0.24);
-      --checkbox-bg: #ffffff;
-    }
-
-    html.dark {
-      color-scheme: dark;
-      --page-bg: #141416;
-      --card-bg: rgba(28, 28, 34, 0.62);
-      --card-border: rgba(255, 255, 255, 0.18);
-      --card-stroke: rgba(255, 255, 255, 0.12);
-      --input-bg: rgba(255, 255, 255, 0.08);
-      --input-bg-focus: rgba(255, 255, 255, 0.16);
-      --text: rgba(255, 255, 255, 0.88);
-      --text-strong: rgba(255, 255, 255, 0.96);
-      --muted: rgba(235, 235, 245, 0.55);
-      --line: rgba(255, 255, 255, 0.08);
-      --primary: #0a84ff;
-      --primary-hover: #2b95ff;
-      --primary-active: #0066cc;
-      --shadow-card: 0 36px 90px rgba(0, 0, 0, 0.60), 0 4px 24px rgba(0, 0, 0, 0.35);
-      --switch-off: rgba(120, 120, 128, 0.35);
-      --checkbox-bg: rgba(255, 255, 255, 0.1);
-    }
-
-    html.dark[data-theme="ultra-dark"] {
-      --page-bg: #000000;
-      --card-bg: rgba(18, 18, 22, 0.75);
-      --card-border: rgba(255, 255, 255, 0.10);
-      --card-stroke: rgba(255, 255, 255, 0.08);
-      --input-bg: rgba(255, 255, 255, 0.06);
-      --shadow-card: 0 36px 90px rgba(0, 0, 0, 0.85);
-    }
-
-    * { box-sizing: border-box; }
-    html, body { min-height: 100%; }
-
-    body {
-      margin: 0;
-      min-height: 100vh;
-      display: grid;
-      place-items: center;
-      overflow: hidden;
-      color: var(--text);
-      background: var(--page-bg);
-      font: 14px/1.5 var(--font);
-      -webkit-font-smoothing: antialiased;
-      -moz-osx-font-smoothing: grayscale;
-      position: relative;
-      transition: background-color .3s var(--ease), color .3s var(--ease);
-    }
-
-    /* Apple 环境光渐变底图与动态极光光球 */
-    .ambient-backdrop {
-      position: fixed;
-      inset: 0;
-      pointer-events: none;
-      z-index: 0;
-      overflow: hidden;
-      background: var(--page-bg);
-    }
-    .aurora-orb {
-      position: absolute;
-      border-radius: 50%;
-      filter: blur(80px);
-      opacity: 0.65;
-      mix-blend-mode: normal;
-      pointer-events: none;
-      will-change: transform;
-    }
-    html.dark .aurora-orb {
-      opacity: 0.45;
-      filter: blur(90px);
-    }
-    .orb-1 {
-      width: 520px; height: 520px;
-      top: -150px; left: -120px;
-      background: radial-gradient(circle, rgba(0, 122, 255, 0.60) 0%, rgba(0, 122, 255, 0) 70%);
-      animation: float-orb-1 18s ease-in-out infinite alternate;
-    }
-    .orb-2 {
-      width: 560px; height: 560px;
-      bottom: -160px; right: -140px;
-      background: radial-gradient(circle, rgba(175, 82, 222, 0.55) 0%, rgba(175, 82, 222, 0) 70%);
-      animation: float-orb-2 22s ease-in-out infinite alternate;
-    }
-    .orb-3 {
-      width: 400px; height: 400px;
-      top: 35%; right: 5%;
-      background: radial-gradient(circle, rgba(52, 199, 89, 0.38) 0%, rgba(52, 199, 89, 0) 70%);
-      animation: float-orb-3 16s ease-in-out infinite alternate;
-    }
-    .orb-4 {
-      width: 460px; height: 460px;
-      bottom: 10%; left: 10%;
-      background: radial-gradient(circle, rgba(0, 199, 190, 0.42) 0%, rgba(0, 199, 190, 0) 70%);
-      animation: float-orb-4 20s ease-in-out infinite alternate;
-    }
-    @keyframes float-orb-1 { 0% { transform: translate(0, 0) scale(1); } 100% { transform: translate(80px, 60px) scale(1.15); } }
-    @keyframes float-orb-2 { 0% { transform: translate(0, 0) scale(1); } 100% { transform: translate(-70px, -50px) scale(1.12); } }
-    @keyframes float-orb-3 { 0% { transform: translate(0, 0) scale(1); } 100% { transform: translate(-60px, 80px) scale(0.9); } }
-    @keyframes float-orb-4 { 0% { transform: translate(0, 0) scale(1); } 100% { transform: translate(70px, -60px) scale(1.08); } }
-
-    /* macOS 26 Tahoe / iOS 26 Liquid Glass 锁屏卡片 */
-    .login-card {
-      position: relative;
-      z-index: 1;
-      width: min(420px, calc(100vw - 36px));
-      padding: 3rem 2.25rem 2.25rem;
-      border-radius: 28px;
-      background: var(--card-bg) !important;
-      border: 1px solid var(--card-border) !important;
-      box-shadow: var(--shadow-card), inset 0 1.5px 2px rgba(255, 255, 255, 0.95), inset 0 -1px 1.5px rgba(0, 0, 0, 0.05) !important;
-      backdrop-filter: blur(48px) saturate(220%) !important;
-      -webkit-backdrop-filter: blur(48px) saturate(220%) !important;
-      animation: mui-sheet-in .4s var(--ease-modal) both;
-      user-select: none;
-      -webkit-user-select: none;
-      overflow: hidden;
-    }
-    .login-card::after {
-      content: '';
-      position: absolute;
-      inset: 0;
-      border-radius: inherit;
-      pointer-events: none;
-      background: radial-gradient(circle 280px at var(--glass-x, 50%) var(--glass-y, 50%), rgba(255, 255, 255, 0.35) 0%, rgba(255, 255, 255, 0.08) 45%, transparent 70%);
-      opacity: 0.85;
-      transition: opacity .3s var(--ease);
-      mix-blend-mode: overlay;
-    }
-    html.dark .login-card::after {
-      background: radial-gradient(circle 280px at var(--glass-x, 50%) var(--glass-y, 50%), rgba(255, 255, 255, 0.18) 0%, rgba(10, 132, 255, 0.12) 40%, transparent 70%);
-      mix-blend-mode: screen;
-    }
-
-    /* macOS 交通灯红黄绿微晶圆钮 */
-    .mac-traffic-lights {
-      position: absolute;
-      top: 18px;
-      left: 20px;
-      display: flex;
-      gap: 7px;
-      z-index: 5;
-    }
-    .mac-dot {
-      width: 11px;
-      height: 11px;
-      border-radius: 50%;
-      box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.4);
-      transition: transform .2s var(--ease);
-    }
-    .mac-dot.red { background: #ff5f56; border: 0.5px solid rgba(224, 68, 62, 0.8); }
-    .mac-dot.yellow { background: #ffbd2e; border: 0.5px solid rgba(222, 161, 35, 0.8); }
-    .mac-dot.green { background: #27c93f; border: 0.5px solid rgba(40, 173, 60, 0.8); }
-    .login-card:hover .mac-dot { transform: scale(1.08); }
-
-    /* 卡片顶部 m-ui 标志徽章 */
-    .brand-emblem {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      margin-bottom: 8px;
-    }
-    .brand-icon {
-      width: 64px;
-      height: 64px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      border-radius: 18px;
-      background: transparent;
-      filter: drop-shadow(0 8px 24px rgba(0, 0, 0, 0.28));
-      margin-bottom: 12px;
-      transition: transform .3s var(--ease);
-      overflow: hidden;
-    }
-    .brand-icon:hover { transform: scale(1.05); }
-    .brand-icon img { width: 100%; height: 100%; object-fit: cover; display: block; border-radius: inherit; }
-
-    /* macOS 偏好设置齿轮按钮 */
-    .settings-button {
-      position: absolute;
-      top: 20px;
-      right: 20px;
-      width: 32px;
-      height: 32px;
-      display: grid;
-      place-items: center;
-      padding: 0;
-      border: 1px solid var(--line);
-      border-radius: 50%;
-      color: var(--muted);
-      background: var(--input-bg);
-      cursor: pointer;
-      backdrop-filter: blur(12px);
-      -webkit-backdrop-filter: blur(12px);
-      transition: all .2s var(--ease);
-    }
-    .settings-button:hover { color: var(--text-strong); transform: scale(1.06); background: rgba(120, 120, 128, 0.16); }
-    .settings-button svg { width: 16px; height: 16px; }
-
-    /* 设置弹出菜单：macOS 浮动面板样式 */
-    .settings-menu {
-      position: absolute;
-      z-index: 10;
-      top: 60px;
-      right: 20px;
-      width: 250px;
-      padding: 0;
-      border: 1px solid var(--line);
-      border-radius: 16px;
-      background: var(--card-bg);
-      backdrop-filter: blur(28px) saturate(190%);
-      -webkit-backdrop-filter: blur(28px) saturate(190%);
-      box-shadow: 0 16px 40px rgba(0, 0, 0, 0.18);
-      transform: translateY(-8px) scale(.98);
-      transform-origin: top right;
-      opacity: 0;
-      visibility: hidden;
-      transition: all .2s var(--ease);
-    }
-    .settings-menu.open { transform: translateY(0) scale(1); opacity: 1; visibility: visible; }
-    .settings-title { position: relative; min-height: 34px; padding: 10px 16px 6px; border-bottom: 1px solid var(--line); font-size: 13.5px; font-weight: 600; color: var(--text-strong); }
-    .settings-body { display: grid; gap: 10px; padding: 12px 16px; }
-    .settings-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; font-size: 13px; color: var(--text); }
-    .settings-row.ultra-row[hidden] { display: none; }
-
-    /* 开关控件 */
-    .theme-switch { position: relative; width: 34px; height: 20px; flex: none; }
-    .theme-switch input { position: absolute; opacity: 0; }
-    .theme-switch span { position: absolute; inset: 0; border-radius: 9999px; background: var(--switch-off); cursor: pointer; transition: all .28s var(--ease-modal); }
-    .theme-switch span::after { position: absolute; top: 2px; left: 2px; width: 16px; height: 16px; border-radius: 50%; background: #fff; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2); content: ""; transition: transform .28s var(--ease-modal); }
-    .theme-switch input:checked + span { background: #34c759; }
-    .theme-switch input:checked + span::after { transform: translateX(14px); }
-
-    .ultra-check { position: relative; display: inline-flex; width: 18px; height: 18px; flex: none; }
-    .ultra-check input { position: absolute; inset: 0; margin: 0; opacity: 0; cursor: pointer; }
-    .ultra-check span { position: absolute; inset: 0; border: 1.5px solid var(--line); border-radius: 5px; background: var(--checkbox-bg); pointer-events: none; transition: all .2s; }
-    .ultra-check span::after { position: absolute; top: 46%; left: 26%; width: 5px; height: 9px; border: 2px solid #fff; border-top: 0; border-left: 0; transform: translateY(-50%) rotate(45deg); opacity: 0; content: ""; transition: opacity .15s; }
-    .ultra-check input:checked + span { border-color: var(--primary); background: var(--primary); }
-    .ultra-check input:checked + span::after { opacity: 1; }
-    .language-label { color: var(--muted); font-size: 12px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.04em; margin-top: 2px; }
-    .language-select { width: 100%; height: 32px; font-size: 13px; }
-
-    /* 欢迎标语 */
-    .headline { display: flex; justify-content: center; align-items: center; margin: 0 0 24px; font-size: 22px; line-height: 1.25; letter-spacing: -0.02em; }
-    .headline b { font-weight: 700; color: var(--text-strong); }
-    .words-wrapper { width: 100%; display: inline-block; position: relative; text-align: center; }
-    .words-wrapper b { width: 100%; display: inline-block; position: absolute; left: 0; top: 0; }
-    .words-wrapper b.is-visible { position: relative; }
-    .headline.zoom .words-wrapper { perspective: 300px; }
-    .headline.zoom b { opacity: 0; }
-    .headline.zoom b.is-visible { opacity: 1; animation: cubic-bezier(.215, .61, .355, 1) zoom-in .6s; }
-    .headline.zoom b.is-hidden { animation: cubic-bezier(.215, .61, .355, 1) zoom-out .35s; }
-
-    @keyframes zoom-in { 0% { opacity: 0; transform: scale(.92); } 100% { opacity: 1; transform: scale(1); } }
-    @keyframes zoom-out { 0% { opacity: 1; transform: scale(1); } 100% { opacity: 0; transform: scale(1.06); } }
-
-    /* 表单与输入框 */
-    form { width: 100%; }
-    .input-wrap { position: relative; margin-bottom: 14px; }
-    .input-wrap > svg { position: absolute; top: 50%; left: 16px; width: 18px; height: 18px; color: var(--muted); transform: translateY(-50%); pointer-events: none; transition: color .2s; }
-
-    input[type="text"], input[type="password"] {
-      width: 100%;
-      height: 46px;
-      padding: 0 44px 0 44px;
-      border: 1px solid var(--card-stroke);
-      border-radius: 12px;
-      color: var(--text-strong);
-      background: var(--input-bg);
-      outline: none;
-      font: inherit;
-      font-size: 14.5px;
-      transition: all .2s var(--ease);
-    }
-    input::placeholder { color: var(--muted); }
-    input:hover { border-color: rgba(120, 120, 128, 0.35); }
-    input:focus {
-      border-color: var(--primary);
-      background: var(--input-bg-focus);
-      box-shadow: 0 0 0 3px rgba(0, 113, 227, 0.25);
-    }
-    .input-wrap:focus-within > svg { color: var(--primary); }
-
-    input:-webkit-autofill {
-      -webkit-box-shadow: 0 0 0 100px var(--input-bg) inset;
-      box-shadow: 0 0 0 100px var(--input-bg) inset;
-      -webkit-text-fill-color: var(--text);
-      caret-color: var(--text);
-      transition: background-color 9999s ease-in-out 0s, color 9999s ease-in-out 0s;
-    }
-
-    .password-toggle {
-      position: absolute; top: 50%; right: 12px; width: 30px; height: 30px;
-      display: grid; place-items: center; padding: 0; border: 0;
-      border-radius: 6px; color: var(--muted); background: transparent;
-      transform: translateY(-50%); cursor: pointer; transition: all .2s;
-    }
-    .password-toggle:hover { color: var(--text-strong); background: rgba(120, 120, 128, 0.12); }
-    .password-toggle svg { width: 17px; height: 17px; }
-
-    .centered { display: flex; text-align: center; align-items: center; justify-content: center; width: 100%; margin-top: 1.25rem; }
-    .wave-btn-bg { width: 100%; }
-
-    /* Apple System Blue 登录主按钮 */
-    .login-button {
-      display: block;
-      width: 100%;
-      height: 46px;
-      border: 0;
-      border-radius: 12px;
-      color: #ffffff;
-      background-color: var(--primary);
-      font: inherit;
-      font-size: 15px;
-      font-weight: 600;
-      letter-spacing: -0.01em;
-      cursor: pointer;
-      box-shadow: 0 4px 16px rgba(0, 113, 227, 0.32);
-      transition: all .2s var(--ease);
-    }
-    .login-button:hover:not(:disabled) {
-      background-color: var(--primary-hover);
-      box-shadow: 0 6px 20px rgba(0, 113, 227, 0.42);
-      transform: translateY(-1px);
-    }
-    .login-button:active:not(:disabled) {
-      background-color: var(--primary-active);
-      transform: scale(0.98);
-      box-shadow: 0 2px 8px rgba(0, 113, 227, 0.28);
-    }
-    .login-button:disabled { cursor: wait; opacity: .55; }
-
-    .error { min-height: 20px; margin-top: 14px; text-align: center; color: #ff3b30; font-size: 13px; font-weight: 500; }
-
-    @media (max-width: 620px) {
-      body { overflow: auto; padding: 24px 0; }
-      .login-card { padding: 2.5rem 1.5rem 2rem; border-radius: 20px; }
-      .headline { margin-bottom: 1.5rem; font-size: 20px; }
-      .settings-menu { right: 16px; }
-    }
-  </style>
-  <link rel="stylesheet" href="static/liquid-optics.css" data-ui-only="liquid">
-  <link rel="stylesheet" href="static/liquid-toggle.css" data-ui-only="liquid">
-  <link rel="stylesheet" href="static/liquid-glass-gl.css" data-ui-only="liquid">
-  <link rel="stylesheet" href="static/liquid-button.css" data-ui-only="liquid">
-  <link rel="stylesheet" href="static/liquid-sheet.css" data-ui-only="liquid">
-  <script defer src="static/liquid-toggle.js" data-ui-only="liquid"></script>
-  <script defer src="static/liquid-button.js" data-ui-only="liquid"></script>
-<link rel="stylesheet" href="static/fonts.css" data-ui-only="shadcn"><link rel="stylesheet" href="static/fonts.css" data-ui-only="md3"><link rel="stylesheet" href="static/theme-shadcn.css" data-ui-only="shadcn"><link rel="stylesheet" href="static/theme-md3.css" data-ui-only="md3">
+  <link rel="stylesheet" href="static/themes.css">
+  <link rel="stylesheet" href="static/login.css">
+  <link rel="stylesheet" href="static/components.css">
+  <script src="static/appearance.js"></script>
 </head>
 <body>
   <div class="ambient-backdrop" aria-hidden="true">
@@ -400,8 +31,8 @@
       <div class="settings-title">面板设置</div>
       <div class="settings-body">
         <div class="settings-row"><label class="theme-switch"><input id="dark-mode" type="checkbox" aria-label="暗色"><span></span></label><span>暗色</span></div>
-        <div class="settings-row ultra-row" id="ultra-row" hidden><label class="ultra-check"><input id="ultra-dark" type="checkbox" aria-label="超暗色"><span></span></label><span>超暗色</span></div>
-        <span class="language-label">语言</span>
+
+        <div data-appearance-slot></div><span class="language-label">语言</span>
         <select class="language-select" id="language-select" aria-label="语言"><option value="zh-CN">🇨🇳 简体中文</option><option value="zh-TW">🇹🇼 繁體中文</option><option value="en">🇺🇸 English</option><option value="ja">🇯🇵 日本語</option><option value="ru">🇷🇺 Русский</option><option value="fa">🇮🇷 فارسی</option><option value="vi">🇻🇳 Tiếng Việt</option><option value="es">🇪🇸 Español</option><option value="tr">🇹🇷 Türkçe</option><option value="uk">🇺🇦 Українська</option><option value="pt-BR">🇧🇷 Português</option></select>
       </div>
     </section>
@@ -436,18 +67,13 @@
       </div>
       <div class="error" id="error" role="alert"></div>
     </form>
-  </main>
-  <script src="static/icons-lucide.js" data-ui-only="shadcn"></script><script src="static/icons-material.js" data-ui-only="md3"></script><script src="static/sf-symbols.js"></script>
-  <script src="static/liquid-optics.js" data-ui-only="liquid"></script>
-  <script src="static/liquid-glass-gl.js" data-ui-only="liquid"></script>
+  </main><script src="static/sf-symbols.js"></script>
   <script src="static/swiftui-components.js"></script>
   <script>
     const root = document.documentElement;
     const settingsButton = document.getElementById('settings-button');
     const settingsMenu = document.getElementById('settings-menu');
     const darkMode = document.getElementById('dark-mode');
-    const ultraDark = document.getElementById('ultra-dark');
-    const ultraRow = document.getElementById('ultra-row');
     const languageSelect = document.getElementById('language-select');
     const passwordInput = document.getElementById('password');
     const passwordToggle = document.getElementById('password-toggle');
@@ -468,21 +94,7 @@
 
     /* Apple Design 三套主题（Light / Dark / Ultra Dark OLED）。Ultra Dark 只在深色模式下开启，
        切换期间打上 data-theme-animations="off" 抑制所有闪烁过渡。 */
-    function applyTheme(theme, ultra) {
-      const dark = theme === 'dark' || theme === 'ultra';
-      const wantUltra = ultra === undefined ? (theme === 'ultra' || localStorage.getItem('mui-is-ultra-dark') === 'true') : !!ultra;
-      root.setAttribute('data-theme-animations', 'off');
-      root.classList.toggle('dark', dark);
-      if (dark && wantUltra) root.setAttribute('data-theme', 'ultra-dark');
-      else root.removeAttribute('data-theme');
-      darkMode.checked = dark;
-      ultraDark.checked = wantUltra;
-      ultraRow.hidden = !dark;
-      localStorage.setItem('mui-theme', dark ? 'dark' : 'light');
-      localStorage.setItem('mui-is-ultra-dark', wantUltra ? 'true' : 'false');
-      clearTimeout(applyTheme.timer);
-      applyTheme.timer = setTimeout(() => root.removeAttribute('data-theme-animations'), 80);
-    }
+    function applyTheme(theme) { UPTheme.setMode(theme === 'dark' || theme === true); }
 
     function applyLanguage(language) {
       const lang = messages[language] ? language : 'zh-CN';
@@ -500,11 +112,9 @@
       loginButton.textContent = loginButton.disabled ? text.logging : text.login;
       document.querySelector('.settings-title').textContent = text.settings;
       document.querySelector('.settings-row > span').textContent = text.dark;
-      document.querySelector('.ultra-row > span').textContent = text.ultra;
       document.querySelector('.language-label').textContent = text.language;
       settingsButton.setAttribute('aria-label', text.settings);
       darkMode.setAttribute('aria-label', text.dark);
-      ultraDark.setAttribute('aria-label', text.ultra);
       languageSelect.setAttribute('aria-label', text.language);
       passwordToggle.setAttribute('aria-label', passwordInput.type === 'password' ? text.show : text.hide);
       localStorage.setItem('mui-language', lang);
@@ -533,9 +143,8 @@
     document.addEventListener('click', event => { if (!settingsMenu.contains(event.target) && !settingsButton.contains(event.target)) closeSettings(); });
     document.addEventListener('keydown', event => { if (event.key === 'Escape') closeSettings(); });
     darkMode.addEventListener('change', () => applyTheme(darkMode.checked ? 'dark' : 'light'));
-    ultraDark.addEventListener('change', () => applyTheme('dark', ultraDark.checked));
     /* 在主题控件上 mousedown 关掉过渡、mouseleave/touchend 恢复，避免整页背景渐变闪烁 */
-    for (const control of [darkMode.closest('.settings-row'), ultraRow]) {
+    for (const control of [darkMode.closest('.settings-row')]) {
       control.addEventListener('mousedown', () => root.setAttribute('data-theme-animations', 'off'));
       control.addEventListener('mouseleave', () => root.removeAttribute('data-theme-animations'));
       control.addEventListener('touchend', () => root.removeAttribute('data-theme-animations'));
@@ -585,7 +194,7 @@
       }
     });
 
-    applyTheme(localStorage.getItem('mui-theme') || 'light', localStorage.getItem('mui-is-ultra-dark') === 'true');
+    UPTheme.sync();
     // 面板设置里的 Language 通过 data-default-language 注进来，作为没访问过本面板的
     // 浏览器的初始语言；本机手动选过的话以 localStorage 为准。
     applyLanguage(localStorage.getItem('mui-language') || document.documentElement.dataset.defaultLanguage || 'zh-CN');

@@ -1,0 +1,76 @@
+/* UnifiedProxy components, adapted from m-ui (GPL-3.0).
+ * Palette references: Vercel / Claude (Anthropic) / Sentry / Supabase / Stripe,
+ * via VoltAgent/awesome-design-md (MIT). Colors are defined only in themes.css.
+ */
+* { box-sizing: border-box; }
+html { background: var(--canvas); color: var(--ink); font-family: var(--font-sans); font-synthesis: none; }
+html body { background: var(--canvas); color: var(--ink); font-family: var(--font-sans); font-size: var(--p-body); line-height: 1.45; }
+html body :is(h1,h2,h3,h4) { color: var(--ink); letter-spacing: 0; }
+html body :is(input,select,textarea,button) { font: inherit; }
+html body :is(input:not([type=checkbox]):not([type=radio]):not([type=range]),select,textarea) {
+  color: var(--ink); background: var(--surface-1); border: 1px solid var(--hairline-strong); border-radius: var(--rounded-md);
+  padding: var(--spacing-xs) var(--spacing-sm); box-shadow: none; min-height: var(--control-height);
+}
+html body :is(input,textarea)::placeholder { color: var(--ink-subtle); opacity: 1; }
+html body input[type=checkbox],html body input[type=radio] { accent-color: var(--primary); }
+html body button { color: var(--ink); border-radius: var(--rounded-md); box-shadow: none; cursor: pointer; }
+html body button:not(:disabled):hover { background-color: var(--surface-2); }
+html body button:not(:disabled):active { background-color: var(--surface-3); }
+html body :is(.primary-btn,.login-button,.inbound-pill#add-inbound,.button-primary) {
+  color: var(--on-primary); background: var(--primary); border: 1px solid transparent; border-radius: var(--rounded-md);
+  min-height: var(--control-height); padding: var(--spacing-xs) var(--spacing-md); box-shadow: none;
+}
+html body :is(.primary-btn,.login-button,.inbound-pill#add-inbound,.button-primary):hover:not(:disabled) { color: var(--on-primary); background: var(--primary-hover); }
+html body :is(.primary-btn,.login-button,.inbound-pill#add-inbound,.button-primary):active:not(:disabled) { color: var(--on-primary); background: var(--primary-active); }
+html body :is(.outline-btn,.icon-btn,.inbound-pill,.ghost-btn,.button-secondary) {
+  background: var(--surface-1); color: var(--ink); border: 1px solid var(--hairline-strong); border-radius: var(--rounded-md); box-shadow: none;
+}
+html body :is(.danger-btn,button.danger) { color: var(--danger-ink); background: var(--surface-1); border: 1px solid var(--hairline-strong); }
+html body :is(.danger-btn,button.danger):hover { background: var(--surface-2); color: var(--danger-ink); }
+html body :is(button,input,select,textarea,a,summary,[tabindex]):focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--primary-focus) 50%, transparent); outline-offset: 2px; box-shadow: none;
+}
+html body :is(button,input,select,textarea):disabled { opacity: .5; cursor: not-allowed; }
+html body :is(a,.link-btn) { color: var(--primary-deep); }
+[data-color-theme=t0] body a { color: var(--ink); text-underline-offset: 3px; }
+html body :is(.sidebar,.card,.gauges-card,.system-card,.traffic-card,.inbounds-card,.mihomo-card,.fleet-block,.modal-panel,.drawer,.settings-menu,.login-card,.pass-card,.sub-card) {
+  background: var(--surface-1); color: var(--ink); border-color: var(--hairline); box-shadow: none; backdrop-filter: none; -webkit-backdrop-filter: none;
+}
+html body :is(.ambient-backdrop,.aurora-orb,.mac-traffic-lights) { display: none; }
+html body :is(.modal-titlebar,.card-head,.setting-row,th,td) { border-color: var(--hairline); }
+html body :is(.subtitle,.mihomo-warning,.setting-row p,.metric-label,.stat-label,.gauge-caption,.fleet-toolbar label,.theme-option-row,.caption) { color: var(--ink-muted); }
+html body :is(.tag,.badge,.status-badge) { background: var(--surface-2); color: var(--ink-muted); border-color: var(--hairline); }
+html body :is(.segmented,.liquid-tabbar,.mode-switch) { background: var(--surface-2); border: 1px solid var(--hairline); box-shadow: none; border-radius: var(--rounded-md); }
+html body :is(.segmented, .liquid-tabbar, #security-extra-toggles) > button { color: var(--ink-muted); background: transparent; box-shadow: none; border: 0; border-radius: var(--rounded-sm); }
+html body :is(.segmented, .liquid-tabbar, #security-extra-toggles) > button.active { background: var(--primary-soft); color: var(--primary-deep); box-shadow: none; }
+html body :is(.settings-tabbar,.mihomo-tabs) { background: var(--surface-1); border-color: var(--hairline); box-shadow: none; }
+html body :is(.settings-tabbar,.mihomo-tabs) button.active { color: var(--primary-deep); background: var(--primary-soft); }
+html body :is(.switch,.theme-switch) input:focus-visible + span { outline: 2px solid color-mix(in srgb,var(--primary-focus) 50%,transparent); outline-offset: 2px; }
+html body :is(.switch,.theme-switch) input + span { background: var(--hairline-strong); box-shadow: none; border: 0; }
+html body :is(.switch,.theme-switch) input:checked + span { background: var(--primary); }
+html body :is(.switch,.theme-switch) input + span::after { background: var(--surface-1); box-shadow: none; border: 1px solid var(--hairline); }
+html body :is(.gauge-bar,.cpu-history-line,.traffic-line) { stroke: var(--chart-line); }
+html body :is(.gauge-track,.metric-bar) { stroke: var(--surface-3); }
+html body :is(.gauge-value,.metric-value,.traffic-value,.mono,.fleet-result,code,pre,.stat-value,.data-value) {
+  font-family: var(--font-mono); font-variant-numeric: tabular-nums; font-feature-settings: "tnum";
+}
+html body :is(.toast,.dynamic-island-toast) { color: var(--inverse-ink); background: var(--inverse-canvas); border: 1px solid var(--hairline-strong); border-radius: var(--rounded-md); box-shadow: none; }
+[data-theme=dark] body :is(.toast,.dynamic-island-toast) { color: var(--ink); background: var(--surface-3); }
+html body :is(.swift-picker-selection,.swift-picker-menu) { color: var(--ink); background: var(--surface-1); border: 1px solid var(--hairline-strong); border-radius: var(--rounded-md); box-shadow: none; backdrop-filter: none; }
+html body .swift-picker-menu li.mui-selected { color: var(--primary-deep); background: var(--primary-soft); }
+html body .swift-picker-menu li:is(:hover,.mui-active) { color: var(--ink); background: var(--surface-2); }
+[data-appearance-slot] select { width: 100%; font-size: var(--p-caption); }
+html body .ink-bar { display: none; }
+html body .nav > button.active { background: var(--primary-soft); color: var(--primary-deep); border-inline-start: 0; box-shadow: none; }
+html body .nav > button.active::before { display: none; }
+[data-color-theme=t2][data-theme=dark] .nav > button.active::after { content: ""; width: 4px; height: 4px; margin-inline-start: auto; background: var(--highlight); border-radius: var(--rounded-full); }
+@media (prefers-reduced-motion: reduce) {
+  :root { --duration-instant: 0ms; --duration-fast: 0ms; --duration-base: 0ms; --duration-slow: 0ms; --duration-theme: 0ms; }
+  *,*::before,*::after { animation-duration: 0ms !important; transition-duration: 0ms !important; scroll-behavior: auto !important; }
+}
+
+/* Shared explicit icon dimensions. */
+.sf-symbol { width: 20px; height: 20px; flex: 0 0 auto; display: inline-block; vertical-align: middle; fill: currentColor; }
+.sf-symbol.small { width: 16px; height: 16px; }
+.sf-symbol.large { width: 24px; height: 24px; }
+html body #nav button.active { background: var(--primary-soft); color: var(--primary-deep); border-inline-start: 0; }

@@ -493,6 +493,10 @@ func (a *App) handleSubscriptionRequest(w http.ResponseWriter, r *http.Request) 
 		"liquid-button.css":       "text/css; charset=utf-8",
 		"liquid-button.js":        "text/javascript; charset=utf-8",
 		"fonts.css":               "text/css; charset=utf-8",
+		"themes.css":              "text/css; charset=utf-8",
+		"components.css":          "text/css; charset=utf-8",
+		"subscription.css":        "text/css; charset=utf-8",
+		"appearance.js":           "text/javascript; charset=utf-8",
 		"subscription-themes.css": "text/css; charset=utf-8",
 	} {
 		if r.URL.Path == assetBase+name {

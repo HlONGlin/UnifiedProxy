@@ -14,6 +14,13 @@ m-ui 界面多语言核心（简体中文 / 繁體中文 / English / 日本語 /
 
   var DICT = {
     'zh-CN': {
+      'appearance.title': '配色主题',
+      'appearance.description': '五套配色只改变颜色；明暗独立保存。T2 首次选择默认暗色。',
+      'appearance.t0': 'T0 黑白 · 墨 · Vercel',
+      'appearance.t1': 'T1 暖纸陶土 · Claude / Anthropic',
+      'appearance.t2': 'T2 夜紫荧光 · Sentry',
+      'appearance.t3': 'T3 翡翠绿 · Supabase',
+      'appearance.t4': 'T4 靛紫 · Stripe',
       'common.save': '保存',
       'common.cancel': '取消',
       'common.import': '导入',
@@ -928,6 +935,13 @@ m-ui 界面多语言核心（简体中文 / 繁體中文 / English / 日本語 /
       'cs.busyPulling': '当前正在拉取，完成后再清除缓存'
     },
     'en': {
+      'appearance.title': 'Color theme',
+      'appearance.description': 'Five color palettes, independent light/dark preference. T2 starts dark on first selection.',
+      'appearance.t0': 'T0 Ink · Vercel',
+      'appearance.t1': 'T1 Warm clay · Claude / Anthropic',
+      'appearance.t2': 'T2 Night violet · Sentry',
+      'appearance.t3': 'T3 Emerald · Supabase',
+      'appearance.t4': 'T4 Indigo · Stripe',
       'common.save': 'Save',
       'common.cancel': 'Cancel',
       'common.import': 'Import',
