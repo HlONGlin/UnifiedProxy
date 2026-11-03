@@ -86,8 +86,7 @@
       'pt-BR': { pageTitle:'UnifiedProxy | Entrar', hello:'Olá', title:'Bem-vindo', username:'Nome de Usuário', password:'Senha', login:'Entrar', logging:'Entrando…', settings:'Configurações do Painel', dark:'Escuro', ultra:'Muito Escuro', language:'Idioma', show:'Mostrar senha', hide:'Ocultar senha', failed:'Falha no login', languageFailed:'Falha ao salvar a configuração de idioma' }
     };
 
-    /* Apple Design 三套主题（Light / Dark / Ultra Dark OLED）。Ultra Dark 只在深色模式下开启，
-       切换期间打上 data-theme-animations="off" 抑制所有闪烁过渡。 */
+    // UPTheme owns the independent palette and light/dark choices.
     function applyTheme(theme) { UPTheme.setMode(theme === 'dark' || theme === true); }
 
     function applyLanguage(language) {
@@ -114,7 +113,7 @@
       localStorage.setItem('mui-language', lang);
     }
 
-    // SwiftUI 标题词轮播动效：每隔 2s 循环轮转问候语，触发优雅缩放微动效。
+    // Rotate the localized greeting; workspace.css keeps its layout stable.
     function rotateHeadline(word, delay) {
       const next = word.nextElementSibling || word.parentElement.firstElementChild;
       word.classList.replace('is-visible', 'is-hidden');

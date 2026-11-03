@@ -2,7 +2,7 @@
 set -Eeuo pipefail
 umask 077
 
-REPO="RomanovCaesar/m-ui"
+REPO="HlONGlin/UnifiedProxy"
 MIHOMO_REPO="MetaCubeX/mihomo"
 INSTALL_DIR="/usr/local/m-ui"
 DATA_DIR="${INSTALL_DIR}/data"

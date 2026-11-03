@@ -35,7 +35,7 @@ func checkFleetRelease(ctx context.Context, role, platform string) (fleetRelease
 	}
 	repo := os.Getenv("MUI_RELEASE_REPO")
 	if repo == "" {
-		repo = "RomanovCaesar/m-ui"
+		repo = "HlONGlin/UnifiedProxy"
 	}
 	if !fleetRepoPattern.MatchString(repo) {
 		return fleetRelease{}, errors.New("invalid MUI_RELEASE_REPO")
@@ -54,7 +54,7 @@ func checkFleetRelease(ctx context.Context, role, platform string) (fleetRelease
 		if err != nil {
 			return nil, err
 		}
-		req.Header.Set("User-Agent", "m-ui-fleet")
+		req.Header.Set("User-Agent", "UnifiedProxy-fleet")
 		res, err := client.Do(req)
 		if err != nil {
 			return nil, err

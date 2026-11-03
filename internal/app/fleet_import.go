@@ -68,6 +68,12 @@ func convertMerit(node meritNode) (State, []fleet.Sidecar, []string, error) {
 	}
 	seenIDs, seenPorts := map[string]bool{}, map[string]bool{}
 	for _, p := range node.Ports {
+		// The unsupported legacy Naive form is recovery-only. Validate supported
+		// siblings independently, even when that record has unusable credentials.
+		if p.ProxyType == "naive" && (p.Port < 1 || p.Port > 65535 || p.Username == "" || p.Password == "" || p.Domain == "" || (!p.AutoACME && (!strings.Contains(p.TLSCert, "BEGIN CERTIFICATE") || !strings.Contains(p.TLSKey, "PRIVATE KEY")))) {
+			logs = append(logs, fmt.Sprintf("NaiveProxy %d excluded from activation; original record retained in recovery archive", p.Port))
+			continue
+		}
 		if p.ID != "" && seenIDs[p.ID] {
 			return state, nil, nil, errors.New("duplicate legacy port ID")
 		}
@@ -128,7 +134,7 @@ func convertMerit(node meritNode) (State, []fleet.Sidecar, []string, error) {
 		}
 		if typeName == "naive" {
 			if p.Domain == "" || (!p.AutoACME && (!strings.Contains(p.TLSCert, "BEGIN CERTIFICATE") || !strings.Contains(p.TLSKey, "PRIVATE KEY"))) {
-				logs = append(logs, fmt.Sprintf("Na茂veProxy %d excluded from activation; original record retained in recovery archive", p.Port))
+				logs = append(logs, fmt.Sprintf("NaiveProxy %d excluded from activation; original record retained in recovery archive", p.Port))
 				continue
 			}
 			credentials := base64.StdEncoding.EncodeToString([]byte(p.Username + ":" + p.Password))

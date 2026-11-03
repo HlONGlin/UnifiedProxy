@@ -61,8 +61,19 @@ func appendLegacyMigration(s *State, raw []byte, nodes []string) {
 	normalized, _ := json.Marshal(compact)
 	sum := sha256.Sum256(normalized)
 	id := hex.EncodeToString(sum[:])
-	for _, old := range s.LegacyMigrations {
+	for i := range s.LegacyMigrations {
+		old := &s.LegacyMigrations[i]
 		if old.ID == id {
+			seen := make(map[string]bool, len(old.NodeIDs))
+			for _, node := range old.NodeIDs {
+				seen[node] = true
+			}
+			for _, node := range nodes {
+				if !seen[node] {
+					old.NodeIDs = append(old.NodeIDs, node)
+					seen[node] = true
+				}
+			}
 			return
 		}
 	}

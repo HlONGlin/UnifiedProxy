@@ -11,6 +11,17 @@ html body :is(a,summary,[role=button]):active:not([aria-disabled=true]){backgrou
 html body :is([aria-disabled=true],button:disabled,input:disabled,select:disabled,textarea:disabled){cursor:not-allowed;opacity:.5}
 html body :is(.overview-action,.login-button,.code-card,.qr,.url,.client-btn,.node):is(:hover,:active){transform:none}
 html body .client-btn[aria-expanded=true]{background:var(--primary-soft);color:var(--primary-deep);border-color:var(--hairline-strong)}
+/* P5 rendered contrast: primary action labels need their paired on-color. */
+html body .mihomo-primary{color:var(--on-primary);background:var(--primary);border-color:var(--primary)}
+html body .mihomo-primary:hover{color:var(--on-primary);background:var(--primary-hover);border-color:var(--primary-hover);transform:none}
+html body .mihomo-primary:active{color:var(--on-primary);background:var(--primary-active);transform:none}
+html body :is(.segmented,.settings-segmented,.mode-switch) > button.active{color:var(--primary-deep);background:var(--primary-soft)}
+html body :is(.remark-tokens,.table-pager) button.active{color:var(--primary-deep);background:var(--primary-soft);border-color:var(--hairline-strong)}
+html body :is(.eyebrow,#remark-sample){color:var(--primary-deep)}
+html body .subtpl-badge{color:var(--primary-deep);background:var(--primary-soft)}
+html body #mc-summary{color:var(--ink-muted)}
+html body .login-fields .input-wrap svg{stroke-width:1.5}
+html body .login-card .input-wrap > input:is([type=text],[type=password]){padding-inline:calc(var(--spacing-xl) + var(--spacing-sm))}
 html body .client-item:is(:hover,:active,:focus-visible){background:var(--surface-3)!important;color:var(--ink)!important}
 html body :is(.client-menu,.settings-menu){border-radius:var(--rounded-md)!important}
 html body :is(.client-menu,.copy-toast){transition:opacity var(--duration-base) var(--easing-out),visibility var(--duration-base) var(--easing-out)}

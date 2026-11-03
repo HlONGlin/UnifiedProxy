@@ -5,7 +5,7 @@ umask 077
 INSTALL_DIR="${MUI_INSTALL_DIR:-/usr/local/m-ui}"
 BIN="${INSTALL_DIR}/m-ui"
 DATA_DIR="${INSTALL_DIR}/data"
-INSTALL_URL="https://raw.githubusercontent.com/RomanovCaesar/m-ui/main/install.sh"
+INSTALL_URL="https://raw.githubusercontent.com/HlONGlin/UnifiedProxy/main/install.sh"
 # 菜单语言和面板界面语言保持同一套；m-ui --lang <code> 选好后记在这个文件里。
 MENU_LANG_FILE="${INSTALL_DIR}/menu-lang"
 MENU_LANGS=(en zh-CN zh-TW ja ru fa vi es tr uk pt-BR)
@@ -87,7 +87,7 @@ install_cmd() {
 update_menu() {
     require_root
     local menu; menu="$(mktemp /tmp/m-ui-menu.XXXXXX)"
-    if ! curl -fsSL --retry 3 "https://raw.githubusercontent.com/RomanovCaesar/m-ui/main/scripts/m-ui.sh" -o "$menu"; then
+    if ! curl -fsSL --retry 3 "https://raw.githubusercontent.com/HlONGlin/UnifiedProxy/main/scripts/m-ui.sh" -o "$menu"; then
         rm -f -- "$menu"
         die "$(t dl_menu_fail)"
     fi

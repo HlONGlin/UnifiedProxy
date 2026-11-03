@@ -1,0 +1,137 @@
+{
+  "environment": "orca-linux-unifiedproxy /workspace, Linux only",
+  "browser": [
+    {
+      "checks": 45,
+      "screenshots": 470
+    },
+    {
+      "checks": 38,
+      "screenshots": 70
+    },
+    {
+      "checks": 60,
+      "screenshots": 3
+    }
+  ],
+  "themes": {
+    "t0-dark": {
+      "textSamples": 2128,
+      "normalMin": 7.13,
+      "largeMin": 11.07,
+      "accentMaxFraction": 0.042065,
+      "highlightMaxFraction": 0.042065,
+      "fluorescentMaxFraction": 0
+    },
+    "t0-light": {
+      "textSamples": 2154,
+      "normalMin": 5.779,
+      "largeMin": 6.49,
+      "accentMaxFraction": 0.04722,
+      "highlightMaxFraction": 0.04722,
+      "fluorescentMaxFraction": 0
+    },
+    "t1-dark": {
+      "textSamples": 2128,
+      "normalMin": 5.057,
+      "largeMin": 9.417,
+      "accentMaxFraction": 0.039835,
+      "highlightMaxFraction": 0.001206,
+      "fluorescentMaxFraction": 0
+    },
+    "t1-light": {
+      "textSamples": 2128,
+      "normalMin": 5.057,
+      "largeMin": 5.371,
+      "accentMaxFraction": 0.039835,
+      "highlightMaxFraction": 0.039835,
+      "fluorescentMaxFraction": 0
+    },
+    "t2-dark": {
+      "textSamples": 2128,
+      "normalMin": 5.224,
+      "largeMin": 10.336,
+      "accentMaxFraction": 0.039835,
+      "highlightMaxFraction": 3e-06,
+      "fluorescentMaxFraction": 3e-06
+    },
+    "t2-light": {
+      "textSamples": 2128,
+      "normalMin": 5.224,
+      "largeMin": 5.983,
+      "accentMaxFraction": 0.039841,
+      "highlightMaxFraction": 0.039841,
+      "fluorescentMaxFraction": 0.0
+    },
+    "t3-dark": {
+      "textSamples": 2128,
+      "normalMin": 7.858,
+      "largeMin": 9.79,
+      "accentMaxFraction": 0.039841,
+      "highlightMaxFraction": 0.001206,
+      "fluorescentMaxFraction": 0
+    },
+    "t3-light": {
+      "textSamples": 2128,
+      "normalMin": 5.779,
+      "largeMin": 6.218,
+      "accentMaxFraction": 0.039841,
+      "highlightMaxFraction": 0.001206,
+      "fluorescentMaxFraction": 0
+    },
+    "t4-dark": {
+      "textSamples": 2128,
+      "normalMin": 4.581,
+      "largeMin": 7.048,
+      "accentMaxFraction": 0.039835,
+      "highlightMaxFraction": 0.001236,
+      "fluorescentMaxFraction": 0
+    },
+    "t4-light": {
+      "textSamples": 2128,
+      "normalMin": 5.744,
+      "largeMin": 6.142,
+      "accentMaxFraction": 0.039829,
+      "highlightMaxFraction": 0.039829,
+      "fluorescentMaxFraction": 0
+    }
+  },
+  "sharedTokens": [
+    "chart-line",
+    "semantic-success",
+    "latency-good",
+    "row-height",
+    "rounded-md",
+    "duration-fast",
+    "font-mono"
+  ],
+  "go": {
+    "run": 545,
+    "passed": 539,
+    "skipped": [
+      "TestDesignAcceptanceServer",
+      "TestFleetRealSidecarProcesses",
+      "TestInboundSyncBrowserFixture",
+      "TestMultiControlBrowserFixture",
+      "TestVPNGateAppArmorPolicyParses",
+      "TestWarpBrowserFixture"
+    ],
+    "packages": [
+      "github.com/RomanovCaesar/m-ui/internal/fleet",
+      "github.com/RomanovCaesar/m-ui/internal/agent",
+      "github.com/RomanovCaesar/m-ui/internal/control",
+      "github.com/RomanovCaesar/m-ui/internal/app"
+    ]
+  },
+  "liveDataPlane": {
+    "checks": 12,
+    "offlineRestart": "passed"
+  },
+  "evidenceSHA256": {
+    "p5-tests.json": "41cc1f9d4a9c03be075bda0b7bfb1f960f5c0a1f84d6a46e26d6acd3d3e288ce",
+    "p5-live/results.json": "c2f98417d41102904a67b1a70eb0f1bc9df5fc2dba603688161dcb68ae8f3ab2",
+    "p5/browser-results.json": "00e69e56d887c308448feabc1c39a0456a63cc304f86ac10301a2dac5c79fc88",
+    "p5/fleet/browser-results.json": "09fb01cab818feda59e92055314ae1732674750c414c75514406cf198851e8cf",
+    "p5/operations/browser-results.json": "5117a49c0d23469700d52ae2e34d68e0ff8498a125e6e7be9ed73cd66e624902"
+  }
+}

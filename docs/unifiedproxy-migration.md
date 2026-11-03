@@ -1,7 +1,8 @@
 # UnifiedProxy × m-ui：运行与迁移指南
 
 合并以 m-ui 为主体，保留 Mihomo 原生配置、Inbound/Client、订阅模板、3x-ui、
-WARP/VPNGate、客户端设备、11 种语言和三套主题。新增舰队、签名任务、期望状态、
+WARP/VPNGate、客户端设备和 11 种语言。外观现为五套配色（T0 黑白默认）× 独立明暗，
+旧三主题偏好可迁移。新增舰队、签名任务、期望状态、
 Sidecar、中央证书、WebDAV 和更新流程。合并产物遵循 GPL-3.0；UP 的 MIT 声明
 保留于 NOTICE 和 licenses/。代码快照上传到
 [审阅分支](https://github.com/HlONGlin/UnifiedProxy/tree/codex/unifiedproxy-merge-20261103)，
@@ -128,7 +129,8 @@ Release 与平台校验和，再下载候选、验证可运行，交独立 syste
 超过十分钟仍未完成时，从独立 recovery 二进制恢复旧程序并发送失败回执。
 它不把未验证的候选程序报为成功。内核和 Geo 数据任务也要求配置验证与健康检查，
 失败恢复原文件；金丝雀只有收到成功回执才推进下一台。
-MUI_RELEASE_REPO 应指向发布合并资产的 owner/repository；默认上游不保证有新资产。
+更新检查默认指向 HlONGlin/UnifiedProxy；MUI_RELEASE_REPO 可覆盖为兼容发行仓库。
+只有该仓库发布了对应角色/架构的资产和校验和才能升级；不会退回下载 m-ui 上游程序。
 32 位 ARM 的自动检查选择兼容所有受支持 CPU 的 armv5 包；可显式指定 linux-armv6/armv7。
 Windows 人工换包，Docker 同数据卷重建镜像；它们不声明 systemd 自动升级能力。
 Dockerfile.fleet 与 docker-compose.fleet.yml 提供两种角色，Mihomo 使用 core 挂载。

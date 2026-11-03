@@ -25,3 +25,12 @@
 证据：`dist/design-audit/legacy-regression.log`、`legacy-check.log`。测试含实际 HTTP 上传、
 订阅 YAML、磁盘重启和备份恢复、失败回滚；不是仅测试 JSON 解码。进程夹具只证明
 控制/应用契约，不能代替真实 Mihomo 网络代理的端到端证明。
+
+P5 补充真实传输：固定 Mihomo v1.19.33，SHA256 与 Dockerfile 中的固定值一致，
+最早备份结构从真实导入入口应用后，由另一个真实 Mihomo 客户端访问容器内 HTTP 服务。
+Mieru TCP、Mieru UDP、AnyTLS、ShadowTLS + 自动 SS 后端均通过，保留原用户名/密码与
+ShadowTLS aes-256-gcm 默认值。AnyTLS/ShadowTLS 仅测试夹具的自签证书放宽验证；
+产品默认验证不变。证据：p5-transport.log。另运行原真实 sidecar 启动/重启检查，
+见 p5-sidecars.log；这些不是公网部署或 CA/DNS 验收。
+相同源 JSON 多次选不同节点导入时，归档合并节点关联而不重复源记录。
+不完整 Naive 记录即使端口/凭据无效也仅归档，不阻止其他支持的节点。

@@ -3,7 +3,7 @@
  * via VoltAgent/awesome-design-md (MIT). See docs/design/p2-token-map.md.
  * This sheet preserves functional layout and visibility; themes.css owns color.
  */
-:root { --font: -apple-system,BlinkMacSystemFont,"SF Pro Display","SF Pro Text","SF Pro","PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif; --font-mono: "SF Mono",SFMono-Regular,ui-monospace,Menlo,Monaco,Consolas,monospace; --radius-xl: 26px; --radius-pill: 9999px; background: var(--page); color: var(--text); font: 14px/1.5 var(--font); }
+:root { --font: var(--font-sans); background: var(--page); color: var(--text); font: 14px/1.5 var(--font-sans); }
 * { box-sizing: border-box; }
 body { margin: 0; min-height: 100vh; padding: 36px 16px; background: var(--page); color: var(--text); font-family: var(--font-sans); -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; transition: background-color var(--duration-slow) var(--ease),color var(--duration-slow) var(--ease); display: flex; align-items: flex-start; justify-content: center; }
 button,select { font: inherit; }

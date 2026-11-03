@@ -95,6 +95,29 @@ func TestLegacyRealApplySeedsSurviveRefreshResetAndZip(t *testing.T) {
 // Shape taken from aa45551 (2026-10-05, first data-producing commit).
 const oldestLegacyBackup = `{"admin":{"username":"old-admin","passwordSalt":"aa","passwordHash":"old-private-hash","createdAt":"2026-10-05T10:32:00+08:00"},"settings":{"subToken":"oldest-token-keep"},"nodes":[{"id":"oldest","name":"oldest node","apiKey":"old-private-api-key","address":"one.example","remark":"old notes","createdAt":"2026-10-05T10:32:00+08:00","ports":[{"id":"p1","port":31234,"protocol":"TCP","username":"old-alice","password":"original-password","label":"original listener","enabled":true,"createdAt":"2026-10-05T10:32:00+08:00"}]}]}`
 
+func TestLegacyArchiveUnionsImportedNodes(t *testing.T) {
+	var state State
+	appendLegacyMigration(&state, []byte(oldestLegacyBackup), []string{"first"})
+	stamp := state.LegacyMigrations[0].ImportedAt
+	appendLegacyMigration(&state, []byte(oldestLegacyBackup), []string{"second", "first", "second"})
+	if len(state.LegacyMigrations) != 1 || strings.Join(state.LegacyMigrations[0].NodeIDs, ",") != "first,second" || state.LegacyMigrations[0].ImportedAt != stamp {
+		t.Fatalf("repeat import lost source associations: %+v", state.LegacyMigrations)
+	}
+}
+
+func TestLegacyUnusableNaiveCannotBlockSupportedSiblings(t *testing.T) {
+	a := fleetTestApp(t)
+	var input map[string]any
+	_ = json.Unmarshal([]byte(oldestLegacyBackup), &input)
+	node := input["nodes"].([]any)[0].(map[string]any)
+	node["ports"] = append(node["ports"].([]any), map[string]any{"id": "excluded-naive", "proxyType": "naive", "port": 0})
+	raw, _ := json.Marshal(input)
+	w := importLegacyTest(t, a, raw)
+	if w.Code != 200 || len(a.fleet.store.Nodes()) != 1 || !strings.Contains(w.Body.String(), "excluded") || !bytes.Contains(a.manager.state.LegacyMigrations[0].Source, []byte("excluded-naive")) {
+		t.Fatal("excluded Naive record blocked/lost supported backup data", w.Code, w.Body.String())
+	}
+}
+
 func importLegacyTest(t *testing.T, a *App, raw []byte) *httptest.ResponseRecorder {
 	t.Helper()
 	w := httptest.NewRecorder()
