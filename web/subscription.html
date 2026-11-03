@@ -1,0 +1,830 @@
+<!doctype html>
+<html lang="en" data-theme="light" data-default-language="{{.DefaultLanguage}}" data-ui-theme="{{.UITheme}}">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Subscription info</title>
+  <script>
+    try {
+      const savedTheme=localStorage.getItem('mui-theme');
+      document.documentElement.dataset.theme=savedTheme==='dark'?'dark':'light';
+      if(localStorage.getItem('mui-is-ultra-dark')==='true')document.documentElement.dataset.ultraDark='true';
+    } catch {}
+  </script>
+  <style>
+    /* ===== Apple Wallet / SwiftUI Design Tokens =====
+       Sub page styled as an Apple Passbook / Wallet Pass card.
+       Uses SF Pro typography, frosted glass materials, Apple squircle radii, and Cupertino system colors. */
+    :root{
+      color-scheme:light;
+      --page:#f2f2f7;
+      --card:rgba(255,255,255,.84);
+      --card-border:rgba(0,0,0,.08);
+      --card-shadow:0 24px 64px -12px rgba(0,0,0,.09),0 2px 6px rgba(0,0,0,.04);
+      --surface:rgba(255,255,255,.7);
+      --surface-hover:rgba(255,255,255,.9);
+      --surface-strong:rgba(255,255,255,.96);
+      --surface-subtle:rgba(0,0,0,.03);
+      --text:#1d1d1f;
+      --text-strong:#000000;
+      --muted:#86868b;
+      --muted-2:#aeaeb2;
+      --line:rgba(60,60,67,.12);
+      --line-strong:rgba(60,60,67,.24);
+      --primary:#0071e3;
+      --primary-hover:#0077ed;
+      --primary-soft:rgba(0,113,227,.1);
+      --primary-soft-hover:rgba(0,113,227,.16);
+      --green:#34c759;
+      --green-soft:rgba(52,199,89,.12);
+      --orange:#ff9500;
+      --orange-soft:rgba(255,149,0,.12);
+      --purple:#af52de;
+      --purple-soft:rgba(175,82,222,.1);
+      --purple-line:rgba(175,82,222,.24);
+      --shadow:0 8px 24px rgba(0,0,0,.05);
+      --card-hover-shadow:0 12px 32px rgba(0,0,0,.08);
+      --menu-shadow:0 16px 40px rgba(0,0,0,.14);
+      --btn-bg:rgba(255,255,255,.8);
+      --btn-border:rgba(60,60,67,.18);
+      --btn-color:#1d1d1f;
+      --btn-hover-bg:#ffffff;
+      --btn-hover-border:#0071e3;
+      --btn-hover-color:#0071e3;
+      --stroke:rgba(60,60,67,.16);
+      --teal:#0071e3;
+      --teal-3:#0077ed;
+      --teal-soft:rgba(0,113,227,.18);
+      --shadow-pop:0 14px 36px rgba(0,0,0,.14);
+      --select-bg:rgba(255,255,255,.9);
+      --select-hover:rgba(0,113,227,.08);
+      --select-item-hover:rgba(0,113,227,.08);
+      --select-item-selected:rgba(0,113,227,.12);
+      --select-item-color:#1d1d1f;
+      --switch-off:rgba(120,120,128,.2);
+      --checkbox-bg:#ffffff;
+      --checkbox-border:rgba(60,60,67,.25);
+      --node-bg:rgba(255,255,255,.65);
+      --node-border:rgba(60,60,67,.12);
+      --node-color:#1d1d1f;
+      --node-hover-bg:rgba(255,255,255,.92);
+      --node-hover-border:rgba(0,113,227,.35);
+      --qr-plate:#ffffff;
+      --qr-plate-hover:#ffffff;
+      --qr-plate-active:rgba(255,255,255,.9);
+      --qr-cv:#ffffff;
+      --msg-bg:rgba(28,28,30,.92);
+      --msg-color:#ffffff;
+      --msg-border:rgba(255,255,255,.14);
+      --scrollbar:rgba(0,0,0,.2);
+      --scrollbar-hover:rgba(0,0,0,.35);
+      --font:-apple-system,BlinkMacSystemFont,"SF Pro Display","SF Pro Text","SF Pro","PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;
+      --font-mono:"SF Mono",SFMono-Regular,ui-monospace,Menlo,Monaco,Consolas,monospace;
+      --ease:cubic-bezier(.25,1,.5,1);
+      --radius-xs:6px;
+      --radius-sm:10px;
+      --radius:14px;
+      --radius-lg:20px;
+      --radius-xl:26px;
+      --radius-pill:9999px;
+      background:var(--page);color:var(--text);font:14px/1.5 var(--font);
+    }
+    html[data-theme="dark"]{
+      color-scheme:dark;
+      --page:#161618;
+      --card:rgba(28,28,30,.86);
+      --card-border:rgba(255,255,255,.12);
+      --card-shadow:0 28px 70px -12px rgba(0,0,0,.65),0 0 0 1px rgba(255,255,255,.08);
+      --surface:rgba(44,44,46,.72);
+      --surface-hover:rgba(58,58,60,.85);
+      --surface-strong:rgba(36,36,38,.96);
+      --surface-subtle:rgba(255,255,255,.05);
+      --text:rgba(255,255,255,.88);
+      --text-strong:#ffffff;
+      --muted:rgba(235,235,245,.6);
+      --muted-2:rgba(235,235,245,.3);
+      --line:rgba(255,255,255,.1);
+      --line-strong:rgba(255,255,255,.2);
+      --primary:#0a84ff;
+      --primary-hover:#409cff;
+      --primary-soft:rgba(10,132,255,.16);
+      --primary-soft-hover:rgba(10,132,255,.24);
+      --green:#30d158;
+      --green-soft:rgba(48,209,88,.16);
+      --orange:#ff9f0a;
+      --orange-soft:rgba(255,159,10,.16);
+      --purple:#bf5af2;
+      --purple-soft:rgba(191,90,242,.16);
+      --purple-line:rgba(191,90,242,.32);
+      --shadow:0 8px 28px rgba(0,0,0,.35);
+      --card-hover-shadow:0 14px 40px rgba(0,0,0,.45);
+      --menu-shadow:0 18px 48px rgba(0,0,0,.5);
+      --btn-bg:rgba(255,255,255,.08);
+      --btn-border:rgba(255,255,255,.15);
+      --btn-color:rgba(255,255,255,.88);
+      --btn-hover-bg:rgba(255,255,255,.14);
+      --btn-hover-border:#0a84ff;
+      --btn-hover-color:#0a84ff;
+      --stroke:rgba(255,255,255,.15);
+      --teal:#0a84ff;
+      --teal-3:#409cff;
+      --teal-soft:rgba(10,132,255,.22);
+      --shadow-pop:0 16px 44px rgba(0,0,0,.5);
+      --select-bg:rgba(36,36,38,.96);
+      --select-hover:rgba(10,132,255,.18);
+      --select-item-hover:rgba(10,132,255,.18);
+      --select-item-selected:rgba(10,132,255,.24);
+      --select-item-color:rgba(255,255,255,.92);
+      --switch-off:rgba(120,120,128,.32);
+      --checkbox-bg:rgba(255,255,255,.08);
+      --checkbox-border:rgba(255,255,255,.25);
+      --node-bg:rgba(44,44,46,.65);
+      --node-border:rgba(255,255,255,.1);
+      --node-color:rgba(255,255,255,.9);
+      --node-hover-bg:rgba(58,58,60,.82);
+      --node-hover-border:rgba(10,132,255,.45);
+      --qr-plate:#1e1e20;
+      --qr-plate-hover:#242426;
+      --qr-plate-active:#2c2c2e;
+      --qr-cv:#ffffff;
+      --msg-bg:rgba(40,40,42,.94);
+      --msg-color:#ffffff;
+      --msg-border:rgba(255,255,255,.18);
+      --scrollbar:rgba(255,255,255,.2);
+      --scrollbar-hover:rgba(255,255,255,.35);
+    }
+    html[data-theme="dark"][data-ultra-dark="true"]{
+      --page:#000000;
+      --card:rgba(18,18,18,.92);
+      --card-border:rgba(255,255,255,.09);
+      --card-shadow:0 30px 80px -10px rgba(0,0,0,.85),0 0 0 1px rgba(255,255,255,.06);
+      --surface:rgba(28,28,30,.8);
+      --surface-hover:rgba(38,38,40,.9);
+      --surface-strong:rgba(24,24,26,.98);
+      --surface-subtle:rgba(255,255,255,.04);
+      --line:rgba(255,255,255,.08);
+      --line-strong:rgba(255,255,255,.16);
+      --stroke:rgba(255,255,255,.12);
+      --select-bg:rgba(24,24,26,.98);
+      --node-bg:rgba(24,24,26,.8);
+      --node-border:rgba(255,255,255,.08);
+      --qr-plate:#141416;
+      --msg-bg:rgba(28,28,30,.96);
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;min-height:100vh;padding:36px 16px;background:var(--page);color:var(--text);
+      font-family:var(--font);-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;
+      transition:background-color .3s var(--ease),color .3s var(--ease);
+      display:flex;align-items:flex-start;justify-content:center;
+    }
+    button,select{font:inherit}
+    html[data-theme-animations="off"] *,html[data-theme-animations="off"] *::before,html[data-theme-animations="off"] *::after{transition:none!important;animation:none!important}
+    ::-webkit-scrollbar{width:8px;height:8px}
+    ::-webkit-scrollbar-track{background:transparent}
+    ::-webkit-scrollbar-thumb{border:2px solid transparent;border-radius:var(--radius-pill);background-color:var(--scrollbar);background-clip:content-box}
+    ::-webkit-scrollbar-thumb:hover{background-color:var(--scrollbar-hover)}
+    *{scrollbar-width:thin;scrollbar-color:var(--scrollbar) transparent}
+
+    /* ===== Apple Wallet Pass Card ===== */
+    .card{
+      width:min(900px,100%);
+      margin:0 auto;
+      padding:0 0 28px;
+      border:1px solid var(--card-border);
+      border-radius:var(--radius-xl);
+      background:var(--card);
+      backdrop-filter:blur(32px) saturate(190%);
+      -webkit-backdrop-filter:blur(32px) saturate(190%);
+      box-shadow:var(--card-shadow);
+      position:relative;
+      overflow:hidden;
+      transition:background-color .3s var(--ease),border-color .3s var(--ease),box-shadow .3s var(--ease);
+    }
+    .card::before{
+      content:"";position:absolute;top:0;left:0;right:0;height:1px;
+      background:linear-gradient(90deg,transparent,rgba(255,255,255,.35) 20%,rgba(255,255,255,.35) 80%,transparent);
+      pointer-events:none;
+    }
+
+    /* Pass Header */
+    .head{
+      position:relative;display:flex;align-items:center;gap:12px;
+      min-height:60px;padding:0 24px;border-bottom:1px solid var(--line);
+      color:var(--text-strong);font-size:17px;font-weight:600;letter-spacing:-.015em;
+    }
+    .token{
+      max-width:min(50vw,420px);overflow:hidden;padding:3px 10px;
+      border:1px solid var(--line);border-radius:var(--radius-pill);
+      color:var(--muted);background:var(--surface-subtle);
+      font-family:var(--font-mono);font-size:12px;font-weight:500;
+      line-height:18px;text-overflow:ellipsis;white-space:nowrap;
+    }
+    .gear{
+      margin-left:auto;width:34px;height:34px;min-width:34px;flex:none;
+      display:inline-flex;align-items:center;justify-content:center;padding:0;
+      border:1px solid var(--line);border-radius:50%;color:var(--muted);
+      background:var(--surface-subtle);font-size:16px;cursor:pointer;
+      transition:all .2s var(--ease);
+    }
+    .gear:hover,.gear[aria-expanded="true"]{
+      color:var(--text-strong);border-color:var(--line-strong);background:var(--surface-hover);
+      transform:scale(1.04);
+    }
+    .gear:active{transform:scale(.96)}
+    .gear:focus-visible,.theme-switch input:focus-visible+span,.ultra-check input:focus-visible+span,.language-select:focus-visible{
+      outline:2px solid var(--primary);outline-offset:2px;
+    }
+    .gear svg{width:16px;height:16px}
+
+    /* macOS Sequoia Popover Menu */
+    .settings-menu{
+      position:absolute;z-index:20;top:calc(100% + 10px);right:16px;
+      width:min(280px,calc(100vw - 48px));padding:6px 0 14px;
+      border:1px solid var(--card-border);border-radius:var(--radius-lg);
+      background:var(--surface-strong);backdrop-filter:blur(36px) saturate(190%);
+      -webkit-backdrop-filter:blur(36px) saturate(190%);
+      box-shadow:var(--menu-shadow);
+      transform:translateY(-8px) scale(.98);transform-origin:top right;
+      opacity:0;visibility:hidden;
+      transition:transform .2s var(--ease),opacity .2s var(--ease),visibility .2s;
+    }
+    .settings-menu.open{transform:translateY(0) scale(1);opacity:1;visibility:visible}
+    .settings-title{
+      position:relative;padding:8px 18px;border-bottom:1px solid var(--line);
+      color:var(--text-strong);font-size:13px;font-weight:600;letter-spacing:-.01em;
+    }
+    .theme-options{display:grid;gap:12px;padding:14px 18px 6px}
+    .theme-option{display:flex;align-items:center;justify-content:space-between;gap:8px;color:var(--text);font-size:14px;cursor:pointer}
+    .theme-option[hidden]{display:none}
+
+    /* iOS 18 Toggle Switch */
+    .theme-switch{position:relative;width:44px;height:24px;min-width:44px;flex:none}
+    .theme-switch input,.ultra-check input{position:absolute;inset:0;margin:0;opacity:0;pointer-events:none}
+    .theme-switch span{position:absolute;inset:0;border-radius:var(--radius-pill);background:var(--switch-off);cursor:pointer;transition:background-color .3s var(--ease)}
+    .theme-switch span::after{
+      position:absolute;top:2px;left:2px;width:20px;height:20px;border-radius:50%;
+      background:#ffffff;box-shadow:0 2px 4px rgba(0,0,0,.2),0 0 1px rgba(0,0,0,.15);
+      content:"";transition:transform .3s var(--ease);
+    }
+    .theme-switch input:checked+span{background:var(--green)}
+    .theme-switch input:checked+span::after{transform:translateX(20px)}
+
+    /* iOS Squircle Checkbox */
+    .ultra-check{position:relative;display:inline-flex;width:18px;height:18px;flex:none}
+    .ultra-check span{
+      position:absolute;inset:0;border:1.5px solid var(--checkbox-border);
+      border-radius:6px;background:var(--checkbox-bg);pointer-events:none;
+      transition:all .2s var(--ease);
+    }
+    .ultra-check span::after{
+      position:absolute;top:50%;left:50%;width:4px;height:8px;
+      border:2px solid #fff;border-top:0;border-left:0;
+      transform:rotate(45deg) scale(0) translate(-50%,-50%);transform-origin:center;
+      opacity:0;content:"";transition:transform .2s var(--ease),opacity .2s;
+    }
+    .ultra-check input:checked+span{border-color:var(--primary);background:var(--primary)}
+    .ultra-check input:checked+span::after{transform:rotate(45deg) scale(1) translate(-50%,-50%);opacity:1}
+
+    .language-label{padding:12px 18px 6px;color:var(--muted);font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.04em}
+    .language-select{width:calc(100% - 36px);margin:0 18px}
+
+    /* Passbook QR Cards */
+    .codes{
+      display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));
+      justify-content:center;gap:16px;margin:28px 24px 20px;
+    }
+    .code-card{
+      display:flex;flex-direction:column;align-items:center;padding:20px 16px;
+      border:1px solid var(--line);border-radius:var(--radius-lg);
+      background:var(--surface);text-align:center;
+      box-shadow:0 4px 16px rgba(0,0,0,.03);transition:all .3s var(--ease);
+    }
+    .code-card:hover{
+      transform:translateY(-2px);border-color:var(--line-strong);
+      box-shadow:0 8px 24px rgba(0,0,0,.06);
+    }
+    .code-title{
+      display:inline-flex;align-items:center;justify-content:center;
+      margin:0 0 14px;padding:3px 14px;border:1px solid var(--purple-line);
+      border-radius:var(--radius-pill);color:var(--purple);background:var(--purple-soft);
+      font-size:12px;font-weight:600;letter-spacing:.02em;text-align:center;
+    }
+    .qr{
+      position:relative;width:210px;height:210px;margin:0 auto;padding:10px;
+      border:1px solid var(--line);border-radius:var(--radius);
+      background:#ffffff;box-shadow:0 4px 16px rgba(0,0,0,.04);
+      cursor:pointer;transition:transform .2s var(--ease),box-shadow .2s var(--ease);
+    }
+    .qr:hover{transform:scale(1.02);box-shadow:0 8px 24px rgba(0,0,0,.08)}
+    .qr:active{transform:scale(.98)}
+    .qr canvas{display:block;width:100%!important;height:100%!important;border-radius:8px;background-color:#ffffff}
+    .url{
+      width:100%;margin-top:14px;padding:10px 12px;
+      border:1px solid var(--line);border-radius:var(--radius-sm);
+      color:var(--muted);background:var(--surface-subtle);
+      font:12px/1.5 var(--font-mono);text-align:center;word-break:break-all;
+      cursor:pointer;transition:all .2s var(--ease);
+    }
+    .url:hover{background:var(--primary-soft);border-color:var(--primary);color:var(--primary)}
+    .url:active{transform:scale(.99)}
+    .caesar-btn{margin-top:12px;justify-content:center}
+
+    /* SwiftUI Segmented Clients Buttons */
+    .clients{display:flex;justify-content:center;flex-wrap:wrap;gap:10px;margin:0 24px 12px}
+    .client-drop{position:relative}
+    .client-btn{
+      display:inline-flex;align-items:center;gap:8px;height:38px;padding:0 18px;
+      border:1px solid var(--line-strong);border-radius:var(--radius-pill);
+      color:var(--text-strong);background:var(--surface);
+      font-size:14px;font-weight:500;line-height:1.5;white-space:nowrap;
+      cursor:pointer;box-shadow:0 2px 6px rgba(0,0,0,.03);
+      transition:all .2s var(--ease);
+    }
+    .client-btn:hover{
+      background:var(--primary-soft);border-color:var(--primary);color:var(--primary);
+      transform:translateY(-1px);
+    }
+    .client-btn[aria-expanded="true"]{
+      background:var(--primary);border-color:var(--primary);color:#ffffff;
+    }
+    .client-btn svg{width:16px;height:16px;flex:none}
+    .client-btn .chev{width:11px;height:11px;transition:transform .24s var(--ease)}
+    .client-btn[aria-expanded="true"] .chev{transform:rotate(180deg)}
+    .client-btn:focus-visible{outline:2px solid var(--primary);outline-offset:2px}
+
+    /* Client Popover Menu */
+    .client-menu{
+      position:absolute;z-index:20;left:50%;top:calc(100% + 8px);min-width:200px;
+      padding:6px;border:1px solid var(--card-border);border-radius:var(--radius);
+      background:var(--surface-strong);backdrop-filter:blur(32px) saturate(190%);
+      -webkit-backdrop-filter:blur(32px) saturate(190%);
+      box-shadow:var(--menu-shadow);
+      transform:translate(-50%,-6px) scale(.98);transform-origin:top center;
+      opacity:0;visibility:hidden;
+      transition:transform .2s var(--ease),opacity .2s var(--ease),visibility .2s;
+    }
+    .client-menu.open{transform:translate(-50%,0) scale(1);opacity:1;visibility:visible}
+    .client-item{
+      display:block;width:100%;margin:0;padding:7px 12px;border:0;
+      border-radius:8px;color:var(--text);background:transparent;
+      text-align:left;font:inherit;font-size:13px;font-weight:500;line-height:20px;
+      white-space:nowrap;cursor:pointer;transition:all .15s var(--ease);
+    }
+    .client-item:hover,.client-item:focus-visible{
+      background:var(--primary-soft);color:var(--primary);outline:none;
+    }
+
+    /* SwiftUI Inset Grouped Table (Form Section) */
+    table{
+      width:calc(100% - 48px);margin:24px 24px 0;overflow:hidden;
+      border:1px solid var(--line);border-spacing:0;border-collapse:separate;
+      border-radius:var(--radius-lg);background:var(--surface);
+      box-shadow:0 2px 10px rgba(0,0,0,.02);
+    }
+    td{padding:13px 18px;border-bottom:1px solid var(--line);font-size:14px;transition:background-color .2s var(--ease)}
+    tr:last-child td{border-bottom:0}
+    td:first-child{
+      width:40%;color:var(--muted);background:var(--surface-subtle);
+      font-weight:500;border-right:1px solid var(--line);
+    }
+    td:last-child{color:var(--text-strong);font-weight:500}
+    tr:hover td{background:var(--surface-hover)}
+
+    /* Status Capsule Tag */
+    .status{
+      display:inline-flex;align-items:center;padding:2px 10px;
+      border:1px solid rgba(52,199,89,.3);border-radius:var(--radius-pill);
+      color:var(--green);background:var(--green-soft);font-size:12px;font-weight:600;
+    }
+
+    /* Node Link Cards */
+    .nodes{margin:24px 24px 0;padding-bottom:12px}
+    .node{
+      position:relative;margin-top:12px;padding:14px 18px;
+      border:1px solid var(--node-border);border-radius:var(--radius);
+      color:var(--node-color);background:var(--node-bg);
+      font:12px/1.5 var(--font-mono);text-align:left;word-break:break-all;
+      cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.02);
+      transition:all .2s var(--ease);
+    }
+    .node:hover{
+      background:var(--node-hover-bg);border-color:var(--node-hover-border);
+      transform:translateY(-1px);box-shadow:0 6px 16px rgba(0,0,0,.06);
+    }
+    .node:active{transform:scale(.995)}
+    .node-title{
+      display:inline-flex;align-items:center;margin:0 0 6px;padding:2px 10px;
+      border:1px solid rgba(0,113,227,.25);border-radius:var(--radius-pill);
+      color:var(--primary);background:var(--primary-soft);
+      font:600 12px/18px var(--font);letter-spacing:.01em;
+    }
+
+    /* Apple Dynamic Island Top Center Pill Toast */
+    .copy-toast{
+      position:fixed;z-index:100;top:20px;left:50%;
+      display:flex;align-items:center;gap:8px;padding:9px 20px;
+      border:1px solid var(--msg-border);border-radius:var(--radius-pill);
+      color:var(--msg-color);background:var(--msg-bg);
+      backdrop-filter:blur(28px) saturate(190%);
+      -webkit-backdrop-filter:blur(28px) saturate(190%);
+      box-shadow:0 12px 36px rgba(0,0,0,.25);font-size:14px;font-weight:500;
+      transform:translate(-50%,-20px) scale(.94);opacity:0;pointer-events:none;
+      transition:transform .28s var(--ease),opacity .28s var(--ease);
+    }
+    .copy-toast.show{transform:translate(-50%,0) scale(1);opacity:1}
+    .copy-toast svg{width:16px;height:16px;flex:none;color:var(--green)}
+
+    @media(max-width:700px){
+      body{padding:12px}
+      .card{border-radius:var(--radius-lg)}
+      .head{min-height:50px;padding:0 16px;font-size:15px}
+      .codes,.clients,table,.nodes{margin-left:14px;margin-right:14px}
+      .codes{grid-template-columns:1fr;gap:12px}
+      .qr{width:180px;height:180px}
+      .settings-menu{right:0}
+      td{padding:11px 14px}
+      .node{padding:12px 14px}
+    }
+  </style>
+  {{if eq .UITheme "liquid"}}
+  <link rel="stylesheet" href="{{.ToggleStyleURL}}">
+  <link rel="stylesheet" href="{{.ButtonStyleURL}}">
+  <style>
+    /* Liquid Glass (matches the panel): macOS menus, accent for the open client button. */
+    html body button.client-btn[aria-expanded="true"]{--lb-fill:#0088ff !important;--lb-text:#fff !important}
+    html[data-theme="dark"] body button.client-btn[aria-expanded="true"]{--lb-fill:#0091ff !important}
+    .client-menu,.settings-menu{border-radius:14px !important;border:.5px solid var(--card-border) !important}
+    .client-menu{padding:5px !important}
+    .client-item{border-radius:8px !important;transition:none !important}
+    .client-item:hover,.client-item:focus-visible{background:#0088ff !important;color:#fff !important}
+    html[data-theme="dark"] .client-item:hover,html[data-theme="dark"] .client-item:focus-visible{background:#0091ff !important}
+  </style>
+  <script defer src="{{.ToggleScriptURL}}"></script>
+  <script defer src="{{.ButtonScriptURL}}"></script>
+  {{else}}
+  <link rel="stylesheet" href="{{.AssetBase}}fonts.css">
+  <link rel="stylesheet" href="{{.AssetBase}}subscription-themes.css">
+  {{end}}
+</head>
+<body>
+  <main class="card">
+    <header class="head">
+      <span data-i18n="title">Subscription info</span><span class="token">{{.Token}}</span>
+      <button class="gear icon-btn" id="settings-button" type="button" aria-label="Panel Settings" aria-controls="settings-menu" aria-expanded="false">
+        <svg class="sf-symbol" viewBox="64 64 896 896" fill="currentColor" aria-hidden="true"><path d="M924.8 625.7l-65.5-56c3.1-19 4.7-38.4 4.7-57.8s-1.6-38.8-4.7-57.8l65.5-56a32.03 32.03 0 0 0 9.3-35.2l-.9-2.6a443.74 443.74 0 0 0-79.7-137.9l-1.8-2.1a32.12 32.12 0 0 0-35.1-9.5l-81.3 28.9c-30-24.6-63.5-44-99.7-57.6l-15.7-85a32.05 32.05 0 0 0-25.8-25.7l-2.7-.5c-52.1-9.4-106.9-9.4-159 0l-2.7.5a32.05 32.05 0 0 0-25.8 25.7l-15.8 85.4a351.86 351.86 0 0 0-99 57.4l-81.9-29.1a32 32 0 0 0-35.1 9.5l-1.8 2.1a446.02 446.02 0 0 0-79.7 137.9l-.9 2.6c-4.5 12.5-.8 26.5 9.3 35.2l66.3 56.6c-3.1 18.8-4.6 38-4.6 57.1 0 19.2 1.5 38.4 4.6 57.1L99 625.5a32.03 32.03 0 0 0-9.3 35.2l.9 2.6c18.1 50.4 44.9 96.9 79.7 137.9l1.8 2.1a32.12 32.12 0 0 0 35.1 9.5l81.9-29.1c29.8 24.5 63.1 43.9 99 57.4l15.8 85.4a32.05 32.05 0 0 0 25.8 25.7l2.7.5a449.4 449.4 0 0 0 159 0l2.7-.5a32.05 32.05 0 0 0 25.8-25.7l15.7-85a350 350 0 0 0 99.7-57.6l81.3 28.9a32 32 0 0 0 35.1-9.5l1.8-2.1c34.8-41.1 61.6-87.5 79.7-137.9l.9-2.6c4.5-12.3.8-26.3-9.3-35zM788.3 465.9c2.5 15.1 3.8 30.6 3.8 46.1s-1.3 31-3.8 46.1l-6.6 40.1 74.7 63.9a370.03 370.03 0 0 1-42.6 73.6L721 702.8l-31.4 25.8c-23.9 19.6-50.5 35-79.3 45.8l-38.1 14.3-17.9 97a377.5 377.5 0 0 1-85 0l-17.9-97.2-37.8-14.5c-28.5-10.8-55-26.2-78.7-45.7l-31.4-25.9-93.4 33.2c-17-22.9-31.2-47.6-42.6-73.6l75.5-64.5-6.5-40c-2.4-14.9-3.7-30.3-3.7-45.5 0-15.3 1.2-30.6 3.7-45.5l6.5-40-75.5-64.5c11.3-26.1 25.6-50.7 42.6-73.6l93.4 33.2 31.4-25.9c23.7-19.5 50.2-34.9 78.7-45.7l37.9-14.3 17.9-97.2c28.1-3.2 56.8-3.2 85 0l17.9 97 38.1 14.3c28.7 10.8 55.4 26.2 79.3 45.8l31.4 25.8 92.8-32.9c17 22.9 31.2 47.6 42.6 73.6L781.8 426l6.5 39.9zM512 326c-97.2 0-176 78.8-176 176s78.8 176 176 176 176-78.8 176-176-78.8-176-176-176zm79.2 255.2A111.6 111.6 0 0 1 512 614c-29.9 0-58-11.7-79.2-32.8A111.6 111.6 0 0 1 400 502c0-29.9 11.7-58 32.8-79.2C454 401.6 482.1 390 512 390c29.9 0 58 11.6 79.2 32.8A111.6 111.6 0 0 1 624 502c0 29.9-11.7 58-32.8 79.2z"/></svg>
+      </button>
+      <section class="settings-menu" id="settings-menu" aria-hidden="true">
+        <div class="settings-title" data-i18n="settings">Panel Settings</div>
+        <div class="theme-options" role="group" aria-label="Theme">
+          <label class="theme-option"><span class="theme-switch"><input id="dark-mode" type="checkbox"><span></span></span><span data-i18n="dark">Dark</span></label>
+          <label class="theme-option" id="ultra-dark-row"><span class="ultra-check"><input id="ultra-dark" type="checkbox"><span></span></span><span data-i18n="ultraDark">Ultra Dark</span></label>
+        </div>
+        <div class="language-label" data-i18n="language">Language</div>
+        <select class="language-select" id="language-select" aria-label="Language"><option value="zh-CN">🇨🇳 简体中文</option><option value="zh-TW">🇹🇼 繁體中文</option><option value="en">🇺🇸 English</option><option value="ja">🇯🇵 日本語</option><option value="ru">🇷🇺 Русский</option><option value="fa">🇮🇷 فارسی</option><option value="vi">🇻🇳 Tiếng Việt</option><option value="es">🇪🇸 Español</option><option value="tr">🇹🇷 Türkçe</option><option value="uk">🇺🇦 Українська</option><option value="pt-BR">🇧🇷 Português</option></select>
+      </section>
+    </header>
+    <section class="codes">
+      <div class="code-card"><div class="code-title" data-i18n="subscription">Subscription</div><div class="qr"><canvas id="sub-qr" data-url="{{.SubscriptionURL}}"></canvas></div><div class="url" id="sub-url">{{.SubscriptionURL}}</div></div>
+      {{if .ClashEnabled}}<div class="code-card"><div class="code-title">Clash / Mihomo</div><div class="qr"><canvas id="clash-qr" data-url="{{.ClashURL}}"></canvas></div><div class="url" id="clash-url">{{.ClashURL}}</div><button class="client-btn caesar-btn" id="caesar-import" type="button" data-name="{{.Username}}"><span data-i18n="importCaesar">Import to Clash Caesar</span></button></div>{{end}}
+    </section>
+    <section class="clients" data-toggles='{{.ClientToggles}}'>
+      <div class="client-drop">
+        <button class="client-btn" id="android-btn" type="button" aria-haspopup="true" aria-controls="android-menu" aria-expanded="false">
+          <svg class="sf-symbol" viewBox="64 64 896 896" fill="currentColor" aria-hidden="true"><path d="M448.3 225.2c-18.6 0-32 13.4-32 31.9s13.5 31.9 32 31.9c18.6 0 32-13.4 32-31.9.1-18.4-13.4-31.9-32-31.9zm393.9 96.4c-13.8-13.8-32.7-21.5-53.2-21.5-3.9 0-7.4.4-10.7 1v-1h-3.6c-5.5-30.6-18.6-60.5-38.1-87.4-18.7-25.7-43-47.9-70.8-64.9l25.1-35.8v-3.3c0-.8.4-2.3.7-3.8.6-2.4 1.4-5.5 1.4-8.9 0-18.5-13.5-31.9-32-31.9-9.8 0-19.5 5.7-25.9 15.4l-29.3 42.1c-30-9.8-62.4-15-93.8-15-31.3 0-63.7 5.2-93.8 15L389 79.4c-6.6-9.6-16.1-15.4-26-15.4-18.6 0-32 13.4-32 31.9 0 6.2 2.5 12.8 6.7 17.4l22.6 32.3c-28.7 17-53.5 39.4-72.2 65.1-19.4 26.9-32 56.8-36.7 87.4h-5.5v1c-3.2-.6-6.7-1-10.7-1-20.3 0-39.2 7.5-53.1 21.3-13.8 13.8-21.5 32.6-21.5 53v235c0 20.3 7.5 39.1 21.4 52.9 13.8 13.8 32.8 21.5 53.2 21.5 3.9 0 7.4-.4 10.7-1v93.5c0 29.2 23.9 53.1 53.2 53.1H331v58.3c0 20.3 7.5 39.1 21.4 52.9 13.8 13.8 32.8 21.5 53.2 21.5 20.3 0 39.2-7.5 53.1-21.3 13.8-13.8 21.5-32.6 21.5-53v-58.2H544v58.1c0 20.3 7.5 39.1 21.4 52.9 13.8 13.8 32.8 21.5 53.2 21.5 20.4 0 39.2-7.5 53.1-21.6 13.8-13.8 21.5-32.6 21.5-53v-58.2h31.9c29.3 0 53.2-23.8 53.2-53.1v-91.4c3.2.6 6.7 1 10.7 1 20.3 0 39.2-7.5 53.1-21.3 13.8-13.8 21.5-32.6 21.5-53v-235c-.1-20.3-7.6-39-21.4-52.9zM246 609.6c0 6.8-3.9 10.6-10.7 10.6-6.8 0-10.7-3.8-10.7-10.6V374.5c0-6.8 3.9-10.6 10.7-10.6 6.8 0 10.7 3.8 10.7 10.6v235.1zm131.1-396.8c37.5-27.3 85.3-42.3 135-42.3s97.5 15.1 135 42.5c32.4 23.7 54.2 54.2 62.7 87.5H314.4c8.5-33.4 30.5-64 62.7-87.7zm39.3 674.7c-.6 5.6-4.4 8.7-10.5 8.7-6.8 0-10.7-3.8-10.7-10.6v-58.2h21.2v60.1zm202.3 8.7c-6.8 0-10.7-3.8-10.7-10.6v-58.2h21.2v60.1c-.6 5.6-4.3 8.7-10.5 8.7zm95.8-132.6H309.9V364h404.6v399.6zm85.2-154c0 6.8-3.9 10.6-10.7 10.6-6.8 0-10.7-3.8-10.7-10.6V374.5c0-6.8 3.9-10.6 10.7-10.6 6.8 0 10.7 3.8 10.7 10.6v235.1zM576.1 225.2c-18.6 0-32 13.4-32 31.9s13.5 31.9 32 31.9c18.6 0 32.1-13.4 32.1-32-.1-18.6-13.4-31.8-32.1-31.8z"/></svg>
+          <span>Android</span>
+          <svg class="chev sf-symbol" viewBox="64 64 896 896" fill="currentColor" aria-hidden="true"><path d="M884 256h-75c-5.1 0-9.9 2.5-12.9 6.6L512 654.2 227.9 262.6c-3-4.1-7.8-6.6-12.9-6.6h-75c-6.5 0-10.3 7.4-6.5 12.7l352.6 486.1c12.8 17.6 39 17.6 51.7 0l352.6-486.1c3.9-5.3.1-12.7-6.4-12.7z"/></svg>
+        </button>
+        <div class="client-menu" id="android-menu" role="menu" aria-hidden="true"></div>
+      </div>
+      <div class="client-drop">
+        <button class="client-btn" id="ios-btn" type="button" aria-haspopup="true" aria-controls="ios-menu" aria-expanded="false">
+          <svg class="sf-symbol" viewBox="64 64 896 896" fill="currentColor" aria-hidden="true"><path d="M747.4 535.7c-.4-68.2 30.5-119.6 92.9-157.5-34.9-50-87.7-77.5-157.3-82.8-65.9-5.2-138 38.4-164.4 38.4-27.9 0-91.7-36.6-141.9-36.6C273.1 298.8 163 379.8 163 544.6c0 48.7 8.9 99 26.7 150.8 23.8 68.2 109.6 235.3 199.1 232.6 46.8-1.1 79.9-33.2 140.8-33.2 59.1 0 89.7 33.2 141.9 33.2 90.3-1.3 167.9-153.2 190.5-221.6-121.1-57.1-114.6-167.2-114.6-170.7zm-10.6 267c-14.3 19.9-28.7 35.6-41.9 45.7-10.5 8-18.6 11.4-24 11.6-9-.1-17.7-2.3-34.7-8.8-1.2-.5-2.5-1-4.2-1.6l-4.4-1.7c-17.4-6.7-27.8-10.3-41.1-13.8-18.6-4.8-37.1-7.4-56.9-7.4-20.2 0-39.2 2.5-58.1 7.2-13.9 3.5-25.6 7.4-42.7 13.8-.7.3-8.1 3.1-10.2 3.9-3.5 1.3-6.2 2.3-8.7 3.2-10.4 3.6-17 5.1-22.9 5.2-.7 0-1.3-.1-1.8-.2-1.1-.2-2.5-.6-4.1-1.3-4.5-1.8-9.9-5.1-16-9.8-14-10.9-29.4-28-45.1-49.9-27.5-38.6-53.5-89.8-66-125.7-15.4-44.8-23-87.7-23-128.6 0-60.2 17.8-106 48.4-137.1 26.3-26.6 61.7-41.5 97.8-42.3 5.9.1 14.5 1.5 25.4 4.5 8.6 2.3 18 5.4 30.7 9.9 3.8 1.4 16.9 6.1 18.5 6.7 7.7 2.8 13.5 4.8 19.2 6.6 18.2 5.8 32.3 9 47.6 9 15.5 0 28.8-3.3 47.7-9.8 7.1-2.4 32.9-12 37.5-13.6 25.6-9.1 44.5-14 60.8-15.2 4.8-.4 9.1-.4 13.2-.1 22.7 1.8 42.1 6.3 58.6 13.8-37.6 43.4-57 96.5-56.9 158.4-.3 14.7.9 31.7 5.1 51.8 6.4 30.5 18.6 60.7 37.9 89 14.7 21.5 32.9 40.9 54.7 57.8-11.5 23.7-25.6 48.2-40.4 68.8zm-94.5-572c50.7-60.2 46.1-115 44.6-134.7-44.8 2.6-96.6 30.5-126.1 64.8-32.5 36.8-51.6 82.3-47.5 133.6 48.4 3.7 92.6-21.2 129-63.7z"/></svg>
+          <span>iOS</span>
+          <svg class="chev sf-symbol" viewBox="64 64 896 896" fill="currentColor" aria-hidden="true"><path d="M884 256h-75c-5.1 0-9.9 2.5-12.9 6.6L512 654.2 227.9 262.6c-3-4.1-7.8-6.6-12.9-6.6h-75c-6.5 0-10.3 7.4-6.5 12.7l352.6 486.1c12.8 17.6 39 17.6 51.7 0l352.6-486.1c3.9-5.3.1-12.7-6.4-12.7z"/></svg>
+        </button>
+        <div class="client-menu" id="ios-menu" role="menu" aria-hidden="true"></div>
+      </div>
+      <div class="client-drop">
+        <button class="client-btn" id="mac-btn" type="button" aria-haspopup="true" aria-controls="mac-menu" aria-expanded="false">
+          <svg class="sf-symbol" viewBox="64 64 896 896" fill="currentColor" aria-hidden="true"><path d="M928 140H96c-17.7 0-32 14.3-32 32v496c0 17.7 14.3 32 32 32h380v112H304c-8.8 0-16 7.2-16 16v48c0 4.4 3.6 8 8 8h432c4.4 0 8-3.6 8-8v-48c0-8.8-7.2-16-16-16H548V700h380c17.7 0 32-14.3 32-32V172c0-17.7-14.3-32-32-32zm-40 488H136V212h752v416z"/></svg>
+          <span>macOS</span>
+          <svg class="chev sf-symbol" viewBox="64 64 896 896" fill="currentColor" aria-hidden="true"><path d="M884 256h-75c-5.1 0-9.9 2.5-12.9 6.6L512 654.2 227.9 262.6c-3-4.1-7.8-6.6-12.9-6.6h-75c-6.5 0-10.3 7.4-6.5 12.7l352.6 486.1c12.8 17.6 39 17.6 51.7 0l352.6-486.1c3.9-5.3.1-12.7-6.4-12.7z"/></svg>
+        </button>
+        <div class="client-menu" id="mac-menu" role="menu" aria-hidden="true"></div>
+      </div>
+    </section>
+    <table>
+      <tr><td data-i18n="subscriptionId">Subscription ID</td><td>{{.Token}}</td></tr>
+      <tr><td data-i18n="status">Status</td><td><span class="status" id="status-value" data-value="{{.Status}}">{{.Status}}</span></td></tr>
+      <tr><td data-i18n="downloaded">Downloaded</td><td>{{.Downloaded}}</td></tr>
+      <tr><td data-i18n="uploaded">Uploaded</td><td>{{.Uploaded}}</td></tr>
+      <tr><td data-i18n="usage">Usage</td><td>{{.Usage}}</td></tr>
+      <tr><td data-i18n="totalQuota">Total quota</td><td>{{.Total}}</td></tr>
+      <tr><td data-i18n="lastOnline">Last Online</td><td id="last-online-value" data-value="{{.LastOnline}}">{{.LastOnline}}</td></tr>
+      <tr><td data-i18n="expiry">Expiry</td><td id="expiry-value" data-value="{{.Expiry}}">{{.Expiry}}</td></tr>
+    </table>
+    <section class="nodes">{{range .Nodes}}<div class="node" data-copy="{{.URL}}"><div class="node-title">{{.Name}}</div>{{.URL}}</div>{{end}}</section>
+  </main>
+  <div class="copy-toast" id="copy-toast" role="status" aria-live="polite">Copied</div>
+  <script src="{{.StaticURL}}"></script>
+  <script>
+/* ===== SwiftUI Picker 下拉选择器增强系统 =====
+   专为 Apple SwiftUI & iOS 26 / macOS 26 (Tahoe) Liquid Glass 设计哲学打造：
+   原生 <select> 完整保留在 DOM 内保证数据与事件完整性；
+   外层构建 .swift-picker 平滑连续圆角容器与高透磨砂浮层菜单。 */
+(function(){
+  'use strict';
+
+  var STYLE_ID='mui-swift-picker-style';
+  var ARROW='<svg class="sf-symbol mui-select-arrow" viewBox="64 64 896 896" aria-hidden="true"><path d="M884 256h-75c-5.1 0-9.9 2.5-12.9 6.6L512 651 227.9 262.6c-3-4.1-7.8-6.6-12.9-6.6h-75c-6.5 0-10.3 7.4-6.5 12.7l352.6 486.1c12.8 17.6 39 17.6 51.7 0l352.6-486.1c3.9-5.3.1-12.7-6.4-12.7z" fill="currentColor"></path></svg>';
+  var CSS=[
+    ':where(.swift-picker){position:relative;display:block;width:100%;min-width:0}',
+    '.swift-picker .mui-native-select{position:absolute;top:0;left:0;width:1px;height:1px;margin:0;padding:0;border:0;opacity:0;pointer-events:none;appearance:none;-webkit-appearance:none}',
+    '.swift-picker[hidden]{display:none}',
+    '.swift-picker-selection{display:flex;align-items:center;height:var(--ctl,34px);padding:0 28px 0 12px;border:1px solid var(--stroke,rgba(60,60,67,.18));border-radius:var(--radius-sm,10px);background:var(--select-bg,rgba(255,255,255,.9));color:var(--text,#1d1d1f);font-size:13px;font-weight:500;cursor:pointer;transition:border-color .2s var(--ease),background-color .2s var(--ease),box-shadow .2s var(--ease)}',
+    '.mui-select-value{flex:1;min-width:0;overflow:hidden;line-height:32px;text-overflow:ellipsis;white-space:nowrap}',
+    '.swift-picker-selection:hover{border-color:var(--teal-3,#0077ed);background-color:var(--select-hover,rgba(0,113,227,.06))}',
+    '.swift-picker-open .swift-picker-selection,.swift-picker:focus-visible .swift-picker-selection{border-color:var(--teal,#0071e3);box-shadow:0 0 0 3px var(--teal-soft,rgba(0,113,227,.2));outline:0}',
+    '.swift-picker-disabled .swift-picker-selection{background:var(--surface-subtle,rgba(0,0,0,.04));color:var(--muted,#86868b);cursor:not-allowed}',
+    '.swift-picker-disabled .swift-picker-selection:hover{border-color:var(--stroke,rgba(60,60,67,.18));background:var(--surface-subtle,rgba(0,0,0,.04))}',
+    '.mui-select-arrow{position:absolute;top:50%;right:11px;margin-top:-6px;width:12px;height:12px;color:var(--muted-2,rgba(60,60,67,.4));pointer-events:none;transition:transform .24s var(--ease)}',
+    '.swift-picker-open .mui-select-arrow{transform:rotate(180deg)}',
+    '.mui-select-menu{position:fixed;z-index:1050;margin:0;padding:6px;list-style:none;max-height:260px;overflow:auto;border:1px solid var(--card-border,rgba(0,0,0,.1));border-radius:var(--radius,14px);background:var(--select-bg,rgba(255,255,255,.96));backdrop-filter:blur(32px) saturate(190%);-webkit-backdrop-filter:blur(32px) saturate(190%);box-shadow:var(--shadow-pop,0 16px 40px rgba(0,0,0,.16));animation:mui-select-in .15s var(--ease)}',
+    '.mui-select-menu[hidden]{display:none}',
+    '@keyframes mui-select-in{0%{opacity:0;transform:translateY(-6px) scale(.98)}100%{opacity:1;transform:translateY(0) scale(1)}}',
+    '.mui-select-menu li{margin:1px 0;padding:6px 12px;border-radius:8px;color:var(--select-item-color,var(--text,#1d1d1f));font-size:13px;font-weight:500;line-height:20px;cursor:pointer;transition:background-color .15s var(--ease);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}',
+    '.mui-select-menu li:hover,.mui-select-menu li.mui-active{background:var(--select-item-hover,rgba(0,113,227,.1))}',
+    '.mui-select-menu li.mui-selected{background:var(--select-item-selected,rgba(0,113,227,.14));color:var(--teal,#0071e3);font-weight:600}',
+    '.mui-select-menu li:empty::after{content:"None";font-weight:400;color:var(--muted-2,rgba(60,60,67,.4))}'
+  ].join('\n');
+
+  function injectStyle(){
+    if(document.getElementById(STYLE_ID))return;
+    var style=document.createElement('style');
+    style.id=STYLE_ID;
+    style.textContent=CSS;
+    document.head.appendChild(style);
+  }
+
+  var valueDesc=Object.getOwnPropertyDescriptor(HTMLSelectElement.prototype,'value');
+  var openWrap=null;
+
+  function isSkipped(select){
+    return select.multiple||select.size>1||!!select.querySelector('optgroup')||select.hasAttribute('data-no-swift-picker');
+  }
+  function isHiddenSelect(select){
+    return select.hidden||select.style.display==='none';
+  }
+  function signature(select){
+    var out='';
+    for(var i=0;i<select.options.length;i++){
+      var option=select.options[i];
+      out+=option.value+'|'+option.textContent+'|'+(option.hidden?1:0)+'|'+(option.disabled?1:0)+';';
+    }
+    return out+(select.disabled?1:0);
+  }
+
+  function closeAll(){
+    if(!openWrap)return;
+    openWrap.classList.remove('swift-picker-open');
+    openWrap.mui.menu.hidden=true;
+    openWrap=null;
+  }
+
+  function position(wrap){
+    var menu=wrap.mui.menu,rect=wrap.getBoundingClientRect();
+    menu.style.width=Math.max(rect.width,120)+'px';
+    menu.hidden=false;
+    var height=menu.offsetHeight,top=rect.bottom+4;
+    if(top+height>window.innerHeight-8&&rect.top-4-height>8)top=rect.top-4-height;
+    menu.style.left=Math.max(8,Math.min(rect.left,window.innerWidth-rect.width-8))+'px';
+    menu.style.top=top+'px';
+  }
+
+  function open(wrap){
+    if(wrap.mui.select.disabled)return;
+    if(openWrap===wrap){closeAll();return;}
+    closeAll();
+    rebuild(wrap);
+    openWrap=wrap;
+    wrap.classList.add('swift-picker-open');
+    position(wrap);
+    var active=wrap.mui.menu.querySelector('.mui-selected')||wrap.mui.menu.querySelector('li');
+    if(active)wrap.mui.menu.scrollTop=Math.max(0,active.offsetTop-wrap.mui.menu.clientHeight/2+active.offsetHeight/2);
+  }
+
+  function rebuild(wrap){
+    var select=wrap.mui.select,menu=wrap.mui.menu,html='';
+    for(var i=0;i<select.options.length;i++){
+      var option=select.options[i];
+      if(option.hidden)continue;
+      html+='<li data-index="'+i+'" class="'+(option.selected?'mui-selected':'')+(option.disabled?' mui-disabled':'')+'" role="option">'+option.textContent.replace(/[&<>]/g,function(ch){return ch==='&'?'&amp;':ch==='<'?'&lt;':'&gt;';})+'</li>';
+    }
+    menu.innerHTML=html||'<li class="mui-empty"></li>';
+    wrap.mui.sig=signature(select);
+  }
+
+  function refresh(wrap){
+    var select=wrap.mui.select;
+    wrap.hidden=isHiddenSelect(select);
+    wrap.classList.toggle('swift-picker-disabled',select.disabled);
+    var option=select.options[select.selectedIndex];
+    wrap.mui.value.textContent=option?option.textContent:'';
+    if(signature(select)!==wrap.mui.sig)rebuild(wrap);
+    else{
+      var items=wrap.mui.menu.children;
+      for(var i=0;i<items.length;i++){
+        if(items[i].dataset.index===undefined)continue;
+        items[i].classList.toggle('mui-selected',!!select.options[Number(items[i].dataset.index)]?.selected);
+      }
+    }
+    if(openWrap===wrap)position(wrap);
+  }
+
+  function pick(wrap,index){
+    var select=wrap.mui.select;
+    valueDesc.set.call(select,select.options[index].value);
+    closeAll();
+    refresh(wrap);
+    select.dispatchEvent(new Event('change',{bubbles:true}));
+  }
+
+  function upgrade(select){
+    if(select.dataset.swiftPicker||isSkipped(select)||isHiddenSelect(select))return;
+    select.dataset.swiftPicker='1';
+    var wrap=document.createElement('div');
+    wrap.className=('swift-picker '+(select.className||'')).trim();
+    wrap.tabIndex=0;
+    wrap.setAttribute('role','combobox');
+    if(select.style.width)wrap.style.width=select.style.width;
+    select.parentNode.insertBefore(wrap,select);
+    wrap.appendChild(select);
+    select.classList.add('mui-native-select');
+    var selection=document.createElement('span');
+    selection.className='swift-picker-selection';
+    var value=document.createElement('span');
+    value.className='mui-select-value';
+    selection.appendChild(value);
+    selection.insertAdjacentHTML('beforeend',ARROW);
+    wrap.appendChild(selection);
+    var menu=document.createElement('ul');
+    menu.className='mui-select-menu';
+    menu.hidden=true;
+    document.body.appendChild(menu);
+    wrap.mui={select:select,menu:menu,value:value,sig:''};
+
+    Object.defineProperty(select,'value',{
+      configurable:true,
+      get:function(){return valueDesc.get.call(this);},
+      set:function(next){valueDesc.set.call(this,next);queueRefresh(select);}
+    });
+
+    wrap.addEventListener('click',function(event){event.preventDefault();open(wrap);});
+    wrap.addEventListener('keydown',function(event){
+      if(event.key==='Enter'||event.key===' '){event.preventDefault();open(wrap);return;}
+      if(event.key==='Escape'){closeAll();return;}
+      if(event.key!=='ArrowDown'&&event.key!=='ArrowUp')return;
+      event.preventDefault();
+      if(!wrap.classList.contains("swift-picker-open")){open(wrap);return;}
+      var items=[].slice.call(wrap.mui.menu.children).filter(function(item){return !item.classList.contains('mui-empty');});
+      if(!items.length)return;
+      var current=items.findIndex(function(item){return item.classList.contains('mui-active');});
+      var next=event.key==='ArrowDown'?Math.min(items.length-1,current+1):Math.max(0,current<0?items.length-1:current-1);
+      items.forEach(function(item,index){item.classList.toggle('mui-active',index===next);});
+    });
+    menu.addEventListener('mousedown',function(event){event.preventDefault();});
+    menu.addEventListener('click',function(event){
+      var item=event.target.closest('li');
+      if(item&&item.dataset.index!==undefined)pick(wrap,Number(item.dataset.index));
+    });
+    select.addEventListener('change',function(){queueRefresh(select);});
+
+    new MutationObserver(function(){queueRefresh(select);}).observe(select,{childList:true,subtree:true,characterData:true,attributes:true,attributeFilter:['hidden','disabled','class','style']});
+    refresh(wrap);
+  }
+
+  var pending=new Set();
+  function queueRefresh(select){
+    if(pending.has(select))return;
+    pending.add(select);
+    Promise.resolve().then(function(){
+      pending.delete(select);
+      var wrap=select.parentElement;
+      if(wrap&&wrap.mui&&wrap.mui.select===select)refresh(wrap);
+      else if(!select.dataset.swiftPicker)upgrade(select);
+    });
+  }
+
+  function scan(root){
+    (root||document).querySelectorAll('select').forEach(function(select){upgrade(select);});
+  }
+
+  document.addEventListener('pointerdown',function(event){
+    if(openWrap&&!openWrap.contains(event.target)&&!openWrap.mui.menu.contains(event.target))closeAll();
+  },true);
+  document.addEventListener('keydown',function(event){
+    if(event.key==='Escape')closeAll();
+  });
+  document.addEventListener('scroll',function(){
+    if(openWrap)position(openWrap);
+  },true);
+  window.addEventListener('resize',function(){
+    if(openWrap)position(openWrap);
+  });
+  document.addEventListener('reset',function(event){
+    var form=event.target;
+    if(!(form instanceof HTMLFormElement))return;
+    Promise.resolve().then(function(){form.querySelectorAll('select').forEach(queueRefresh);});
+  },true);
+
+  new MutationObserver(function(records){
+    for(var i=0;i<records.length;i++){
+      var node=records[i].target;
+      if(records[i].type==='attributes'){
+        if(node.tagName==='SELECT')queueRefresh(node);
+        continue;
+      }
+      records[i].addedNodes.forEach(function(added){
+        if(added.nodeType!==1)return;
+        if(added.tagName==='SELECT')upgrade(added);
+        else if(added.querySelectorAll)added.querySelectorAll('select').forEach(function(select){upgrade(select);});
+      });
+    }
+  }).observe(document.body,{childList:true,subtree:true,attributes:true,attributeFilter:['hidden','style','class']});
+
+  injectStyle();
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',function(){scan();});
+  else scan();
+  window.muiUpgradeSelects=scan;
+})();
+  </script>
+  <script>
+    const root=document.documentElement,settingsButton=document.querySelector('#settings-button'),settingsMenu=document.querySelector('#settings-menu'),darkMode=document.querySelector('#dark-mode'),ultraDark=document.querySelector('#ultra-dark'),ultraDarkRow=document.querySelector('#ultra-dark-row'),languageSelect=document.querySelector('#language-select'),copyToast=document.querySelector('#copy-toast');
+    const messages={
+      en:{title:'Subscription info',settings:'Panel Settings',dark:'Dark',ultraDark:'Ultra Dark',language:'Language',subscription:'Subscription',subscriptionId:'Subscription ID',status:'Status',downloaded:'Downloaded',uploaded:'Uploaded',usage:'Usage',totalQuota:'Total quota',lastOnline:'Last Online',expiry:'Expiry',Unlimited:'Unlimited',Active:'Active',Expired:'Expired',Never:'Never','No expiry':'No expiry',copied:'Copied',importCaesar:'Import to Clash Caesar'},
+      'zh-CN':{title:'订阅信息',settings:'面板设置',dark:'暗色',ultraDark:'超暗色',language:'语言',subscription:'订阅',subscriptionId:'订阅 ID',status:'状态',downloaded:'已下载',uploaded:'已上传',usage:'已用流量',totalQuota:'总流量',lastOnline:'最后在线',expiry:'到期时间',Unlimited:'不限量',Active:'有效',Expired:'已过期',Never:'从未在线','No expiry':'永不过期',copied:'已复制',importCaesar:'导入到 Clash Caesar'},
+      'zh-TW':{title:'訂閱資訊',settings:'面板設定',dark:'深色',ultraDark:'極暗',language:'語言',subscription:'訂閱',subscriptionId:'訂閱 ID',status:'狀態',downloaded:'已下載',uploaded:'已上傳',usage:'已用流量',totalQuota:'總流量',lastOnline:'最後上線',expiry:'到期時間',Unlimited:'不限流量',Active:'有效',Expired:'已過期',Never:'從未上線','No expiry':'永不過期',copied:'已複製',importCaesar:'匯入到 Clash Caesar'},
+      ja:{title:'サブスクリプション情報',settings:'パネル設定',dark:'ダーク',ultraDark:'ウルトラダーク',language:'言語',subscription:'サブスクリプション',subscriptionId:'サブスクリプション ID',status:'ステータス',downloaded:'ダウンロード',uploaded:'アップロード',usage:'使用量',totalQuota:'総通信量',lastOnline:'最終オンライン',expiry:'有効期限',Unlimited:'無制限',Active:'有効',Expired:'期限切れ',Never:'接続歴なし','No expiry':'無期限',copied:'コピー済み',importCaesar:'Clash Caesar にインポート'},
+      ru:{title:'Информация о подписке',settings:'Настройки панели',dark:'Тёмная',ultraDark:'Очень тёмная',language:'Язык',subscription:'Подписка',subscriptionId:'ID подписки',status:'Статус',downloaded:'Загружено',uploaded:'Отправлено',usage:'Использовано',totalQuota:'Общий лимит',lastOnline:'Последний онлайн',expiry:'Срок действия',Unlimited:'Без ограничений',Active:'Активна',Expired:'Истекла',Never:'Никогда','No expiry':'Без срока',copied:'Скопировано',importCaesar:'Импорт в Clash Caesar'},
+      fa:{title:'اطلاعات اشتراک',settings:'تنظیمات پنل',dark:'تیره',ultraDark:'تیرهٔ کامل',language:'زبان',subscription:'اشتراک',subscriptionId:'شناسه اشتراک',status:'وضعیت',downloaded:'دریافت‌شده',uploaded:'ارسال‌شده',usage:'مصرف‌شده',totalQuota:'سهمیه کل',lastOnline:'آخرین فعالیت',expiry:'انقضا',Unlimited:'بدون محدودیت',Active:'فعال',Expired:'منقضی‌شده',Never:'هرگز','No expiry':'بدون انقضا',copied:'کپی شد',importCaesar:'وارد کردن به Clash Caesar'},
+      vi:{title:'Thông tin đăng ký',settings:'Cài đặt bảng điều khiển',dark:'Tối',ultraDark:'Tối sâu',language:'Ngôn ngữ',subscription:'Gói đăng ký',subscriptionId:'ID gói đăng ký',status:'Trạng thái',downloaded:'Đã tải xuống',uploaded:'Đã tải lên',usage:'Đã sử dụng',totalQuota:'Tổng hạn mức',lastOnline:'Trực tuyến lần cuối',expiry:'Hết hạn',Unlimited:'Không giới hạn',Active:'Đang hoạt động',Expired:'Đã hết hạn',Never:'Chưa từng','No expiry':'Không hết hạn',copied:'Đã sao chép',importCaesar:'Nhập vào Clash Caesar'},
+      es:{title:'Información de suscripción',settings:'Ajustes del panel',dark:'Oscuro',ultraDark:'Muy oscuro',language:'Idioma',subscription:'Suscripción',subscriptionId:'ID de suscripción',status:'Estado',downloaded:'Descargado',uploaded:'Subido',usage:'Uso',totalQuota:'Cuota total',lastOnline:'Última conexión',expiry:'Caducidad',Unlimited:'Sin límite',Active:'Activa',Expired:'Caducada',Never:'Nunca','No expiry':'Sin caducidad',copied:'Copiado',importCaesar:'Importar a Clash Caesar'},
+      tr:{title:'Abonelik bilgileri',settings:'Panel Ayarları',dark:'Koyu',ultraDark:'Çok Koyu',language:'Dil',subscription:'Abonelik',subscriptionId:'Abonelik Kimliği',status:'Durum',downloaded:'İndirilen',uploaded:'Yüklenen',usage:'Kullanım',totalQuota:'Toplam kota',lastOnline:'Son Çevrimiçi',expiry:'Son Kullanma',Unlimited:'Sınırsız',Active:'Etkin',Expired:'Süresi dolmuş',Never:'Hiçbir zaman','No expiry':'Süresiz',copied:'Kopyalandı',importCaesar:"Clash Caesar'a aktar"},
+      uk:{title:'Інформація про підписку',settings:'Налаштування панелі',dark:'Темна',ultraDark:'Дуже темна',language:'Мова',subscription:'Підписка',subscriptionId:'ID підписки',status:'Статус',downloaded:'Завантажено',uploaded:'Вивантажено',usage:'Використано',totalQuota:'Загальний ліміт',lastOnline:'Останній онлайн',expiry:'Термін дії',Unlimited:'Безлімітний',Active:'Активна',Expired:'Закінчилася',Never:'Ніколи','No expiry':'Безстроково',copied:'Скопійовано',importCaesar:'Імпорт у Clash Caesar'},
+      'pt-BR':{title:'Informações da Assinatura',settings:'Configurações do Painel',dark:'Escuro',ultraDark:'Muito Escuro',language:'Idioma',subscription:'Assinatura',subscriptionId:'ID da Assinatura',status:'Status',downloaded:'Baixado',uploaded:'Enviado',usage:'Uso',totalQuota:'Cota total',lastOnline:'Última conexão',expiry:'Validade',Unlimited:'Ilimitado',Active:'Ativa',Expired:'Expirada',Never:'Nunca','No expiry':'Sem expiração',copied:'Copiado',importCaesar:'Importar para o Clash Caesar'}
+    };
+    /* Apple Dynamic Island 成功状态提示图标 */
+    const CHECK_ICON='<svg class="sf-symbol" viewBox="64 64 896 896" fill="currentColor" aria-hidden="true"><path d="M699 353h-46.9c-10.2 0-19.9 4.9-25.9 13.3L469 584.3l-71.2-98.8c-6-8.3-15.6-13.3-25.9-13.3H325c-6.5 0-10.3 7.4-6.5 12.7l124.6 172.8a31.8 31.8 0 0 0 51.7 0l210.6-292c3.9-5.3.1-12.7-6.4-12.7z"/><path d="M512 64C264.6 64 64 264.6 64 512s200.6 448 448 448 448-200.6 448-448S759.4 64 512 64zm0 820c-205.4 0-372-166.6-372-372s166.6-372 372-372 372 166.6 372 372-166.6 372-372 372z"/></svg>';
+    const storage={get(key){try{return localStorage.getItem(key)}catch{return null}},set(key,value){try{localStorage.setItem(key,value)}catch{}}};
+    function applyUltraDark(persist=true){root.dataset.ultraDark=darkMode.checked&&ultraDark.checked?'true':'false';if(persist)storage.set('mui-is-ultra-dark',String(ultraDark.checked));}
+    function applyTheme(theme,persist=true){const dark=theme!=='light';root.dataset.theme=dark?'dark':'light';darkMode.checked=dark;ultraDarkRow.hidden=!dark;applyUltraDark(false);if(persist)storage.set('mui-theme',dark?'dark':'light');}
+    function applyLanguage(language){const lang=messages[language]?language:'en',text=messages[lang];root.lang=lang;root.dir=lang==='fa'?'rtl':'ltr';languageSelect.value=lang;document.title=text.title;document.querySelectorAll('[data-i18n]').forEach(element=>{element.textContent=text[element.dataset.i18n]||element.textContent});for(const id of ['status-value','last-online-value','expiry-value']){const element=document.getElementById(id),value=element.dataset.value;element.textContent=text[value]||value;}copyToast.innerHTML=CHECK_ICON+'<span>'+text.copied+'</span>';settingsButton.setAttribute('aria-label',text.settings);darkMode.setAttribute('aria-label',text.dark);ultraDark.setAttribute('aria-label',text.ultraDark);languageSelect.setAttribute('aria-label',text.language);storage.set('mui-language',lang);}
+    function closeSettings(focus=false){settingsMenu.classList.remove('open');settingsMenu.setAttribute('aria-hidden','true');settingsButton.setAttribute('aria-expanded','false');if(focus)settingsButton.focus();}
+    function toggleSettings(){const open=!settingsMenu.classList.contains('open');settingsMenu.classList.toggle('open',open);settingsMenu.setAttribute('aria-hidden',String(!open));settingsButton.setAttribute('aria-expanded',String(open));}
+    let toastTimer;
+    function showCopied(){copyToast.classList.add('show');clearTimeout(toastTimer);toastTimer=setTimeout(()=>copyToast.classList.remove('show'),1400);}
+    const copy=async value=>{try{await navigator.clipboard.writeText(value)}catch{const el=document.createElement('textarea');el.value=value;document.body.appendChild(el);el.select();document.execCommand('copy');el.remove();}showCopied();};
+    const subURL=document.querySelector('#sub-qr').dataset.url;
+    new QRious({element:document.querySelector('#sub-qr'),value:subURL,size:230,level:'M'});
+    document.querySelector('#sub-qr').onclick=()=>copy(subURL);document.querySelector('#sub-url').onclick=()=>copy(subURL);
+    const clashQR=document.querySelector('#clash-qr');
+    if(clashQR){const clashURL=clashQR.dataset.url;new QRious({element:clashQR,value:clashURL,size:230,level:'M'});clashQR.onclick=()=>copy(clashURL);document.querySelector('#clash-url').onclick=()=>copy(clashURL);
+      /* Clash Caesar 深链：用它专用的 clash-caesar:// 协议（clash:// 会被同时安装的其它客户端抢走），客户端未安装时浏览器不会有反应 */
+      const caesar=document.querySelector('#caesar-import');if(caesar)caesar.onclick=()=>{const name=caesar.dataset.name||location.hostname;location.href='clash-caesar://install-config?url='+encodeURIComponent(clashURL)+'&name='+encodeURIComponent(name);};}
+    document.querySelectorAll('[data-copy]').forEach(node=>node.onclick=()=>copy(node.dataset.copy));
+    const clientMenus={
+      android:[{label:'V2Box',suffix:'/v2box'},{label:'V2RayNG',suffix:'/v2rayng'},{label:'Sing-box',suffix:'/sing-box'},{label:'V2RayTun',suffix:'/v2raytun'},{label:'NPV Tunnel',suffix:'/npvtunnel'},{label:'Happ',suffix:'/happ'},{label:'Surfboard',suffix:'/surfboard'}],
+      ios:[{label:'Shadowrocket',suffix:'/shadowrocket'},{label:'V2Box',suffix:'/v2box'},{label:'Streisand',suffix:'/streisand'},{label:'V2RayTun',suffix:'/v2raytun'},{label:'NPV Tunnel',suffix:'/npvtunnel'},{label:'Happ',suffix:'/happ'},{label:'Surge',suffix:'/surge'},{label:'Loon',suffix:'/loon'},{label:'Quantumult X',suffix:'/qx'},{label:'Stash',suffix:'/stash'},{label:'Egern',suffix:'/egern'}],
+      mac:[{label:'Surge Mac',suffix:'/surgemac'},{label:'Surge',suffix:'/surge'},{label:'Stash',suffix:'/stash'},{label:'Egern',suffix:'/egern'}]
+    };
+    const clientDrops=[];
+    const clientToggles=JSON.parse(document.querySelector('.clients')?.dataset.toggles||'{}');
+    function setClientMenu(drop,open){drop.menu.classList.toggle('open',open);drop.menu.setAttribute('aria-hidden',String(!open));drop.button.setAttribute('aria-expanded',String(open));}
+    function closeClientMenus(){for(const drop of clientDrops)setClientMenu(drop,false);}
+    for(const [os,list] of Object.entries(clientMenus)){
+      const button=document.querySelector('#'+os+'-btn'),menu=document.querySelector('#'+os+'-menu');
+      if(!button||!menu)continue;
+      for(const client of list){if(clientToggles[client.suffix.slice(1)]===false)continue;const item=document.createElement('button');item.type='button';item.className='client-item';item.setAttribute('role','menuitem');item.textContent=client.label;item.onclick=()=>{copy(subURL+client.suffix);closeClientMenus();};menu.appendChild(item);}
+      const drop={button,menu};clientDrops.push(drop);
+      button.addEventListener('click',event=>{event.stopPropagation();const open=!menu.classList.contains('open');closeClientMenus();setClientMenu(drop,open);});
+    }
+    document.addEventListener('click',event=>{if(!clientDrops.some(drop=>drop.menu.contains(event.target)||drop.button.contains(event.target)))closeClientMenus();});
+    document.addEventListener('keydown',event=>{if(event.key==='Escape')closeClientMenus();});
+    settingsButton.addEventListener('click',event=>{event.stopPropagation();toggleSettings();});
+    document.addEventListener('click',event=>{if(!settingsMenu.contains(event.target)&&!settingsButton.contains(event.target))closeSettings();});
+    document.addEventListener('keydown',event=>{if(event.key==='Escape'&&settingsMenu.classList.contains('open'))closeSettings(true);});
+    darkMode.addEventListener('change',()=>applyTheme(darkMode.checked?'dark':'light'));
+    ultraDark.addEventListener('change',()=>applyUltraDark());
+    /* 订阅页的语言只存在访问者自己的浏览器里，不改面板的全局语言 */
+    languageSelect.addEventListener('change',()=>applyLanguage(languageSelect.value));
+    ultraDark.checked=storage.get('mui-is-ultra-dark')==='true';applyTheme(storage.get('mui-theme')||'light',false);applyLanguage(storage.get('mui-language')||root.dataset.defaultLanguage||'zh-CN');
+    /* Apple Design 主题切换：在主题控件上 mousedown 关掉过渡，mouseleave/touchend 恢复 */
+    for(const option of document.querySelectorAll('.theme-option')){
+      option.addEventListener('mousedown',()=>root.setAttribute('data-theme-animations','off'));
+      option.addEventListener('mouseleave',()=>root.removeAttribute('data-theme-animations'));
+      option.addEventListener('touchend',()=>root.removeAttribute('data-theme-animations'));
+    }
+  </script>
+</body>
+</html>

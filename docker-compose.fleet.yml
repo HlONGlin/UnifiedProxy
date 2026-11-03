@@ -1,0 +1,22 @@
+services:
+  control:
+    build:
+      context: .
+      dockerfile: Dockerfile.fleet
+      target: control
+    restart: unless-stopped
+    network_mode: host
+    volumes:
+      - ./data-control:/data
+  # Use on each node host; provide Mihomo via configure --core-path /core/mihomo.
+  node:
+    profiles: [node]
+    build:
+      context: .
+      dockerfile: Dockerfile.fleet
+      target: node
+    restart: unless-stopped
+    network_mode: host
+    volumes:
+      - ./data-node:/data
+      - ./core:/core:ro

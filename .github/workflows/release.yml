@@ -1,20 +1,24 @@
-name: Release
+name: Build and publish release
 
 on:
   push:
     tags:
-      - 'v*'
+      - "v*"
 
 permissions:
   contents: write
 
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
 jobs:
-  build:
-    name: Build and Release
+  release:
+    name: Build and publish ${{ github.ref_name }}
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout code
+      - name: Check out source
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
@@ -22,119 +26,316 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@v5
         with:
-          go-version: '1.24'
+          go-version-file: go.mod
+          cache: true
+          cache-dependency-path: go.sum
 
-      - name: Test and vet
+      - name: Validate release tag
+        shell: bash
         run: |
-          go test ./...
-          go vet ./...
-          node --check internal/manager/web/assets/app.js
+          set -euo pipefail
 
-      - name: Get version
-        id: version
-        run: |
-          echo "VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
-          echo "COMMIT_HASH=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
-          echo "BUILD_TIME=$(date -u +%Y-%m-%dT%H:%M:%SZ)" >> $GITHUB_OUTPUT
-
-      - name: Build Manager - Linux AMD64
-        run: |
-          GOOS=linux GOARCH=amd64 go build \
-            -ldflags="-s -w -X merit/internal/buildinfo.Version=${{ steps.version.outputs.VERSION }} \
-            -X merit/internal/buildinfo.Commit=${{ steps.version.outputs.COMMIT_HASH }} \
-            -X merit/internal/buildinfo.BuildTime=${{ steps.version.outputs.BUILD_TIME }}" \
-            -o dist/merit-manager-linux-amd64 \
-            ./cmd/manager
-
-      - name: Build Manager - Linux ARM64
-        run: |
-          GOOS=linux GOARCH=arm64 go build \
-            -ldflags="-s -w -X merit/internal/buildinfo.Version=${{ steps.version.outputs.VERSION }} \
-            -X merit/internal/buildinfo.Commit=${{ steps.version.outputs.COMMIT_HASH }} \
-            -X merit/internal/buildinfo.BuildTime=${{ steps.version.outputs.BUILD_TIME }}" \
-            -o dist/merit-manager-linux-arm64 \
-            ./cmd/manager
-
-      - name: Build Manager - Windows AMD64
-        run: |
-          GOOS=windows GOARCH=amd64 go build \
-            -ldflags="-s -w -X merit/internal/buildinfo.Version=${{ steps.version.outputs.VERSION }} \
-            -X merit/internal/buildinfo.Commit=${{ steps.version.outputs.COMMIT_HASH }} \
-            -X merit/internal/buildinfo.BuildTime=${{ steps.version.outputs.BUILD_TIME }}" \
-            -o dist/merit-manager-windows-amd64.exe \
-            ./cmd/manager
-
-      - name: Build Manager - macOS AMD64
-        run: |
-          GOOS=darwin GOARCH=amd64 go build \
-            -ldflags="-s -w -X merit/internal/buildinfo.Version=${{ steps.version.outputs.VERSION }} \
-            -X merit/internal/buildinfo.Commit=${{ steps.version.outputs.COMMIT_HASH }} \
-            -X merit/internal/buildinfo.BuildTime=${{ steps.version.outputs.BUILD_TIME }}" \
-            -o dist/merit-manager-darwin-amd64 \
-            ./cmd/manager
-
-      - name: Build Manager - macOS ARM64
-        run: |
-          GOOS=darwin GOARCH=arm64 go build \
-            -ldflags="-s -w -X merit/internal/buildinfo.Version=${{ steps.version.outputs.VERSION }} \
-            -X merit/internal/buildinfo.Commit=${{ steps.version.outputs.COMMIT_HASH }} \
-            -X merit/internal/buildinfo.BuildTime=${{ steps.version.outputs.BUILD_TIME }}" \
-            -o dist/merit-manager-darwin-arm64 \
-            ./cmd/manager
-
-      - name: Build Agent - Linux AMD64
-        run: |
-          GOOS=linux GOARCH=amd64 go build \
-            -ldflags="-s -w -X merit/internal/buildinfo.Version=${{ steps.version.outputs.VERSION }} \
-            -X merit/internal/buildinfo.Commit=${{ steps.version.outputs.COMMIT_HASH }} \
-            -X merit/internal/buildinfo.BuildTime=${{ steps.version.outputs.BUILD_TIME }}" \
-            -o dist/merit-agent-linux-amd64 \
-            ./cmd/agent
-
-      - name: Build Agent - Linux ARM64
-        run: |
-          GOOS=linux GOARCH=arm64 go build \
-            -ldflags="-s -w -X merit/internal/buildinfo.Version=${{ steps.version.outputs.VERSION }} \
-            -X merit/internal/buildinfo.Commit=${{ steps.version.outputs.COMMIT_HASH }} \
-            -X merit/internal/buildinfo.BuildTime=${{ steps.version.outputs.BUILD_TIME }}" \
-            -o dist/merit-agent-linux-arm64 \
-            ./cmd/agent
-
-      - name: Calculate checksums
-        run: |
-          cd dist
-          sha256sum * > SHA256SUMS
-          cat SHA256SUMS
-
-      - name: Generate release notes
-        env:
-          VERSION: ${{ steps.version.outputs.VERSION }}
-          COMMIT_HASH: ${{ steps.version.outputs.COMMIT_HASH }}
-          BUILD_TIME: ${{ steps.version.outputs.BUILD_TIME }}
-        run: |
-          notes="docs/RELEASE_NOTES_${VERSION}.md"
-          if [ -f "$notes" ]; then
-            cp "$notes" release_notes.md
-          else
-            printf '## UnifiedProxy %s\n\nSee README.md for installation and upgrade instructions.\n' "$VERSION" > release_notes.md
+          if [[ ! "$GITHUB_REF_NAME" =~ ^v[0-9]+\.[0-9]+\.[0-9]+([+-][0-9A-Za-z.-]+)?$ ]]; then
+            echo "Invalid release tag: $GITHUB_REF_NAME"
+            echo "Expected a tag such as v0.1.0 or v0.1.0-rc.1"
+            exit 1
           fi
-          printf '\n\nBuild: %s / %s / %s\n' "$VERSION" "$COMMIT_HASH" "$BUILD_TIME" >> release_notes.md
 
-      - name: Create Release
-        uses: softprops/action-gh-release@v1
-        with:
-          files: |
-            dist/merit-manager-linux-amd64
-            dist/merit-manager-linux-arm64
-            dist/merit-manager-windows-amd64.exe
-            dist/merit-manager-darwin-amd64
-            dist/merit-manager-darwin-arm64
-            dist/merit-agent-linux-amd64
-            dist/merit-agent-linux-arm64
-            dist/SHA256SUMS
-          body_path: release_notes.md
-          fail_on_unmatched_files: true
-          draft: false
-          prerelease: false
+          echo "Release version: $GITHUB_REF_NAME"
+
+      - name: Download Go modules
+        run: go mod download
+
+      - name: Run tests
+        run: go test ./...
+
+      - name: Run Go vet
+        run: go vet ./...
+
+      - name: Build release assets
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          mkdir -p dist
+
+          export GOOS=linux
+          export CGO_ENABLED=0
+
+          build_one() {
+            local asset="$1"
+            local goarch="$2"
+            local goarm="${3:-}"
+            local output="m-ui-linux-${asset}"
+            local archive="${GITHUB_WORKSPACE}/dist/${output}.tar.gz"
+
+            export GOARCH="$goarch"
+
+            if [[ -n "$goarm" ]]; then
+              export GOARM="$goarm"
+            else
+              unset GOARM || true
+            fi
+
+            echo "Building ${output}..."
+
+            go build \
+              -trimpath \
+              -ldflags="-s -w -X main.version=${GITHUB_REF_NAME}" \
+              -o "dist/${output}" \
+              .
+
+            chmod 0755 "dist/${output}"
+
+            tar \
+              -C "${GITHUB_WORKSPACE}/dist" \
+              -czf "$archive" \
+              "$output"
+
+            for role in control node; do
+              fleet_output="${role}-linux-${asset}"
+              go build -trimpath -ldflags="-s -w -X main.version=${GITHUB_REF_NAME}" -o "dist/$fleet_output" "./cmd/$role"
+              tar -czf "dist/$fleet_output.tar.gz" -C dist "$fleet_output" -C "$GITHUB_WORKSPACE" LICENSE NOTICE licenses/UnifiedProxy-MIT.txt scripts/install-fleet.sh
+            done
+          }
+
+          build_one "386"   "386"
+          build_one "amd64" "amd64"
+          build_one "arm64" "arm64"
+          build_one "armv5" "arm" "5"
+          build_one "armv6" "arm" "6"
+          build_one "armv7" "arm" "7"
+          build_one "s390x" "s390x"
+
+          echo "Building m-ui-windows-amd64..."
+
+          export GOOS=windows
+          export GOARCH=amd64
+          export CGO_ENABLED=0
+          unset GOARM || true
+
+          go build \
+            -trimpath \
+            -ldflags="-s -w -X main.version=${GITHUB_REF_NAME}" \
+            -o "dist/m-ui.exe" \
+            .
+
+          (
+            cd dist
+            zip -9 "m-ui-windows-amd64.zip" "m-ui.exe"
+          )
+
+          rm "dist/m-ui.exe"
+
+          for role in control node; do
+            go build -trimpath -ldflags="-s -w -X main.version=${GITHUB_REF_NAME}" -o "dist/${role}-windows-amd64.exe" "./cmd/$role"
+            zip -j -9 "dist/${role}-windows-amd64.zip" "dist/${role}-windows-amd64.exe" LICENSE NOTICE licenses/UnifiedProxy-MIT.txt
+          done
+          (cd dist && find . -maxdepth 1 -type f ! -name sha256sums.txt -print0 | sort -z | xargs -0 sha256sum > sha256sums.txt)
+
+      - name: Verify release assets
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          assets=(
+            "m-ui-linux-386"
+            "m-ui-linux-amd64"
+            "m-ui-linux-arm64"
+            "m-ui-linux-armv5"
+            "m-ui-linux-armv6"
+            "m-ui-linux-armv7"
+            "m-ui-linux-s390x"
+          )
+
+          for asset in "${assets[@]}"; do
+            archive="dist/${asset}.tar.gz"
+
+            if [[ ! -s "$archive" ]]; then
+              echo "Missing or empty archive: $archive"
+              exit 1
+            fi
+
+            contents="$(tar -tzf "$archive")"
+
+            if [[ "$contents" != "$asset" ]]; then
+              echo "Unexpected contents in $archive:"
+              echo "$contents"
+              exit 1
+            fi
+          done
+
+          windows_archive="dist/m-ui-windows-amd64.zip"
+
+          if [[ ! -s "$windows_archive" ]]; then
+            echo "Missing or empty archive: $windows_archive"
+            exit 1
+          fi
+
+          windows_contents="$(unzip -Z1 "$windows_archive")"
+
+          if [[ "$windows_contents" != "m-ui.exe" ]]; then
+            echo "Unexpected contents in $windows_archive:"
+            echo "$windows_contents"
+            exit 1
+          fi
+
+          unzip -tq "$windows_archive"
+
+          reported_version="$(./dist/m-ui-linux-amd64 version)"
+
+          if [[ "$reported_version" != "$GITHUB_REF_NAME" ]]; then
+            echo "Incorrect embedded version."
+            echo "Expected: $GITHUB_REF_NAME"
+            echo "Actual:   $reported_version"
+            exit 1
+          fi
+
+          echo "Embedded version: $reported_version"
+          for role in control node; do
+            [[ "$(./dist/${role}-linux-amd64 version)" == "$GITHUB_REF_NAME" ]]
+            for arch in 386 amd64 arm64 armv5 armv6 armv7 s390x; do
+              test -s "dist/${role}-linux-${arch}"
+              tar -tzf "dist/${role}-linux-${arch}.tar.gz" | grep -Fx "${role}-linux-${arch}"
+            done
+            unzip -tq "dist/${role}-windows-amd64.zip"
+          done
+          (cd dist && sha256sum --check sha256sums.txt)
+          echo
+          sha256sum dist/*.tar.gz dist/*.zip
+
+      - name: Create or update GitHub Release
+        shell: bash
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+
+          release_files=(
+            dist/*.tar.gz
+            dist/*.zip
+            dist/*-windows-amd64.exe
+            dist/sha256sums.txt
+          )
+          for role in control node; do
+            for arch in 386 amd64 arm64 armv5 armv6 armv7 s390x; do
+              release_files+=("dist/${role}-linux-${arch}")
+            done
+          done
+
+          if gh release view "$GITHUB_REF_NAME" >/dev/null 2>&1; then
+            echo "Release already exists; replacing its release assets."
+
+            gh release upload \
+              "$GITHUB_REF_NAME" \
+              "${release_files[@]}" \
+              --clobber
+          else
+            release_options=(
+              --verify-tag
+              --generate-notes
+              --title "m-ui ${GITHUB_REF_NAME}"
+            )
+
+            if [[ "$GITHUB_REF_NAME" == *-* ]]; then
+              release_options+=(--prerelease)
+            fi
+
+            gh release create \
+              "$GITHUB_REF_NAME" \
+              "${release_files[@]}" \
+              "${release_options[@]}"
+          fi
+
+  docker:
+    name: Publish Docker image
+    needs: release
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Generate Docker metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ghcr.io/${{ github.repository }}
+          tags: |
+            type=ref,event=tag
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=raw,value=latest,enable=${{ !contains(github.ref_name, '-') }}
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          platforms: linux/amd64
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          build-args: |
+            MUI_VERSION=${{ github.ref_name }}
+            MIHOMO_VERSION=1.19.33
+            MIHOMO_SHA256=386508bfb1c72c43b6a0eda73708ecdce82546581b0ebcb16366c53757c622b6
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  fleet-docker:
+    name: Publish fleet ${{ matrix.role }} image
+    needs: release
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        role: [control, node]
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/setup-qemu-action@v3
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Normalize image repository
+        id: image
+        shell: bash
+        run: echo "name=ghcr.io/${GITHUB_REPOSITORY,,}-${{ matrix.role }}" >> "$GITHUB_OUTPUT"
+      - uses: docker/metadata-action@v5
+        id: meta
+        with:
+          images: ${{ steps.image.outputs.name }}
+          tags: |
+            type=ref,event=tag
+            type=semver,pattern={{version}}
+            type=raw,value=latest,enable=${{ !contains(github.ref_name, '-') }}
+      - uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: Dockerfile.fleet
+          target: ${{ matrix.role }}
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          build-args: VERSION=${{ github.ref_name }}
+          cache-from: type=gha,scope=fleet-${{ matrix.role }}
+          cache-to: type=gha,scope=fleet-${{ matrix.role }},mode=max

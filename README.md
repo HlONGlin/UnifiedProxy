@@ -1,835 +1,179 @@
-<div align="center">
+[English](/README.md) | [简体中文](/README.zh_CN.md) | [繁體中文](/README.zh_TW.md) | [日本語](/README.ja.md) | [Русский](/README.ru.md) | [فارسی](/README.fa.md) | [Tiếng Việt](/README.vi.md) | [Español](/README.es.md) | [Türkçe](/README.tr.md) | [Українська](/README.uk.md) | [Português (Brasil)](/README.pt_BR.md)
 
-# 🚀 UnifiedProxy
+<p align="center">
+  <img src="./media/m-ui_logo.png" alt="m-ui logo" width="420">
+</p>
 
-**统一的多协议代理管理平台 - 一键部署和管理多种代理协议**
+# m-ui
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
-[![Go Version](https://img.shields.io/badge/Go-1.24+-00ADD8?logo=go)](go.mod)
-[![Release](https://img.shields.io/github/v/release/HlONGlin/UnifiedProxy)](https://github.com/HlONGlin/UnifiedProxy/releases)
+The UnifiedProxy integration is implemented in this checkout: standalone,
+control and Agent modes share the same program, with signed fleet tasks,
+native Inbound/Client management, NaiveProxy and ShadowTLS sidecars,
+central certificates, WebDAV backups and guarded upgrades.
+Start with the [deployment and migration guide](docs/unifiedproxy-migration.md),
+[model/protocol specification](docs/fleet-protocol.md), and
+[acceptance record](docs/fleet-acceptance.md).
+The combined distribution is GPL-3.0; the UnifiedProxy MIT notice is retained.
+Existing standalone users keep their current data directory and start command;
+enrollment is explicit. Public release and live-server acceptance are recorded
+separately from local implementation and tests.
 
-> **📢 v1.6.3 已发布** - 优化 ShadowTLS 分享链接，兼容 SS + shadow-tls 插件格式，并保留 v1.6.2 的客户端配置导出和端口管理功能。详见 [发布说明](docs/RELEASE_NOTES_v1.6.3.md)
-> 
-> **🛡️ 生产加固计划** - 查看 [生产加固路线图](docs/PRODUCTION_HARDENING_ROADMAP.md) 了解更多改进
+[![Release](https://img.shields.io/github/v/release/RomanovCaesar/m-ui.svg)](https://github.com/RomanovCaesar/m-ui/releases)
+[![Build](https://img.shields.io/github/actions/workflow/status/RomanovCaesar/m-ui/release.yml.svg)](https://github.com/RomanovCaesar/m-ui/actions)
+[![Go Version](https://img.shields.io/github/go-mod/go-version/RomanovCaesar/m-ui.svg)](https://github.com/RomanovCaesar/m-ui/blob/main/go.mod)
+[![Downloads](https://img.shields.io/github/downloads/RomanovCaesar/m-ui/total.svg)](https://github.com/RomanovCaesar/m-ui/releases/latest)
+[![License](https://img.shields.io/github/license/RomanovCaesar/m-ui.svg)](https://github.com/RomanovCaesar/m-ui/blob/main/LICENSE)
 
-[特性](#-特性) • [快速开始](#-快速开始) • [架构](#-架构) • [使用指南](#-使用指南) • [开发](#-开发)
+A server management panel powered by [Mihomo](https://github.com/MetaCubeX/mihomo). Its workflow follows 3x-ui, its interface comes in three themes (shadcn by default, Material Design 3 and Apple's Liquid Glass), and its configuration model is Mihomo's native YAML. The panel is available in 11 languages.
 
----
+> [!IMPORTANT]
+> Use this project only on servers and networks that you own or are authorized to administer. Follow local law, upstream provider terms, and the policies of the services you access.
 
-</div>
+For complete documentation, visit the [m-ui Wiki](https://github.com/RomanovCaesar/m-ui/wiki). Subscribe to our [Telegram channel](https://t.me/MihomoUI) for development news.
 
-## 📋 目录
+<p align="center">
+  <img src="./media/screenshots/en/inbounds.png" alt="Inbounds and clients" width="900">
+</p>
 
-- [概述](#-概述)
-- [特性](#-特性)
-- [架构](#-架构)
-- [快速开始](#-快速开始)
-- [使用指南](#-使用指南)
-- [编译构建](#-编译构建)
-- [配置说明](#-配置说明)
-- [客户端导入](#-客户端导入)
-- [流量管理](#-流量管理)
-- [自动更新](#-自动更新)
-- [常见问题](#-常见问题)
-- [验收测试](#-验收测试)
-- [生产加固](#-生产加固)
-- [与 Zelay 的区别](#-与-zelay-的区别)
-- [开发](#-开发)
-- [许可证](#-许可证)
+## Features
 
----
+**Panel and Mihomo**
+* Dashboard with system, traffic, connection, and Mihomo status; Mihomo starts automatically with the panel
+* Native Mihomo YAML generation and validation, raw configuration preview and download
+* Mihomo version switching from official MetaCubeX releases, and GeoIP / GeoSite / MetaDB updates
+* Full backup and restore: settings, inbounds, Multi-control identity (opt-in), cross-panel cache, subscription templates, and Multi-control client devices
+* **Migrate from 3x-ui in one click:** import `x-ui.db` (v2.9.3–v3.10.2) or an Xray `config.json`; inbounds, clients with their quotas, expiry and traffic, outbounds, balancers, and routing rules are added next to what the panel already has, and a downloadable conversion log lists anything Mihomo cannot do
+* Interface in English, Simplified Chinese, Traditional Chinese, Japanese, Russian, Persian, Vietnamese, Spanish, Turkish, Ukrainian, and Brazilian Portuguese
 
-## 🎯 概述
+**Inbounds and clients**
+* `mixed`, `socks`, `http`, `shadowsocks`, `snell`, `vmess`, `vless`, `trojan`, `hysteria2`, `tuic`, `anytls`, `mieru`, `sudoku`, `shadowquic`, `trusttunnel`, and `hysteria2-realm` listeners
+* TLS, Reality, ShadowTLS, RestTLS, TLSMirror, JLS, Trojan SS, XHTTP, mKCP, Mekya, and obfuscation settings
+* Per-client credentials, traffic quotas, expiry, traffic reset schedules, auto-renewal on expiry, and online state; inbound-level limits too
+* Share links, QR codes, inbound import from Mihomo listener YAML, and bulk traffic reset
 
-**UnifiedProxy**（原 MieruPilot）是一个统一的多协议代理管理平台，采用 **Manager + Agent** 架构设计。一台控制机统一管理所有节点服务器，支持部署和管理多种主流代理协议。
+**Subscriptions**
+* Browser subscription page with usage, quota, expiry, nodes, and one-click import into Clash Caesar
+* **Subscription templates:** every subscription is a complete client profile built from the built-in China / Russia / Iran template or your own Mihomo template
+* Full profiles for Mihomo/Clash, Stash, sing-box, Surge, Surfboard, Loon, Quantumult X, and Egern; node lists for V2Box, V2RayNG, Shadowrocket, and other share-link clients
+* Per-user subscription tokens and an optional dedicated subscription port
 
-### 支持的协议
+**Mihomo Settings**
+* Basics: routing mode, direct IP version, IPv6, TCP concurrency, statistics, logs, and basic routing
+* Outbounds (including Snell, WireGuard, and OpenVPN) and policy groups, with a form editor, native YAML, and share-link conversion
+* Ordered routing rules, including `AND` rules
+* Cloudflare WARP outbounds and VPNGate residential exits by country and ISP
 
-- ✅ **Mieru/Mita** - 高性能的轻量级代理协议
-- ✅ **NaïveProxy** - 基于 Chromium 网络栈的高伪装代理
-- ✅ **AnyTLS** - 通用 TLS 代理协议
-- ✅ **ShadowTLS v3** - 将流量伪装成 TLS 的代理协议
+**Multi-control**
+* Peer-to-peer panel network with signed identities and no master node
+* Encrypted inbound synchronization between trusted panels
+* Cross-panel subscription aggregation
+* Client devices: [Clash Caesar](https://github.com/RomanovCaesar/clash-caesar) imports the network file, signs in once with the panel admin account, and can then see every panel and pull any panel's or the merged subscription through whichever panel it can reach
 
-详细信息、联通性测试、客户端 JSON 导出及 AnyTLS / NaïveProxy 传输参数见 [客户端配置指南](docs/CLIENT_CONFIGURATION.md)。
+## Screenshots
 
-### 协议部署条件
+<table>
+  <tr><td width="50%"><img src="./media/screenshots/en/dashboard.png" alt="Overview"><br><sub>Overview</sub></td><td width="50%"><img src="./media/screenshots/en/client-edit.png" alt="Client: quota, expiry, traffic reset and auto-renewal"><br><sub>Client: quota, expiry, traffic reset and auto-renewal</sub></td></tr>
+  <tr><td width="50%"><img src="./media/screenshots/en/outbounds.png" alt="Outbounds and proxy groups"><br><sub>Outbounds and proxy groups</sub></td><td width="50%"><img src="./media/screenshots/en/routing.png" alt="Routing rules"><br><sub>Routing rules</sub></td></tr>
+  <tr><td width="50%"><img src="./media/screenshots/en/xray-import.png" alt="Import from Xray / 3x-ui"><br><sub>Import from Xray / 3x-ui</sub></td><td width="50%"><img src="./media/screenshots/en/theme-shadcn-dark.png" alt="shadcn theme, dark"><br><sub>shadcn theme, dark</sub></td></tr>
+  <tr><td width="50%"><img src="./media/screenshots/en/theme-md3.png" alt="Material Design 3 theme"><br><sub>Material Design 3 theme</sub></td><td width="50%"><img src="./media/screenshots/en/theme-liquid.png" alt="Liquid Glass theme"><br><sub>Liquid Glass theme</sub></td></tr>
+</table>
 
-| 协议 | 监听端口 | 证书和依赖 | 客户端 |
-|------|----------|------------|--------|
-| Mieru | 1025-65535，TCP/UDP | Linux systemd、dpkg/rpm | mieru 或支持该协议的 mihomo |
-| NaïveProxy | 1-65535，TCP；自动 ACME 使用 443 | 域名正确解析；自动证书验证可达；或上传域名匹配的有效证书；自动安装仅支持 amd64 | NaïveProxy 客户端；不包含在 mihomo 订阅中 |
-| AnyTLS | 1-65535，TCP | 当前 anytls-go 服务端启动时生成临时自签名证书 | 分享链接和订阅显式跳过证书校验，不具备 CA 证书身份验证；仅使用可信节点 |
-| ShadowTLS v3 | 1-65535，TCP | TLS 握手站点；后端地址留空时由面板分配本机端口与密码，Agent 自动安装并运行 shadowsocks-rust（Agent 一键安装支持 amd64/arm64，需能访问 GitHub）；也可填写自有后端，面板不会改动 | 订阅自动带上后端的 SS 密码和加密方式；隧道不转发 UDP |
+## Linux installation
 
-配置同步仅在内容变化或服务停止时重启实例；密码、手动证书和后端地址变化会触发重新应用。部署失败会保留任务自动重试。升级后请同时替换 Manager 和 Agent，再在面板重试同步，并刷新客户端订阅。自动部署的 ShadowTLS 后端需要新版 Agent，旧版 Agent 不会启动后端，ShadowTLS 将无法转发流量。
-
-### 部署能力与验收边界
-
-- 流量统计、月度限额及面板出站规则目前仅支持 **Mieru**。NaïveProxy、AnyTLS、ShadowTLS 不提供这些能力；API 拒绝其正数限额和显式指向这些端口的启用出站规则。“全部 Mieru 端口”也不影响其他协议。
-- 节点检测仅检查已启用端口的连通性和 NaïveProxy 证书，不把 SSH/80 端口当作前提，也不验证代理认证或目标转发。Mieru UDP 标记为“待协议客户端验证”，不会因 TCP 不通误报失败。服务状态来自最近的 Agent 上报。
-- Agent 只认可 systemd 实际使用的固定路径；NaïveProxy 还检查 `http.handlers.forward_proxy` 模块，普通 Caddy 或其他 PATH 路径不算已安装。
-- AnyTLS 使用通配监听。ShadowTLS 仅在 IPv6 可用且 Linux `net.ipv6.bindv6only=0` 时使用 `[::]`，其他情况下保留 IPv4；IPv6 公网连通性仍需现场验收。
-- ShadowTLS 托管后端的 TCP 端口在新增、修改和备份恢复时校验冲突；相同数字的 Mieru UDP 监听不占用该 TCP 端口。独立 `shadowtls://` 链接不含后端 SS 凭据，建议使用完整 mihomo 订阅。
-- NaïveProxy 和 shadowsocks-rust 的 `tar.xz` 归档需要 `tar` 及 xz 解压能力（Debian/Ubuntu：`apt install tar xz-utils`；RPM 系：`yum install tar xz`）。Agent 一键安装整体只支持 amd64/arm64；NaïveProxy 自动下载只支持 amd64。其他架构手动编译需遵循固定 forwardproxy 版本的 `CADDY_VERSION` 和 Caddy 补丁，不能直接使用普通 Caddy 加插件的构建命令。
-- 本地测试、上游认证链路与交叉编译通过不等于 VPS 已验收；Linux systemd 生命周期、ACME 签发/续期及各协议公网客户端请求需在目标节点验证。修复记录见 [部署复核与修复记录](docs/PROTOCOL_DEPLOYMENT_AUDIT_2026-10-27.md)。
-
-### 核心理念
-
-- **一个端口号** → 选择协议类型，自动生成配置、分享链接、Clash 订阅
-- **一条命令** → Agent 自动安装、配置、启停对应代理服务
-- **一个面板** → 集中控制所有主机的所有协议，告别逐台 SSH
-
----
-
-## ✨ 特性
-
-### ☁️ WebDAV 云备份
-- 将本项目的节点配置备份到已有 WebDAV 云盘
-- 系统设置中保存云盘地址与凭据，支持连接测试、手动备份、历史列表与恢复
-- 上传后下载校验；恢复前创建本地备份，并保留当前管理员和管理地址
-- 详见 [WebDAV 云备份指南](docs/WEBDAV_BACKUP.md)
-
-### 🔄 多协议支持 `NEW`
-- **Mieru**：原生 UDP 协议，适合游戏和视频
-- **NaïveProxy**：伪装为 HTTPS，基于 Chrome 网络栈
-- **AnyTLS**：通用 TLS 代理
-- **ShadowTLS v3**：Shadowsocks over TLS 隧道
-- 一个节点支持多种代理类型同时运行
-- Clash / mihomo 订阅包含可表示的代理类型；NaïveProxy 使用专用客户端，ShadowTLS 需要后端凭据
-- 详见 [多协议使用指南](docs/QUICK_START_MULTI_PROXY.md)
-
-### 🔐 增强的证书管理 `v1.3.0`
-- **智能验证**：自动验证证书格式、有效期和私钥匹配
-- **多格式支持**：支持 RSA、EC、PKCS8 等密钥格式
-- **详细信息**：显示域名、颁发者、到期时间、剩余天数
-- **安全保护**：自动设置正确的文件权限，保护私钥安全
-- 详见 [增强功能文档](docs/ENHANCED_FEATURES.md)
-
-### 🔍 节点测试功能 `v1.3.0`
-- **网络测试**：检测已启用的实际监听端口，不依赖 SSH/80
-- **端口测试**：TCP 端口检查连通性；Mieru UDP 明确标记待客户端验证
-- **详细报告**：测试结果包含延迟、状态和建议
-- **故障排查**：快速定位网络、端口、服务问题
-- 详见 [节点测试指南](docs/ENHANCED_FEATURES.md#2-节点测试功能)
-
-### 📋 配置详情查看 `v1.3.0`
-- **完整导出**：查看节点所有配置信息
-- **安全脱敏**：密码和密钥自动隐藏，需要时可显示
-- **证书信息**：包含 TLS 证书详情和到期提醒
-- **便捷操作**：支持 JSON 导出和一键复制
-- 详见 [配置查看文档](docs/ENHANCED_FEATURES.md#3-详细配置信息查看)
-
-### 🎨 傻瓜化操作
-- 添加节点后复制一条命令到目标服务器执行
-- Agent 自动下载并安装所需的代理程序
-- 无需手动配置，开箱即用
-
-### ⚡ 只填端口
-- 面板仅需填写端口号和代理类型
-- 账号密码与分享链接自动生成
-- 配置实时下发到节点
-
-### 📊 流量管理
-- **流量统计**：实时监控 Mieru 端口的流量使用
-- **流量限制**：设置 Mieru 端口的月度流量配额
-- **带宽控制**：预留配置项，当前 mita 不支持可靠的服务端速率限制，暂不生效
-- **自动重置**：流量按月自动归零
-
-### 🔄 自动更新
-- 自动检测 GitHub Releases 新版本
-- 一键更新 Manager 和 Agent
-- 支持版本回滚
-
-### 🎛️ 统一管理
-- 单个 Web 面板管理所有主机
-- 实时状态监控
-- 批量操作支持
-- 删除节点自动清理远程 Agent、mita 实例与账号
-
-### 📦 单文件部署
-- Manager 和 Agent 均为 Go 单二进制
-- 无需 Docker、无需外部数据库
-- 数据持久化到 JSON 文件
-
-### 🔗 多种导入方式
-- `mierus://` 简单分享链接
-- Clash / mihomo 订阅支持
-- 单节点 YAML 导出
-
-### 🤖 自动探测
-- 自动获取公网 IP
-- 系统和架构自动识别
-- `mita` 版本与运行状态实时上报
-
----
-
-## 🏗️ 架构
-
-```
-                    ┌─────────────────────────────┐
-   浏览器 ──────────▶│  Manager（控制机，Web 面板） │
-                    └──────────────┬──────────────┘
-                          HTTP 长轮询 │ 下发配置 / 上报状态
-             ┌───────────────────────┼───────────────────────┐
-             ▼                       ▼                       ▼
-      ┌────────────┐          ┌────────────┐          ┌────────────┐
-      │  Agent A   │          │  Agent B   │          │  Agent C   │
-      │  mita      │          │  mita      │          │  mita      │
-      └────────────┘          └────────────┘          └────────────┘
-```
-
-### 组件说明
-
-| 组件 | 职责 | 位置 |
-|------|------|------|
-| **Manager** | Web 控制台、配置管理、任务下发 | 控制机 |
-| **Agent** | 自动安装 mita、执行同步任务、上报状态 | 节点服务器 |
-| **mita** | mieru 服务端，实际处理代理流量 | 节点服务器 |
-
----
-
-## 🚀 快速开始
-
-### ⚡ 一键安装（推荐）
-
-使用一键脚本完成 Manager 的安装与管理：
+Run as `root` on a Linux system using systemd or OpenRC:
 
 ```bash
-bash <(curl -fsSL https://github.com/HlONGlin/UnifiedProxy/raw/main/one-click.sh)
+bash <(curl -Ls https://raw.githubusercontent.com/RomanovCaesar/m-ui/main/install.sh)
 ```
 
-**脚本功能：**
-
-```
-1. 安装或更新 Manager
-2. 启动 Manager
-3. 停止 Manager
-4. 彻底卸载并清除全部数据
-5. 重置管理员账号（保留节点数据）
-```
-
-**安装步骤：**
-
-1. 运行一键脚本，选择 `1. 安装或更新 Manager`
-2. 脚本会自动：
-   - 从 GitHub 最新 Release 下载 Manager 和 Agent
-   - 安装到 `/opt/merit`
-   - 创建 `systemd` 服务
-   - 提示设置管理员账号和密码
-3. 安装完成后，脚本会输出带随机安全后缀的管理地址：
-   ```
-   http://服务器IP:3000/panel/随机字符串
-   ```
-4. 打开管理地址，使用刚设置的账号登录
-
-> 如需固定版本，可在运行脚本前设置 `MERIT_RELEASE_BASE`，例如 `MERIT_RELEASE_BASE=https://github.com/HlONGlin/UnifiedProxy/releases/download/v1.1.0`。
-
-### 📦 手动安装
-
-如果不使用一键脚本，也可以手动安装：
-
-#### 1. 下载二进制文件
-
-前往 [Releases](https://github.com/HlONGlin/UnifiedProxy/releases/latest) 下载对应平台的二进制文件。
-
-#### 2. 启动 Manager
+The installer picks an unused five-digit panel port and generates a 16-character panel path, a 14-character username, and a 16-character password. It prints the access URL and credentials once at the end. You can also set them explicitly:
 
 ```bash
-chmod +x merit-manager-linux-amd64
-./merit-manager-linux-amd64 --addr :3000
+bash <(curl -Ls https://raw.githubusercontent.com/RomanovCaesar/m-ui/main/install.sh) \
+  --port 34567 \
+  --path MyPanelA1b2C3d4 \
+  --username AdminUserA1234 \
+  --password 'ChangeThisA12345'
 ```
 
-首次启动会提示设置管理员账号，按提示操作即可。
+m-ui is installed under `/usr/local/m-ui`, with its data in `/usr/local/m-ui/data`. The installer also downloads a Mihomo core for the current architecture; an existing core is kept unless you pass `--update-mihomo`.
 
-#### 3. 访问面板
+`m-ui update` upgrades m-ui and keeps all settings. Before updating, it snapshots the data directory into `data/backups/` and keeps the newest 3 snapshots.
 
-打开浏览器访问：`http://服务器IP:3000/panel/随机后缀`
+Releases contain `m-ui-linux-<architecture>.tar.gz` for `386`, `amd64`, `arm64`, `armv5`, `armv6`, `armv7`, and `s390x`, plus `m-ui-windows-amd64.zip`.
 
-管理地址会在首次启动时输出，请妥善保存。
+## Docker
 
-### 💻 系统要求
-
-**控制机（Manager）：**
-- 操作系统：Linux/Windows/macOS
-- 架构：amd64 或 arm64
-- 内存：最低 512MB，推荐 1GB+
-
-**节点服务器（Agent）：**
-- 操作系统：Linux with systemd
-- 包管理器：dpkg (Debian/Ubuntu) 或 rpm (CentOS/RedHat/Rocky)
-- 架构：amd64 或 arm64
-- 内存：最低 256MB，推荐 512MB+
-
-### 🔧 依赖安装
-
-如果提示没有 `curl` 或 `wget`：
+The Docker image targets Linux amd64 and contains m-ui plus a pinned, checksum-verified Mihomo core. The Compose file uses host networking, so inbound ports added in the panel work without extra port mappings.
 
 ```bash
-# Ubuntu / Debian
-apt-get install -y curl wget
-
-# Alpine
-apk add curl wget
-
-# Fedora
-dnf install -y curl wget
-
-# CentOS / Rocky / AlmaLinux / Oracle Linux / Amazon Linux
-yum install -y curl wget
+git clone https://github.com/RomanovCaesar/m-ui.git
+cd m-ui
+cp .env.example .env
+docker compose up -d --build
+docker compose logs m-ui
 ```
 
----
+If `MUI_PASSWORD` and `MUI_PATH` are empty, the first start generates them and prints the URL and credentials once in the log. Releases also publish `ghcr.io/romanovcaesar/m-ui:<tag>` and `latest`; use `docker compose pull` instead of building when the image is available to you. Data lives in the `m-ui-data` and `m-ui-core` volumes; do not run `docker compose down -v` unless you want to delete it.
 
-## 📖 使用指南
+## TLS certificates
 
-### 1. 登录面板
-
-打开安装完成后输出的管理地址，使用管理员账号登录。
-
-### 2. 添加节点
-
-1. 点击「添加节点」
-2. 填写节点名称（如 `hk-1`）
-3. 复制页面上的部署命令
-
-### 3. 部署 Agent
-
-在目标服务器以 root 权限执行部署命令：
+The first interactive installation offers a Let's Encrypt domain certificate, a short-lived Let's Encrypt IPv4 certificate, an existing certificate pair, or skipping TLS. After installation, run:
 
 ```bash
-curl -fsSL http://你的IP:3000/install.sh | sudo bash -s -- --key <API_KEY>
+m-ui ssl
 ```
 
-Agent 会自动：
-- 下载并安装到 `/opt/merit`
-- 创建 systemd 服务并开机自启
-- 连接 Manager 并上报状态
+The menu can issue domain and IP certificates, use the Cloudflare DNS API for domain and wildcard certificates when port 80 is unavailable, renew, revoke, list, and apply an existing certificate pair. m-ui completes certificate files that contain only the leaf certificate, because clients such as Mihomo Party and FlClash reject them.
 
-### 4. 配置端口
+## Management commands
 
-1. 节点上线后，点击节点进入详情页
-2. 填写端口号（Mieru 为 1025-65535；其他协议为 1-65535）
-3. 选择协议（TCP/UDP）
-4. 点击「一键生成」
-
-Manager 会自动：
-- 生成随机用户名和密码
-- 下发配置到 Agent
-- Agent 配置并启动 mita 服务
-- 生成分享链接和 Clash 订阅
-
-### 5. 在线更新
-
-进入「系统设置」点击「检查更新」。发现新版本后，可以点击「在线一键更新」，Manager 会下载当前平台的 Release 二进制，校验 `SHA256SUMS` 后自动替换并重启服务。
-
-节点 Agent 也应使用详情页中最新的部署命令重新执行升级。部署命令现在始终从最新 Release 下载 Agent；旧 Agent 不认识新任务时，升级后原任务会自动重试。
-
-在线更新要求 Manager 运行在 Linux systemd 服务中；Windows、macOS 或手动前台运行时，请下载 Release 资产后手动替换程序。
-
-### 6. 证书管理（TLS 协议）
-
-对于 NaïveProxy、AnyTLS 等需要 TLS 证书的协议：
-
-1. 在端口配置页面点击「上传证书」
-2. 选择证书文件（.crt/.pem）和私钥文件（.key/.pem）
-3. 系统自动验证证书和私钥匹配性
-4. 显示证书详细信息（域名、有效期、剩余天数等）
-
-**快速测试**：
-```bash
-# 生成自签名测试证书（仅测试用）
-openssl req -x509 -newkey ec -pkeyopt ec_paramgen_curve:prime256v1 \
-  -keyout key.pem -out cert.pem -days 365 -nodes \
-  -subj "/CN=your-domain.com"
+```text
+m-ui                  interactive menu
+m-ui start | stop | restart | status | logs
+m-ui settings | configure | set-port
+m-ui reset-credentials | reset-path
+m-ui update | update-menu | ssl
+m-ui enable | disable | clear-logs | uninstall
+m-ui --lang <code>    menu language, e.g. m-ui --lang zh-cn
 ```
 
-详见：[证书管理文档](docs/ENHANCED_FEATURES.md#1-增强的证书上传功能)
+The menu speaks the same 11 languages as the panel and remembers your choice. The installer stays in English.
 
-### 7. 节点测试
+## Documentation
 
-在节点详情页可以测试节点可用性：
+* [Installation](https://github.com/RomanovCaesar/m-ui/wiki/Installation) and [Panel Configuration](https://github.com/RomanovCaesar/m-ui/wiki/Configuration)
+* [Migrating from 3x-ui](https://github.com/RomanovCaesar/m-ui/wiki/Migrating-from-3x-ui)
+* [Inbounds and Clients](https://github.com/RomanovCaesar/m-ui/wiki/Inbounds) and [Mihomo Settings](https://github.com/RomanovCaesar/m-ui/wiki/Mihomo-Settings)
+* [Subscriptions](https://github.com/RomanovCaesar/m-ui/wiki/Subscriptions) and [Subscription Templates](https://github.com/RomanovCaesar/m-ui/wiki/Subscription-Templates)
+* [Multi-control](https://github.com/RomanovCaesar/m-ui/wiki/Multi-control), [Cloudflare WARP](https://github.com/RomanovCaesar/m-ui/wiki/Cloudflare-WARP), and [VPNGate](https://github.com/RomanovCaesar/m-ui/wiki/VPNGate)
+* [Maintenance](https://github.com/RomanovCaesar/m-ui/wiki/Maintenance), [API](https://github.com/RomanovCaesar/m-ui/wiki/API), and [Common Questions](https://github.com/RomanovCaesar/m-ui/wiki/Common-questions-and-problems)
 
-- **快速测试**：检查网络连通和端口可达（~5秒）
-- **完整测试**：额外测试代理服务可用性（~15秒）
+## Development
 
-测试报告包括：
-- 网络连通性（Ping 延迟）
-- 各端口可达性（TCP 连接）
-- 问题诊断和修复建议
+Run from source on Windows; the panel opens at `http://127.0.0.1:2053` with the account `admin` / `admin`:
 
-详见：[节点测试文档](docs/ENHANCED_FEATURES.md#2-节点测试功能)
-
-### 8. 查看配置
-
-在节点详情页可以查看完整配置信息：
-
-- 节点基本信息（IP、状态等）
-- 端口配置（协议类型、证书信息等）
-- 用户配置（默认脱敏，可选择显示完整密码）
-- 出站代理配置
-
-**用途**：
-- 配置备份和迁移
-- 故障排查
-- 配置审计
-
-详见：[配置查看文档](docs/ENHANCED_FEATURES.md#3-详细配置信息查看)
-
-### 9. 流量管理
-
-在端口设置中可以配置：
-
-- **月度流量限制**：设置每月流量配额（如 100GB）
-- **流量统计**：通过 mita 实时指标查看端口使用量和剩余流量
-- **手动重置**：提前重置流量计数
-
-达到月度限额后端口会自动停用；重置流量或调整限额后可以恢复。mita 当前不提供可靠的服务端速率限制，因此 `BandwidthLimit` 仅保留 API 兼容性，暂不生效。
-
----
-
-## 🛠️ 编译构建
-
-### 目录结构
-
-```
-cmd/manager             Manager 入口（Web 面板 + Agent API）
-cmd/agent               Agent 入口（部署在节点主机）
-internal/manager        HTTP 服务、鉴权、节点/端口 API、任务队列
-internal/agent          自动安装 mita、轮询任务、上报状态
-internal/mieru          mita 服务端配置、分享链接、Clash 订阅生成
-internal/store          JSON 文件持久化
-internal/updater        自动更新检查和下载
-internal/traffic        流量统计和控制
-internal/manager/web    内嵌 Web 面板
+```powershell
+.\scripts\run.ps1
 ```
 
-### 构建要求
+Build Windows and Linux amd64 binaries, or all release archives:
 
-- Go 1.24+
-- 前端资源已内嵌在 Go binary 中
-
-### 构建命令
-
-```bash
-# Linux / macOS
-./build.sh
-
-# Windows PowerShell
-./build.ps1
-
-# 或使用 Makefile
-make
+```powershell
+.\scripts\build.ps1
+.\scripts\build-release.ps1
 ```
 
-### 构建产物
+Validate with `go test ./...` and `go vet ./...`. The version is injected with `-X main.version=...` from `MUI_VERSION` or the current Git tag. See [Development and Releases](https://github.com/RomanovCaesar/m-ui/wiki/Development) for the source layout and release flow, and [`LIQUID-GLASS.md`](LIQUID-GLASS.md) for the interface.
 
-产物位于 `dist/` 目录：
+## Acknowledgements
 
-```
-dist/merit-manager-linux-amd64
-dist/merit-manager-windows-amd64.exe
-dist/merit-agent-linux-amd64
-dist/merit-agent-linux-arm64
-```
+* [MetaCubeX/mihomo](https://github.com/MetaCubeX/mihomo): the proxy core and configuration model
+* [MHSanaei/3x-ui](https://github.com/MHSanaei/3x-ui): interface density and workflow
+* [Sub-Store](https://github.com/sub-store-org/Sub-Store): reference behavior for client subscription formats
+* [liquid-glass-webgl](https://github.com/martin65536/liquid-glass-webgl): the Liquid Glass controls (Apache-2.0, see [`NOTICE`](NOTICE))
+* [Lucide](https://lucide.dev) and [Material Symbols](https://github.com/google/material-design-icons) icons, [Geist](https://github.com/vercel/geist-font) and [Roboto](https://github.com/googlefonts/roboto-classic) fonts: the shadcn and Material Design 3 themes (ISC, Apache-2.0 and OFL-1.1, see [`NOTICE`](NOTICE))
 
-> ⚠️ Manager 会通过 `/download/agent` 分发 Agent 二进制给节点，请保持 `dist/` 与 Manager 同目录（或用 `--agent-dir` 指定）。
+## License
 
-### 前端开发
-
-前端资源位于：
-- `internal/manager/web/index.html`
-- `internal/manager/web/assets/style.css`
-- `internal/manager/web/assets/app.js`
-
-修改后需要重新构建 Manager。
-
-检查前端代码：
-
-```bash
-node scripts/check-frontend.cjs
-```
-
----
-
-## ⚙️ 配置说明
-
-### Manager 启动参数
-
-```bash
-./dist/merit-manager-linux-amd64 \
-  --addr :3000 \
-  --agent-dir dist \
-  --data data/merit.json
-```
-
-| 参数 | 默认值 | 说明 |
-|------|--------|------|
-| `--addr` | `:3000` | 面板与 Agent 通信监听地址 |
-| `--data` | `data/merit.json` | 数据文件路径，备份它即可备份全部配置 |
-| `--agent-dir` | `dist` | 存放 agent 二进制的目录 |
-| `--public-url` | 空 | 对外访问地址，如 `http://1.2.3.4:3000`；留空自动用请求 Host |
-| `--panel-path` | 自动生成 | 管理面板随机访问路径，例如 `/panel/abc123`；重启后保持不变 |
-| `--reset-admin` | false | 交互式重置管理员账号 |
-| `--version` | false | 显示版本信息 |
-
-### Agent 启动参数
-
-| 参数 | 默认值 | 说明 |
-|------|--------|------|
-| `--manager` | 必填 | Manager 地址 |
-| `--key` | 必填 | 节点 API Key |
-| `--mita-version` | `3.38.0` | 自动安装的 mita 版本 |
-| `--mita-mirror` | 空 | GitHub 加速前缀，如 `https://ghproxy.net` |
-| `--interval` | `5s` | 出错后的重试间隔 |
-
-Agent 需要 **root** 权限（用于安装软件包和管理 mita 服务）。
-
-### 重置管理员账号
-
-如果忘记账号或密码：
-
-```bash
-# 方法 1：使用一键脚本
-# 选择「5. 重置管理员账号」
-
-# 方法 2：手动执行
-systemctl stop merit-manager
-/opt/merit/merit-manager --data /var/lib/merit/merit.json --reset-admin
-systemctl start merit-manager
-```
-
-重置时节点数据和随机管理地址不会丢失。
-
-### 完全卸载
-
-在一键管理工具中选择 `4`，并输入 `DELETE` 确认。该操作会删除：
-- Manager 程序
-- 管理员账号
-- 节点数据
-- 随机管理地址
-- 所有配置文件
-
-清除后重新选择 `1` 即可重新安装。
-
----
-
-## 📱 客户端导入
-
-### 简单分享链接
-
-每个端口都有独立的 `mierus://` 链接：
-
-```
-mierus://用户名:密码@服务器?port=端口&protocol=TCP
-```
-
-复制链接后在 mieru 客户端中导入。
-
-### Clash 订阅
-
-在「系统设置」页面获取公开订阅地址：
-
-```
-http://你的服务器:3000/panel/随机字符/sub?token=订阅令牌
-```
-
-将该地址填入 Clash Verge / mihomo 等客户端。
-
-### 单节点 Clash
-
-在节点详情页可以下载该节点的 `clash.yaml` 配置文件。
-
----
-
-## 📊 流量管理
-
-当前仅 Mieru 支持真实流量统计与月度配额；其他协议显示“暂不支持流量统计”，不提供限额设置。
-
-### 设置流量限制
-
-1. 进入节点详情页
-2. 点击端口的「设置」按钮
-3. 配置流量参数：
-   - **月度流量限制**：单位 GB，0 表示不限制
-   - **带宽限制**：当前 mita 不支持可靠的服务端速率限制，暂不生效
-
-### 查看流量统计
-
-端口卡片会实时显示：
-- 已用流量 / 总限额
-- 使用百分比
-- 剩余流量
-- 距离重置时间
-
-### 流量重置规则
-
-- 自动按月重置（每月 1 号）
-- 可手动提前重置
-- 超出限制后端口自动停用
-
-### Agent 流量上报
-
-Agent 定期上报 Mieru 端口的流量使用情况，Manager 汇总并持久化。
-
----
-
-## 🔄 自动更新
-
-### 检查更新
-
-在「系统设置」页面点击「检查更新」按钮，系统会自动：
-1. 从 GitHub Releases 获取最新版本
-2. 对比当前版本号
-3. 显示更新日志和下载链接
-
-### 更新 Manager
-
-```bash
-# 使用一键脚本
-bash <(curl -fsSL https://github.com/HlONGlin/UnifiedProxy/raw/main/one-click.sh)
-# 选择「1. 安装或更新 Manager」
-```
-
-脚本会在替换前自动备份数据到 `/var/lib/merit/backups/`。
-
-### 更新 Agent
-
-重新执行节点的部署命令，Agent 会自动更新并重启服务。
-
----
-
-## 🔐 安全建议
-
-### 网络安全
-
-- Manager 面板建议放在 HTTPS 反向代理之后
-- 或仅在内网/白名单环境访问
-- 使用强管理员密码
-
-### 数据安全
-
-- 数据文件包含节点密钥与账号
-- 文件权限已设为 `0600`
-- 定期备份 `merit.json`
-
-### 系统安全
-
-- Agent 以 root 运行，请确保 Manager 地址可信
-- 定期更新系统和依赖
-- 启用防火墙规则
-
-### 备份与恢复
-
-系统设置提供「导出备份」和「选择备份文件」恢复功能：
-- 备份限制 16MB
-- 包含节点账号及出站凭据
-- 恢复前会保存当前配置为 `merit.json.before-restore-*.json`（权限 600）
-- 恢复保留当前管理员和管理路径，替换节点与订阅配置
-
----
-
-## ❓ 常见问题
-
-### Q: 节点显示「未部署」？
-
-**A:** 部署命令未执行成功，或 Agent 连不上 Manager。
-
-解决方案：
-1. 检查安全组/防火墙是否放通 Manager 端口
-2. 确认部署命令中的 Manager 地址正确
-3. 在节点服务器上检查 Agent 日志：
-   ```bash
-   journalctl -u merit-agent -f
-   ```
-
-### Q: 节点在线但 mita 未启动？
-
-**A:** 该节点还没有启用端口。
-
-解决方案：
-1. 进入节点详情页
-2. 添加端口并点击「一键生成」
-3. 等待 Agent 同步并启动 mita
-
-### Q: 自动安装 mita 失败？
-
-**A:** 多为 GitHub 访问受限导致。
-
-解决方案：
-1. 在 Agent 部署命令中追加镜像参数：
-   ```bash
-   --mita-mirror https://ghproxy.net
-   ```
-2. 或编辑 systemd 服务的 `ExecStart` 添加该参数
-3. 重启 Agent 服务
-
-### Q: 支持哪些系统？
-
-**A:** 节点端要求：
-- Linux with systemd
-- dpkg (Debian/Ubuntu) 或 rpm (CentOS/RedHat/Rocky)
-- amd64 或 arm64 架构
-
-Manager 支持 Linux/Windows/macOS。
-
-### Q: 流量统计不准确？
-
-**A:** 可能的原因：
-1. Agent 版本过旧，需要更新
-2. mita 服务重启导致计数器重置
-3. 时间同步问题
-
-建议定期更新 Agent 到最新版本。
-
-### Q: 如何迁移到新服务器？
-
-**A:** 
-1. 在旧服务器备份 `merit.json`
-2. 在新服务器安装 Manager
-3. 停止 Manager 服务
-4. 替换 `merit.json` 文件
-5. 启动 Manager 服务
-6. 确保 Agent 能访问新的 Manager 地址
-
----
-
-## 🆚 与 Zelay 的区别
-
-| 特性 | Zelay | MieruPilot |
-|------|-------|------------|
-| **目标** | Realm 转发 | 生成/管理 mieru 节点 |
-| **操作** | 配置监听/远程地址 | 只填端口，其余自动生成 |
-| **内核** | Realm | mita（見える/mieru） |
-| **流量管理** | 实时统计、月度限额、超额自动停用、手动/自动重置 | 服务端带宽控制 |
-| **自动更新** | ❌ | ✅ |
-| **多协议** | TCP/UDP 转发 | TCP/UDP mieru 节点 |
-
----
-
-## 💻 开发
-
-### 工作原理
-
-1. Manager 为每个节点保存期望配置（启用的端口 + 自动生成的用户）
-2. 端口变化时，Manager 把最新完整配置放入该节点的任务队列
-3. Agent 长轮询拉取任务，写临时 JSON 后执行 `mita replace config`
-4. Agent 执行 `mita stop && mita start` 生效
-5. Agent 定期上报状态（在线、mita 是否运行、版本、公网 IP、流量统计）
-
-> ⚠️ Manager 是该节点 mita 配置的唯一来源。请勿手动在同一 mita 上添加端口/用户，否则会被下一次同步覆盖。
-
-### 配置同步机制
-
-- 待执行同步任务保存于 `merit.json` 的 `tasks` 字段
-- Manager 重启时恢复，成功确认后从磁盘队列删除
-- 一次性测试任务不跨重启恢复
-- 每端口实例只在配置或服务文件变化、实例停止时重新启动
-- 确认启动成功后记录 `.applied` 配置摘要
-- 新配置启动失败时尝试恢复 `.previous` 配置
-
-### 出站检测
-
-- 由所选节点的 Agent 发起
-- 测试路径：节点 → SOCKS5 落地机 → 出口 IP 检测服务
-- 验证 SOCKS5 握手/认证和代理 CONNECT
-- 页面显示测试进度、耗时和出口 IP
-- 需要更新 Agent 才能执行该测试
-- 结果暂存在 Manager 内存中，重启后可重新测试
-
-### 版本信息
-
-管理程序和 Agent 支持 `--version`：
-- 输出版本号、源码提交和提交时间
-- 未提交源码构建会标记 `+modified`
-- 运行日志和面板也会显示该版本信息
-
-### 升级备份
-
-升级脚本在替换 Manager 前，将数据备份到 `/var/lib/merit/backups/`：
-- 目录权限 `700`
-- 备份文件权限 `600`
-- Agent 部署命令会明确重启服务，确保加载新二进制
-
----
-
-## 🧪 验收测试
-
-为确保多协议部署的可靠性,项目提供了自动化验收测试脚本。
-
-### 快速验收
-
-```bash
-cd scripts/acceptance
-
-# 1. 复制配置模板
-cp test_config.env.example test_config.env
-
-# 2. 编辑配置文件,填写节点信息
-nano test_config.env
-
-# 3. 运行快速测试 (~30 秒)
-./quick_check.sh
-```
-
-**测试覆盖**:
-- ✅ Mieru TCP/UDP 端口连通性
-- ✅ AnyTLS、ShadowTLS、NaïveProxy 端口连通性
-- ✅ NaïveProxy TLS 握手和证书验证
-- ✅ Manager API 健康检查
-- ✅ Clash 订阅生成
-
-**适用场景**:
-- 首次部署节点后的验收
-- 版本升级后的回归测试
-- 日常健康检查
-
-详见 [验收测试文档](scripts/acceptance/README.md)
-
----
-
-## 🛡️ 生产加固
-
-项目提供了生产环境部署的加固建议和实施计划。
-
-### 关键改进
-
-**A 级 - 安全与关键体验**
-- AnyTLS 身份校验增强 (使用同域名证书)
-- 证书上传进度可视化
-
-**B 级 - 可观测性**
-- 证书到期监控和续期告警
-- 续期事件日志和面板展示
-
-**C 级 - 防御性保护**
-- Agent 版本检查和兼容性验证
-- 升级前自动快照和回滚能力
-
-**D 级 - 工具和辅助**
-- 一键回归测试脚本
-- 部署验收检查链
-
-查看完整计划: [生产加固路线图](docs/PRODUCTION_HARDENING_ROADMAP.md)
-
-### 相关文档
-
-- [协议部署审计与修复](docs/PROTOCOL_DEPLOYMENT_AUDIT_2026-10-27.md) - 已知问题和修复记录
-- [证书上传进度实施方案](docs/CERT_UPLOAD_PROGRESS.md) - UI/UX 改进设计
-- [WebDAV 云备份](docs/WEBDAV_BACKUP.md) - 配置备份功能
-- [订阅链接修复](docs/SUBSCRIPTION_LINK_FIX.md) - Clash 订阅优化
-
----
-
-## 📄 许可证
-
-[MIT License](LICENSE)
-
----
-
-<div align="center">
-
-**[⬆ 回到顶部](#-mierupilot)**
-
-Made with ❤️ by [HlONGlin](https://github.com/HlONGlin)
-
-</div>
+m-ui is licensed under the [GNU General Public License version 3](LICENSE). The Mihomo sharing-link conversion code keeps its GPL-3.0 attribution in [`internal/mihomoconvert/NOTICE.md`](internal/mihomoconvert/NOTICE.md).

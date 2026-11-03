@@ -1,0 +1,7 @@
+{
+  "checks": [
+    {"node":"node-a","protocol":"hysteria2","proxy":"socks5h://127.0.0.1:10801","url":"https://example.com/","contains":"Example Domain"},
+    {"node":"node-b","protocol":"shadowtls","proxy":"socks5h://127.0.0.1:10802","url":"https://example.com/","contains":"Example Domain"},
+    {"node":"node-c","protocol":"naive","proxy":"socks5h://127.0.0.1:10803","url":"https://example.com/","contains":"Example Domain"}
+  ]
+}

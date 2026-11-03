@@ -1,0 +1,27 @@
+FROM --platform=$BUILDPLATFORM golang:1.27-bookworm AS build
+WORKDIR /src
+COPY go.mod go.sum ./
+RUN go mod download
+COPY . .
+ARG VERSION=dev
+ARG TARGETOS=linux
+ARG TARGETARCH=amd64
+RUN CGO_ENABLED=0 GOOS=$TARGETOS GOARCH=$TARGETARCH go build -trimpath -ldflags="-s -w -X main.version=${VERSION}" -o /out/control ./cmd/control \
+ && CGO_ENABLED=0 GOOS=$TARGETOS GOARCH=$TARGETARCH go build -trimpath -ldflags="-s -w -X main.version=${VERSION}" -o /out/node ./cmd/node
+
+FROM debian:bookworm-slim AS base
+LABEL org.opencontainers.image.licenses="GPL-3.0-only"
+RUN apt-get update && apt-get install -y --no-install-recommends ca-certificates tzdata tar xz-utils && rm -rf /var/lib/apt/lists/*
+WORKDIR /opt/m-ui
+COPY LICENSE NOTICE /usr/share/licenses/m-ui/
+COPY licenses/UnifiedProxy-MIT.txt /usr/share/licenses/m-ui/
+ENV MUI_DATA_DIR=/data
+VOLUME ["/data"]
+
+FROM base AS control
+COPY --from=build /out/control /usr/local/bin/control
+ENTRYPOINT ["control"]
+
+FROM base AS node
+COPY --from=build /out/node /usr/local/bin/node
+ENTRYPOINT ["node"]

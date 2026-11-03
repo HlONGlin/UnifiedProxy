@@ -1,0 +1,6 @@
+FROM golang:1.27-bookworm
+RUN apt-get update && apt-get install -y --no-install-recommends systemd systemd-sysv python3 curl openssl tar xz-utils \
+ && rm -rf /var/lib/apt/lists/*
+ENV container=docker
+STOPSIGNAL SIGRTMIN+3
+CMD ["/sbin/init"]
