@@ -32,12 +32,8 @@ type subscriptionPageData struct {
 	ClashEnabled    bool
 	ClientToggles   string
 	StaticURL       string
-	ToggleStyleURL  string
-	ToggleScriptURL string
-	ButtonStyleURL  string
-	ButtonScriptURL string
 	// AssetBase is the public folder of the shared UI assets; UITheme picks
-	// the look (shadcn, md3 or liquid) like the panel's own pages.
+	// the same five-palette color system as the panel pages.
 	AssetBase       string
 	UITheme         string
 	DefaultLanguage string
@@ -488,16 +484,12 @@ func (a *App) handleSubscriptionRequest(w http.ResponseWriter, r *http.Request) 
 	// Only these shared UI assets are public on the dedicated subscription port.
 	assetBase := strings.TrimSuffix(assetPath, "qrious2.min.js")
 	for name, contentType := range map[string]string{
-		"liquid-toggle.css":       "text/css; charset=utf-8",
-		"liquid-toggle.js":        "text/javascript; charset=utf-8",
-		"liquid-button.css":       "text/css; charset=utf-8",
-		"liquid-button.js":        "text/javascript; charset=utf-8",
-		"fonts.css":               "text/css; charset=utf-8",
-		"themes.css":              "text/css; charset=utf-8",
-		"components.css":          "text/css; charset=utf-8",
-		"subscription.css":        "text/css; charset=utf-8",
-		"appearance.js":           "text/javascript; charset=utf-8",
-		"subscription-themes.css": "text/css; charset=utf-8",
+		"fonts.css":              "text/css; charset=utf-8",
+		"themes.css":             "text/css; charset=utf-8",
+		"components.css":         "text/css; charset=utf-8",
+		"subscription.css":       "text/css; charset=utf-8",
+		"native-interactions.js": "text/javascript; charset=utf-8",
+		"appearance.js":          "text/javascript; charset=utf-8",
 	} {
 		if r.URL.Path == assetBase+name {
 			a.serveEmbedded(w, "web/"+name, contentType)
@@ -663,10 +655,6 @@ func renderSubscriptionPageAt(w http.ResponseWriter, r *http.Request, snapshot s
 		ClashEnabled:    subscriptionClientEnabled(snapshot.Settings, "clash"),
 		ClientToggles:   subscriptionClientTogglesJSON(snapshot.Settings),
 		StaticURL:       subscriptionAssetPublicPath(snapshot.Settings),
-		ToggleStyleURL:  strings.TrimSuffix(subscriptionAssetPublicPath(snapshot.Settings), "qrious2.min.js") + "liquid-toggle.css",
-		ToggleScriptURL: strings.TrimSuffix(subscriptionAssetPublicPath(snapshot.Settings), "qrious2.min.js") + "liquid-toggle.js",
-		ButtonStyleURL:  strings.TrimSuffix(subscriptionAssetPublicPath(snapshot.Settings), "qrious2.min.js") + "liquid-button.css",
-		ButtonScriptURL: strings.TrimSuffix(subscriptionAssetPublicPath(snapshot.Settings), "qrious2.min.js") + "liquid-button.js",
 		AssetBase:       strings.TrimSuffix(subscriptionAssetPublicPath(snapshot.Settings), "qrious2.min.js"),
 		UITheme:         normalizeUITheme(snapshot.Settings.UITheme),
 		DefaultLanguage: settingsLanguage(snapshot.Settings),

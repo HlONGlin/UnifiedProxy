@@ -99,7 +99,7 @@
   }
   button.onclick=()=>{if(typeof setView==='function'){labels.fleet='crumb.dashboard';setView('fleet');document.querySelector('#crumb').textContent=t('title');}load().catch(error=>output(error.message,true));};
   function render(){
-    button.textContent=t('title');section.replaceChildren();element('h2',t('title'),section);
+    button.innerHTML=SF('multi-control','nav-icon')+'<span>'+t('title')+'</span>';section.replaceChildren();element('h2',t('title'),section);
     const toolbar=element('div',undefined,section,{className:'fleet-toolbar'});action('refresh',toolbar,load);
     const panel=element('div',undefined,section,{className:'fleet-block'});
     if(role==='control'){

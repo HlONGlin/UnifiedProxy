@@ -1,6 +1,7 @@
 package app
 
 import (
+	"encoding/json"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -157,16 +158,30 @@ func TestThemeIconSetsCoverEverySymbol(t *testing.T) {
 		}
 		return found
 	}
-	base := ids("web/sf-symbols.js")
-	if len(base) < 50 {
-		t.Fatalf("only %d icons", len(base))
+	raw, err := os.ReadFile("scripts/acceptance/icon-contract.json")
+	if err != nil {
+		t.Fatal(err)
 	}
-	for _, set := range []string{"web/icons-lucide.js", "web/icons-material.js"} {
-		themed := ids(set)
-		for id := range base {
-			if !themed[id] {
-				t.Fatalf("%s missing %s", set, id)
-			}
+	var expected []string
+	if err := json.Unmarshal(raw, &expected); err != nil {
+		t.Fatal(err)
+	}
+	base := ids("web/icons.js")
+	if len(expected) < 50 || len(base) != len(expected) {
+		t.Fatal("incomplete icon contract")
+	}
+	for _, id := range expected {
+		if !base[id] {
+			t.Fatalf("linear sprite missing %s", id)
+		}
+	}
+	for _, file := range []string{"web/index.html", "web/login.html"} {
+		page, err := os.ReadFile(file)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if !strings.Contains(string(page), "static/icons.js") || strings.Contains(string(page), "static/sf-symbols.js") {
+			t.Fatalf("wrong icon runtime in %s", file)
 		}
 	}
 }

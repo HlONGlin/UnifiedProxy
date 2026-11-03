@@ -22,10 +22,10 @@ func TestSubscriptionToggleAssetsOnBothListeners(t *testing.T) {
 			}},
 		} {
 			for name, want := range map[string][2]string{
-				"liquid-toggle.css": {"text/css", "lg-toggle"},
-				"liquid-toggle.js":  {"text/javascript", "lg-toggle"},
-				"liquid-button.css": {"text/css", "--lb-fill"},
-				"liquid-button.js":  {"text/javascript", "MUILiquidButton"},
+				"components.css":         {"text/css", "focus-visible"},
+				"themes.css":             {"text/css", "data-color-theme"},
+				"appearance.js":          {"text/javascript", "UPTheme"},
+				"native-interactions.js": {"text/javascript", "pointercancel"},
 			} {
 				mime := want[0]
 				w := httptest.NewRecorder()

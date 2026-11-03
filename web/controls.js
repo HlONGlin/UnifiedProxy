@@ -1,51 +1,12 @@
-/* ===== m-ui Apple SwiftUI & Liquid Glass 交互系统 =====
-   专为 Apple SwiftUI & iOS 26 / macOS 26 (Tahoe) Liquid Glass 打造的微交互体系：
-   1. Liquid Glass 动态游标光学追踪 (Real-time Specular Highlight Tracker)
-   2. SwiftUI Picker 下拉选择器与 Searchable Combobox 增强器
-   3. iOS 26 / macOS 26 Dynamic Island 灵动浮岛消息 (Interactive Toasts)
-   4. SwiftUI List / Sheet 触控弹性和弹簧物理过渡 */
+/* UnifiedProxy accessible controls; behavior adapted from m-ui (GPL-3.0). See NOTICE. */
+
 (function(){
   'use strict';
 
   var STYLE_ID = 'mui-swiftui-components-style';
-  var ARROW = '<svg class="sf-symbol mui-select-arrow" viewBox="64 64 896 896" aria-hidden="true"><path d="M884 256h-75c-5.1 0-9.9 2.5-12.9 6.6L512 651 227.9 262.6c-3-4.1-7.8-6.6-12.9-6.6h-75c-6.5 0-10.3 7.4-6.5 12.7l352.6 486.1c12.8 17.6 39 17.6 51.7 0l352.6-486.1c3.9-5.3.1-12.7-6.4-12.7z" fill="currentColor"></path></svg>';
+  var ARROW = '<svg class="sf-symbol mui-select-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>';
 
-  var CSS = [
-    /* SwiftUI Picker 下拉选择器 */
-    ':where(.swift-picker){position:relative;display:block;width:100%;min-width:0}',
-    '.swift-picker .mui-native-select{position:absolute;top:0;left:0;width:1px;height:1px;margin:0;padding:0;border:0;opacity:0;pointer-events:none;appearance:none;-webkit-appearance:none}',
-    '.swift-picker[hidden]{display:none}',
-    /* .swift-picker-selection：Apple Squircle 连续曲线微边框选择容器 */
-    '.swift-picker-selection{position:relative;display:flex;align-items:center;height:var(--ctl,34px);padding:0 28px 0 12px;border:1px solid var(--stroke,rgba(60,60,67,.18));border-radius:var(--radius-sm,10px);background:var(--select-bg,var(--surface,#fff));color:var(--text,rgba(0,0,0,.85));font-size:13px;font-weight:500;cursor:pointer;outline:none;user-select:none;-webkit-user-select:none;box-shadow:var(--shadow-btn),var(--glass-caustic);transition:border-color .2s var(--ease),background-color .2s var(--ease),box-shadow .2s var(--ease),transform .15s var(--ease)}',
-    '.swift-picker-selection:hover{border-color:var(--teal-3,#1a88ff);background-color:var(--select-hover,rgba(0,122,255,.05))}',
-    '.swift-picker-open .swift-picker-selection, .swift-picker:focus-visible .swift-picker-selection{border-color:var(--teal,#007aff);box-shadow:0 0 0 3px var(--teal-soft,rgba(0,122,255,.2)),var(--shadow-btn);outline:0}',
-    '.swift-picker-disabled .swift-picker-selection{background:var(--surface-subtle,rgba(0,0,0,.04));color:var(--muted,rgba(0,0,0,.45));cursor:not-allowed;opacity:.55;box-shadow:none}',
-    '.swift-picker-disabled .swift-picker-selection:hover{border-color:var(--stroke,rgba(60,60,67,.18));background:var(--surface-subtle,rgba(0,0,0,.04))}',
-    '.mui-select-value{flex:1;min-width:0;overflow:hidden;line-height:32px;text-overflow:ellipsis;white-space:nowrap;letter-spacing:-0.01em}',
-    /* 箭头：SF Symbol chevron down，展开平滑旋转 180° */
-    '.mui-select-arrow{position:absolute;top:50%;right:11px;margin-top:-6px;width:12px;height:12px;color:var(--muted-2,rgba(60,60,67,.4));pointer-events:none;transition:transform .25s var(--ease),color .2s var(--ease)}',
-    '.swift-picker-open .mui-select-arrow{transform:rotate(180deg);color:var(--teal,#007aff)}',
-    /* .swift-picker-menu：macOS 26 Tahoe / iOS 26 Liquid Glass 浮层菜单 */
-    '.swift-picker-menu{position:fixed;z-index:9000;margin:0;padding:6px;list-style:none;max-height:280px;overflow-y:auto;overflow-x:hidden;border:1px solid var(--stroke,rgba(60,60,67,.18));border-radius:var(--radius,14px);background:var(--surface-modal,rgba(255,255,255,.9));backdrop-filter:var(--glass-blur);-webkit-backdrop-filter:var(--glass-blur);box-shadow:var(--shadow-pop,0 16px 48px rgba(0,0,0,.16)),var(--glass-caustic);animation:swift-menu-in .18s cubic-bezier(0.16,1,0.3,1);transform-origin:top center}',
-    '.swift-picker-menu[hidden]{display:none}',
-    '@keyframes swift-menu-in{0%{opacity:0;transform:translateY(-8px) scale(.97)}100%{opacity:1;transform:translateY(0) scale(1)}}',
-    /* 选项项：连续圆角、触感反馈、高亮 */
-    '.swift-picker-menu li{position:relative;margin:2px 0;padding:7px 12px;border-radius:var(--radius-sm,8px);color:var(--select-item-color,var(--text,rgba(0,0,0,.85)));font-size:13px;font-weight:500;line-height:20px;cursor:pointer;transition:background-color .15s var(--ease),color .15s var(--ease);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}',
-    '.swift-picker-menu li:hover, .swift-picker-menu li.mui-active{background:var(--select-item-hover,rgba(0,122,255,.1))}',
-    '.swift-picker-menu li.mui-selected{background:var(--select-item-selected,rgba(0,122,255,.14));color:var(--teal,#007aff);font-weight:600}',
-    '.swift-picker-menu li:empty::after{content:"None";font-weight:400;color:var(--muted-2,rgba(60,60,67,.4))}',
-    /* SwiftUI Combobox (可输入与即时过滤的下拉选择器) */
-    ':where(.swift-combobox){position:relative;display:block;width:100%;min-width:0}',
-    '.swift-combobox .swift-picker-selection{cursor:text}',
-    '.swift-combobox .swift-combobox-input{flex:1;width:100%!important;height:100%!important;min-width:0!important;padding:0!important;margin:0!important;border:0!important;border-radius:0!important;outline:0!important;box-shadow:none!important;background:transparent!important;color:inherit!important;font:inherit!important;font-size:13px!important;line-height:32px!important;cursor:text}',
-    '.swift-combobox:not(.swift-picker-disabled) .swift-picker-selection:hover{border-color:var(--teal-3,#1a88ff);background-color:var(--select-hover,rgba(0,122,255,.05))}',
-    '.swift-combobox.swift-picker-open .swift-picker-selection, .swift-combobox:focus-within .swift-picker-selection{border-color:var(--teal,#007aff);box-shadow:0 0 0 3px var(--teal-soft,rgba(0,122,255,.2));outline:0}',
-    '.swift-combobox.swift-picker-disabled .swift-picker-selection{background:var(--surface-subtle,rgba(0,0,0,.04));color:var(--muted,rgba(0,0,0,.45));cursor:not-allowed;border-color:var(--stroke,rgba(60,60,67,.18))}',
-    '.swift-combobox.swift-picker-disabled .swift-combobox-input{cursor:not-allowed;color:var(--muted,rgba(0,0,0,.45))}',
-    '.swift-combobox .mui-select-arrow{cursor:pointer;pointer-events:auto}',
-    '.mui-combobox-item{display:flex;align-items:center;justify-content:space-between;gap:8px}',
-    '.mui-combobox-sub{margin-left:auto;color:var(--muted,rgba(60,60,67,.5));font-size:12px;font-weight:400}'
-  ].join('\n');
+  var CSS = '';
 
   function injectStyle(){
     if(document.getElementById(STYLE_ID)) return;
@@ -55,7 +16,7 @@
     (document.head || document.documentElement).appendChild(style);
   }
 
-  /* ===== 2. SwiftUI Dynamic Island 灵动浮岛消息系统 ===== */
+  
   var currentToast = null;
   var toastTimer = null;
 
@@ -80,22 +41,22 @@
     var dur = typeof duration === 'number' ? duration : (isError ? 4000 : 2600);
     toastTimer = setTimeout(function(){
       if(currentToast){
-        currentToast.style.transition = 'opacity 0.25s var(--ease), transform 0.25s var(--ease)';
+        currentToast.style.transition = 'opacity var(--duration-fast) var(--easing-in)';
         currentToast.style.opacity = '0';
-        currentToast.style.transform = 'translate(-50%, -20px) scale(0.9)';
+        currentToast.style.transform = 'translateX(-50%)';
         setTimeout(function(){
           if(currentToast && currentToast.parentNode){
             currentToast.parentNode.removeChild(currentToast);
           }
           currentToast = null;
-        }, 260);
+        }, 120);
       }
     }, dur);
   };
 
   window.toast = window.dynamicIslandToast;
 
-  /* ===== 3. SwiftUI Picker 下拉选择器系统 ===== */
+  
   var valueDesc = Object.getOwnPropertyDescriptor(HTMLSelectElement.prototype, 'value');
   var openWrap = null;
 
@@ -211,15 +172,20 @@
 
     wrap.addEventListener('click', function(event){ event.preventDefault(); open(wrap); });
     wrap.addEventListener('keydown', function(event){
-      if(event.key === 'Enter' || event.key === ' '){ event.preventDefault(); open(wrap); return; }
+      if(event.key === 'Enter' || event.key === ' '){
+        event.preventDefault();
+        var active = wrap.classList.contains('swift-picker-open') && wrap.mui.menu.querySelector('.mui-active[data-index]');
+        if(active) pick(wrap, Number(active.dataset.index)); else open(wrap);
+        return;
+      }
       if(event.key === 'Escape'){ closeAll(); return; }
-      if(event.key !== 'ArrowDown' && event.key !== 'ArrowUp') return;
+      if(!['ArrowDown','ArrowUp','Home','End'].includes(event.key)) return;
       event.preventDefault();
       if(!wrap.classList.contains('swift-picker-open')){ open(wrap); return; }
-      var items = [].slice.call(wrap.mui.menu.children).filter(function(item){ return !item.classList.contains('mui-empty'); });
+      var items = [].slice.call(wrap.mui.menu.children).filter(function(item){ return !item.classList.contains('mui-empty') && item.dataset.index !== undefined && !select.options[Number(item.dataset.index)].disabled; });
       if(!items.length) return;
       var current = items.findIndex(function(item){ return item.classList.contains('mui-active'); });
-      var next = event.key === 'ArrowDown' ? Math.min(items.length - 1, current + 1) : Math.max(0, current < 0 ? items.length - 1 : current - 1);
+      var next = event.key === 'Home' ? 0 : event.key === 'End' ? items.length - 1 : event.key === 'ArrowDown' ? Math.min(items.length - 1, current + 1) : Math.max(0, current < 0 ? items.length - 1 : current - 1);
       items.forEach(function(item, index){ item.classList.toggle('mui-active', index === next); });
     });
     menu.addEventListener('mousedown', function(event){ event.preventDefault(); });
@@ -288,7 +254,7 @@
     }
   }).observe(document.body, { childList: true, subtree: true, attributes: true, attributeFilter: ['hidden', 'style', 'class'] });
 
-  /* ===== 4. SwiftUI Searchable Combobox 增强器 ===== */
+  
   function upgradeCombobox(input, getOptions){
     if(!input || input.dataset.swiftCombobox) return input ? input.closest('.swift-combobox') : null;
     input.dataset.swiftCombobox = '1';
@@ -522,7 +488,7 @@
 
   // The shared optical runtime owns navigation lenses and pointer gestures.
   function initDraggableLiquidSliders(){
-    if(window.MUILiquidGlass) window.MUILiquidGlass.refresh();
+    // Compatibility hook for retired decoration.
   }
 
   injectStyle();

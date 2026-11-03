@@ -4,25 +4,18 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="color-scheme" content="light dark">
-  <title>m-ui | 登录</title>
+  <title>UnifiedProxy | 登录</title>
   <link rel="stylesheet" href="static/themes.css">
   <link rel="stylesheet" href="static/login.css">
   <link rel="stylesheet" href="static/components.css">
+  <link rel="stylesheet" href="static/controls.css">
+  <link rel="stylesheet" href="static/workspace.css">
   <script src="static/appearance.js"></script>
 </head>
-<body>
-  <div class="ambient-backdrop" aria-hidden="true">
-    <div class="aurora-orb orb-1"></div>
-    <div class="aurora-orb orb-2"></div>
-    <div class="aurora-orb orb-3"></div>
-    <div class="aurora-orb orb-4"></div>
-  </div>
-  <main class="login-card">
-    <div class="mac-traffic-lights" aria-hidden="true">
-      <span class="mac-dot red"></span>
-      <span class="mac-dot yellow"></span>
-      <span class="mac-dot green"></span>
-    </div>
+<body class="login-page">
+
+  <main class="login-card"><aside class="login-identity"><img src="media/unifiedproxy.svg" width="48" height="48" alt="UnifiedProxy"><strong>UnifiedProxy</strong><span>Mihomo · Fleet</span><div class="identity-lines" aria-hidden="true"><i></i><i></i><i></i></div></aside><section class="login-fields">
+
     <button class="settings-button" id="settings-button" type="button" aria-label="面板设置" aria-expanded="false">
       <svg class="sf-symbol" aria-hidden="true"><use href="#sf-setting"></use></svg>
     </button>
@@ -39,7 +32,7 @@
 
     <div class="brand-emblem">
       <div class="brand-icon">
-        <img src="media/m-ui_logo.png" alt="m-ui" width="64" height="64">
+        <img src="media/unifiedproxy.svg" alt="UnifiedProxy" width="64" height="64">
       </div>
     </div>
 
@@ -67,8 +60,8 @@
       </div>
       <div class="error" id="error" role="alert"></div>
     </form>
-  </main><script src="static/sf-symbols.js"></script>
-  <script src="static/swiftui-components.js"></script>
+  </section></main><script src="static/icons.js"></script>
+  <script src="static/controls.js"></script><script src="static/native-interactions.js"></script>
   <script>
     const root = document.documentElement;
     const settingsButton = document.getElementById('settings-button');
@@ -79,17 +72,17 @@
     const passwordToggle = document.getElementById('password-toggle');
     const loginButton = document.getElementById('login-button');
     const messages = {
-      'zh-CN': { pageTitle:'m-ui | 登录', hello:'你好', title:'欢迎', username:'用户名', password:'密码', login:'登录', logging:'登录中…', settings:'面板设置', dark:'暗色', ultra:'超暗色', language:'语言', show:'显示密码', hide:'隐藏密码', failed:'登录失败', languageFailed:'语言设置保存失败' },
-      'zh-TW': { pageTitle:'m-ui | 登入', hello:'你好', title:'歡迎', username:'使用者名稱', password:'密碼', login:'登入', logging:'登入中…', settings:'面板設定', dark:'深色', ultra:'極暗', language:'語言', show:'顯示密碼', hide:'隱藏密碼', failed:'登入失敗', languageFailed:'語言設定儲存失敗' },
-      en: { pageTitle:'m-ui | Log In', hello:'Hello', title:'Welcome', username:'Username', password:'Password', login:'Log In', logging:'Logging in…', settings:'Panel Settings', dark:'Dark', ultra:'Ultra Dark', language:'Language', show:'Show password', hide:'Hide password', failed:'Login failed', languageFailed:'Failed to save the language setting' },
-      ja: { pageTitle:'m-ui | ログイン', hello:'こんにちは', title:'ようこそ', username:'ユーザー名', password:'パスワード', login:'ログイン', logging:'ログイン中…', settings:'パネル設定', dark:'ダーク', ultra:'ウルトラダーク', language:'言語', show:'パスワードを表示', hide:'パスワードを非表示', failed:'ログイン失敗', languageFailed:'言語設定の保存に失敗しました' },
-      ru: { pageTitle:'m-ui | Вход', hello:'Здравствуйте', title:'Добро пожаловать', username:'Имя пользователя', password:'Пароль', login:'Войти', logging:'Вход…', settings:'Настройки панели', dark:'Тёмная', ultra:'Очень тёмная', language:'Язык', show:'Показать пароль', hide:'Скрыть пароль', failed:'Ошибка входа', languageFailed:'Не удалось сохранить язык' },
-      fa: { pageTitle:'m-ui | ورود', hello:'سلام', title:'خوش آمدید', username:'نام کاربری', password:'گذرواژه', login:'ورود', logging:'در حال ورود…', settings:'تنظیمات پنل', dark:'تیره', ultra:'تیرهٔ کامل', language:'زبان', show:'نمایش گذرواژه', hide:'پنهان کردن گذرواژه', failed:'ورود ناموفق بود', languageFailed:'ذخیره زبان ناموفق بود' },
-      vi: { pageTitle:'m-ui | Đăng nhập', hello:'Xin chào', title:'Chào mừng', username:'Tên người dùng', password:'Mật khẩu', login:'Đăng nhập', logging:'Đang đăng nhập…', settings:'Cài đặt bảng điều khiển', dark:'Tối', ultra:'Tối sâu', language:'Ngôn ngữ', show:'Hiện mật khẩu', hide:'Ẩn mật khẩu', failed:'Đăng nhập thất bại', languageFailed:'Không thể lưu ngôn ngữ' },
-      es: { pageTitle:'m-ui | Iniciar sesión', hello:'Hola', title:'Bienvenido', username:'Usuario', password:'Contraseña', login:'Iniciar sesión', logging:'Iniciando sesión…', settings:'Ajustes del panel', dark:'Oscuro', ultra:'Muy oscuro', language:'Idioma', show:'Mostrar contraseña', hide:'Ocultar contraseña', failed:'Error de inicio de sesión', languageFailed:'No se pudo guardar el idioma' },
-      tr: { pageTitle:'m-ui | Giriş', hello:'Merhaba', title:'Hoş geldiniz', username:'Kullanıcı adı', password:'Parola', login:'Giriş yap', logging:'Giriş yapılıyor…', settings:'Panel Ayarları', dark:'Koyu', ultra:'Çok Koyu', language:'Dil', show:'Parolayı göster', hide:'Parolayı gizle', failed:'Giriş başarısız', languageFailed:'Dil ayarı kaydedilemedi' },
-      uk: { pageTitle:'m-ui | Вхід', hello:'Привіт', title:'Ласкаво просимо', username:"Ім'я користувача", password:'Пароль', login:'Увійти', logging:'Вхід…', settings:'Налаштування панелі', dark:'Темна', ultra:'Дуже темна', language:'Мова', show:'Показати пароль', hide:'Приховати пароль', failed:'Помилка входу', languageFailed:'Не вдалося зберегти мову' },
-      'pt-BR': { pageTitle:'m-ui | Entrar', hello:'Olá', title:'Bem-vindo', username:'Nome de Usuário', password:'Senha', login:'Entrar', logging:'Entrando…', settings:'Configurações do Painel', dark:'Escuro', ultra:'Muito Escuro', language:'Idioma', show:'Mostrar senha', hide:'Ocultar senha', failed:'Falha no login', languageFailed:'Falha ao salvar a configuração de idioma' }
+      'zh-CN': { pageTitle:'UnifiedProxy | 登录', hello:'你好', title:'欢迎', username:'用户名', password:'密码', login:'登录', logging:'登录中…', settings:'面板设置', dark:'暗色', ultra:'超暗色', language:'语言', show:'显示密码', hide:'隐藏密码', failed:'登录失败', languageFailed:'语言设置保存失败' },
+      'zh-TW': { pageTitle:'UnifiedProxy | 登入', hello:'你好', title:'歡迎', username:'使用者名稱', password:'密碼', login:'登入', logging:'登入中…', settings:'面板設定', dark:'深色', ultra:'極暗', language:'語言', show:'顯示密碼', hide:'隱藏密碼', failed:'登入失敗', languageFailed:'語言設定儲存失敗' },
+      en: { pageTitle:'UnifiedProxy | Log In', hello:'Hello', title:'Welcome', username:'Username', password:'Password', login:'Log In', logging:'Logging in…', settings:'Panel Settings', dark:'Dark', ultra:'Ultra Dark', language:'Language', show:'Show password', hide:'Hide password', failed:'Login failed', languageFailed:'Failed to save the language setting' },
+      ja: { pageTitle:'UnifiedProxy | ログイン', hello:'こんにちは', title:'ようこそ', username:'ユーザー名', password:'パスワード', login:'ログイン', logging:'ログイン中…', settings:'パネル設定', dark:'ダーク', ultra:'ウルトラダーク', language:'言語', show:'パスワードを表示', hide:'パスワードを非表示', failed:'ログイン失敗', languageFailed:'言語設定の保存に失敗しました' },
+      ru: { pageTitle:'UnifiedProxy | Вход', hello:'Здравствуйте', title:'Добро пожаловать', username:'Имя пользователя', password:'Пароль', login:'Войти', logging:'Вход…', settings:'Настройки панели', dark:'Тёмная', ultra:'Очень тёмная', language:'Язык', show:'Показать пароль', hide:'Скрыть пароль', failed:'Ошибка входа', languageFailed:'Не удалось сохранить язык' },
+      fa: { pageTitle:'UnifiedProxy | ورود', hello:'سلام', title:'خوش آمدید', username:'نام کاربری', password:'گذرواژه', login:'ورود', logging:'در حال ورود…', settings:'تنظیمات پنل', dark:'تیره', ultra:'تیرهٔ کامل', language:'زبان', show:'نمایش گذرواژه', hide:'پنهان کردن گذرواژه', failed:'ورود ناموفق بود', languageFailed:'ذخیره زبان ناموفق بود' },
+      vi: { pageTitle:'UnifiedProxy | Đăng nhập', hello:'Xin chào', title:'Chào mừng', username:'Tên người dùng', password:'Mật khẩu', login:'Đăng nhập', logging:'Đang đăng nhập…', settings:'Cài đặt bảng điều khiển', dark:'Tối', ultra:'Tối sâu', language:'Ngôn ngữ', show:'Hiện mật khẩu', hide:'Ẩn mật khẩu', failed:'Đăng nhập thất bại', languageFailed:'Không thể lưu ngôn ngữ' },
+      es: { pageTitle:'UnifiedProxy | Iniciar sesión', hello:'Hola', title:'Bienvenido', username:'Usuario', password:'Contraseña', login:'Iniciar sesión', logging:'Iniciando sesión…', settings:'Ajustes del panel', dark:'Oscuro', ultra:'Muy oscuro', language:'Idioma', show:'Mostrar contraseña', hide:'Ocultar contraseña', failed:'Error de inicio de sesión', languageFailed:'No se pudo guardar el idioma' },
+      tr: { pageTitle:'UnifiedProxy | Giriş', hello:'Merhaba', title:'Hoş geldiniz', username:'Kullanıcı adı', password:'Parola', login:'Giriş yap', logging:'Giriş yapılıyor…', settings:'Panel Ayarları', dark:'Koyu', ultra:'Çok Koyu', language:'Dil', show:'Parolayı göster', hide:'Parolayı gizle', failed:'Giriş başarısız', languageFailed:'Dil ayarı kaydedilemedi' },
+      uk: { pageTitle:'UnifiedProxy | Вхід', hello:'Привіт', title:'Ласкаво просимо', username:"Ім'я користувача", password:'Пароль', login:'Увійти', logging:'Вхід…', settings:'Налаштування панелі', dark:'Темна', ultra:'Дуже темна', language:'Мова', show:'Показати пароль', hide:'Приховати пароль', failed:'Помилка входу', languageFailed:'Не вдалося зберегти мову' },
+      'pt-BR': { pageTitle:'UnifiedProxy | Entrar', hello:'Olá', title:'Bem-vindo', username:'Nome de Usuário', password:'Senha', login:'Entrar', logging:'Entrando…', settings:'Configurações do Painel', dark:'Escuro', ultra:'Muito Escuro', language:'Idioma', show:'Mostrar senha', hide:'Ocultar senha', failed:'Falha no login', languageFailed:'Falha ao salvar a configuração de idioma' }
     };
 
     /* Apple Design 三套主题（Light / Dark / Ultra Dark OLED）。Ultra Dark 只在深色模式下开启，

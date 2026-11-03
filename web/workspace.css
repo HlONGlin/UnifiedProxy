@@ -1,0 +1,73 @@
+/* UnifiedProxy layout. References: Vercel, Claude/Anthropic, Sentry, Supabase,
+ * Stripe via awesome-design-md (MIT). Application adapted from m-ui (GPL-3.0). */
+html body .sf-symbol{fill:none;width:20px;height:20px;stroke-width:1.5}
+html body .nav-icon .sf-symbol{width:16px;height:16px}
+body{margin:0}
+html body .sidebar{width:var(--sidebar-width);padding:var(--spacing-lg) var(--spacing-sm);background:var(--surface-1);border-right:1px solid var(--hairline)}
+html body .sidebar-header{padding:0 var(--spacing-xs) var(--spacing-lg);gap:var(--spacing-xs)}
+html body .sidebar-logo{width:32px;height:32px;border-radius:var(--rounded-md)}
+html body .sidebar-app-name{font-size:var(--p-card-title);letter-spacing:0}
+html body .sidebar-app-badge{display:none}
+html body .nav{gap:var(--spacing-xxs)}
+html body .nav button{height:var(--row-height);border-radius:var(--rounded-sm);padding-inline:var(--spacing-sm)}
+html body .topbar{display:flex;min-height:64px;height:auto;gap:var(--spacing-md);padding:var(--spacing-sm) var(--spacing-lg);background:var(--surface-1);z-index:65}
+html body .top-actions .theme-control{position:relative;margin:0;overflow:visible}
+html body.sider-collapsed .sidebar{width:72px}
+html body.sider-collapsed .top-actions .theme-chevron{display:inline-flex}
+html body.sider-collapsed .top-actions .theme-control.open .theme-options{display:flex!important}
+html body .theme-trigger{min-height:var(--control-height);width:auto;padding:var(--spacing-xs) var(--spacing-sm);border:1px solid var(--hairline);border-radius:var(--rounded-md);background:var(--surface-1);color:var(--ink)}
+html body .theme-options{position:absolute;inset-inline-end:0;top:100%;width:280px;z-index:100;padding:var(--spacing-md);background:var(--surface-2);border:1px solid var(--hairline-strong);border-radius:var(--rounded-md)}
+html body .sider-trigger{left:var(--spacing-lg);bottom:var(--spacing-lg);border-radius:var(--rounded-md)!important;background:var(--surface-2)!important;border:1px solid var(--hairline)!important;transform:none}
+html body .main{margin:var(--spacing-lg);padding:0}
+.workspace-heading{display:flex;align-items:end;justify-content:space-between;margin-bottom:var(--spacing-lg);gap:var(--spacing-md)}
+.workspace-heading h1{margin:var(--spacing-xs) 0 0;font-size:var(--p-display)}
+html body .gauges-card{border:0;padding:0;background:transparent;gap:var(--spacing-md)}
+html body .gauge{position:relative;align-items:stretch;justify-content:space-between;padding:var(--spacing-md);border:1px solid var(--hairline);border-radius:var(--rounded-lg);background:var(--surface-1);gap:var(--spacing-sm)}
+html body .gauge-dial{width:100%;height:64px;display:flex;align-items:start;justify-content:start;color:var(--gauge-color)}
+html body .gauge-svg{position:absolute;left:0;bottom:0;top:auto;width:100%;height:4px;transform:none;overflow:hidden}
+html body .gauge-value{position:static;transform:none;font-size:var(--p-display);color:var(--gauge-color);line-height:1.2}
+html body .gauge-bar{stroke:var(--gauge-color);stroke-width:4}
+html body .gauge-track{stroke:var(--surface-3);stroke-width:4}
+html body .gauge-caption{justify-content:start;text-align:start;min-height:24px;font-size:var(--p-caption)}
+html body .overview-grid{grid-template-columns:repeat(4,minmax(0,1fr));gap:var(--spacing-md)}
+html body .overview-card{min-width:0;border-radius:var(--rounded-lg);border:1px solid var(--hairline);background:var(--surface-1);box-shadow:none}
+html body .overview-card:nth-child(-n+2){grid-column:span 2}
+html body .overview-card-header{min-height:40px;padding:var(--spacing-xs) var(--spacing-md);font-size:var(--p-body-sm);border-bottom:1px solid var(--hairline)}
+html body .overview-card-body{padding:var(--spacing-md)}
+html body .overview-actions{padding:var(--spacing-xs);gap:var(--spacing-xs)}
+html body .overview-action{border:0;border-radius:var(--rounded-md);min-height:var(--control-height)}
+html body :is(.data-row,tbody tr){min-height:var(--row-height)}
+html body :is(th,td){height:var(--row-height);padding:var(--spacing-xs) var(--spacing-sm)}
+html body :is(.inbound-card,.resource-card,.chart-panel,.data-table){border:1px solid var(--hairline);background:var(--surface-1);border-radius:var(--rounded-lg);box-shadow:none}
+html body :is(.inbound-pill,.primary-btn,.outline-btn,.circle-action,.small-btn){border-radius:var(--rounded-md);transform:none}
+html body #theme-toggle{display:none}
+html body :is(.modal-panel,.drawer){border:1px solid var(--hairline-strong);border-radius:var(--rounded-lg);background:var(--surface-2)}
+html body .fleet-block{padding:var(--spacing-md);border-color:var(--hairline);margin:var(--spacing-md) 0;border-radius:var(--rounded-lg);background:var(--surface-1)}
+html body .fleet-grid :is(td,th){padding:var(--spacing-xs) var(--spacing-sm);height:var(--row-height)}
+html body .fleet-toolbar{gap:var(--spacing-xs);margin:var(--spacing-sm) 0}
+html body .fleet-result{font:var(--p-caption)/1.6 var(--font-mono)}
+html body .settings-tabbar{display:flex;gap:var(--spacing-xxs);padding:var(--spacing-xxs);border-radius:var(--rounded-md)}
+html body .settings-tabbar button{border-radius:var(--rounded-sm);height:var(--row-height)}
+@media(max-width:1100px){html body .overview-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:768px){html body .main{margin:var(--spacing-md)}html body .topbar{padding:var(--spacing-xs) var(--spacing-md);padding-inline-start:64px}html body .crumb{display:none}html body .top-actions{margin-inline-start:auto}html body .gauges-card{grid-template-columns:repeat(2,minmax(0,1fr))}html body .overview-card:nth-child(-n+2){grid-column:span 2}html body .theme-options{position:fixed;top:64px;inset-inline-end:var(--spacing-md)}html body .workspace-heading h1{font-size:var(--p-headline)}}
+@media(max-width:480px){html body .overview-grid{grid-template-columns:1fr}html body .overview-card:nth-child(-n+2){grid-column:auto}html body .top-actions #refresh span{display:none}}
+/* Sign-in uses a separate identity column and a single form action. */
+body.login-page{overflow:auto;padding:var(--spacing-lg)}
+html body .login-card{display:grid;grid-template-columns:1fr 1fr;max-width:920px;width:100%;padding:0;border-radius:var(--rounded-xl);overflow:visible;animation:none}
+html body .login-card::after{display:none}
+.login-identity{display:flex;flex-direction:column;align-items:start;gap:var(--spacing-md);padding:var(--spacing-xxl);background:var(--surface-2);border-inline-end:1px solid var(--hairline);border-radius:var(--rounded-xl) 0 0 var(--rounded-xl)}
+.login-identity strong{font-size:var(--p-display);color:var(--ink);letter-spacing:0}
+.login-identity>span{color:var(--ink-muted);font-family:var(--font-mono);font-size:var(--p-body-sm)}
+.identity-lines{width:100%;margin-top:auto;padding-top:var(--spacing-xxl)}
+.identity-lines i{display:block;height:1px;background:var(--hairline-strong);margin-top:var(--spacing-lg)}
+.identity-lines i:nth-child(2){width:80%}.identity-lines i:nth-child(3){width:60%}
+.login-fields{position:relative;padding:var(--spacing-xxl)}
+html body .login-fields .brand-emblem{display:none}
+html body .headline{justify-content:start;margin:var(--spacing-lg) 0 var(--spacing-xl)}
+html body .words-wrapper{text-align:start}
+html body .headline.zoom b{animation:none}
+html body .login-card .settings-button{top:var(--spacing-sm);right:var(--spacing-sm);border-radius:var(--rounded-md)}
+html body .login-card input:is([type=text],[type=password]){height:44px;padding-inline:44px;border-radius:var(--rounded-md)}
+html body .login-button{border-radius:var(--rounded-md);transform:none}
+html body .login-card .settings-menu{z-index:100;top:56px;right:var(--spacing-sm);background:var(--surface-2)}
+@media(max-width:680px){html body .login-card{grid-template-columns:1fr}.login-identity{padding:var(--spacing-lg);border-inline-end:0;border-bottom:1px solid var(--hairline);border-radius:var(--rounded-xl) var(--rounded-xl) 0 0}.identity-lines{display:none}.login-fields{padding:var(--spacing-lg)}.login-identity strong{font-size:var(--p-headline)}}
