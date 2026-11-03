@@ -115,6 +115,7 @@ func (s Settings) maskSecrets() Settings {
 }
 
 type Inbound struct {
+	LegacySeed           *legacyTrafficSeed     `json:"legacySeed,omitempty"`
 	Native               map[string]any         `json:"native,omitempty"`
 	SyncOrigin           *InboundSyncOrigin     `json:"syncOrigin,omitempty"`
 	ID                   string                 `json:"id"`
@@ -157,6 +158,7 @@ type Inbound struct {
 	ECHKey               string                 `json:"echKey,omitempty"`
 	ECHServerName        string                 `json:"echServerName,omitempty"`
 	TLSServerName        string                 `json:"tlsServerName,omitempty"`
+	TLSFingerprint       string                 `json:"tlsFingerprint,omitempty"`
 	AllowInsecure        bool                   `json:"allowInsecure,omitempty"`
 	Reality              RealitySettings        `json:"reality"`
 	Mux                  MuxSettings            `json:"mux"`
@@ -597,10 +599,14 @@ type Client struct {
 }
 
 type TrafficStats struct {
-	Up          uint64 `json:"up"`
-	Down        uint64 `json:"down"`
-	AllTimeUp   uint64 `json:"allTimeUp"`
-	AllTimeDown uint64 `json:"allTimeDown"`
+	// Old MieruPilot counters have no directional information. Keep their
+	// combined bytes separately instead of fabricating an upload/download split.
+	LegacyCombined        uint64 `json:"legacyCombined,omitempty"`
+	AllTimeLegacyCombined uint64 `json:"allTimeLegacyCombined,omitempty"`
+	Up                    uint64 `json:"up"`
+	Down                  uint64 `json:"down"`
+	AllTimeUp             uint64 `json:"allTimeUp"`
+	AllTimeDown           uint64 `json:"allTimeDown"`
 }
 
 type TrafficTotals struct {
@@ -609,6 +615,7 @@ type TrafficTotals struct {
 }
 
 type State struct {
+	LegacyMigrations   []legacyMigration       `json:"legacyMigrations,omitempty"`
 	Settings           Settings                `json:"settings"`
 	Inbounds           []Inbound               `json:"inbounds"`
 	Outbounds          []MihomoOutbound        `json:"outbounds,omitempty"`
@@ -1412,6 +1419,7 @@ func (a *App) handleState(w http.ResponseWriter, r *http.Request) {
 	basics := effectiveMihomoBasics(state)
 	state.MihomoBasics = &basics
 	state.Settings = state.Settings.maskSecrets()
+	state.LegacyMigrations = nil // recovery archives contain old credentials
 	state.WARP = nil
 	running := a.manager.runningLocked()
 	started := a.manager.started
@@ -4412,11 +4420,11 @@ func enabledClients(inbound Inbound) []Client {
 }
 
 func inboundDepleted(inbound Inbound, now int64) bool {
-	return !inbound.Enabled || (inbound.ExpiryTime > 0 && inbound.ExpiryTime <= now) || (inbound.Total > 0 && inbound.Traffic.Up+inbound.Traffic.Down >= inbound.Total)
+	return !inbound.Enabled || (inbound.ExpiryTime > 0 && inbound.ExpiryTime <= now) || (inbound.Total > 0 && inbound.Traffic.used() >= inbound.Total)
 }
 
 func clientDepleted(client Client, now int64) bool {
-	return !client.Enabled || (client.ExpiryTime > 0 && client.ExpiryTime <= now) || (client.Total > 0 && client.Traffic.Up+client.Traffic.Down >= client.Total)
+	return !client.Enabled || (client.ExpiryTime > 0 && client.ExpiryTime <= now) || (client.Total > 0 && client.Traffic.used() >= client.Total)
 }
 
 func (m *CoreManager) initializeEnforcedClientsLocked() {

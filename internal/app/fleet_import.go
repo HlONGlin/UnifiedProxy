@@ -7,9 +7,10 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io"
 	"net"
 	"net/http"
+	"os"
+	"path/filepath"
 	"strconv"
 	"strings"
 
@@ -27,6 +28,12 @@ type meritPort struct {
 	Label           string `json:"label"`
 	Enabled         bool   `json:"enabled"`
 	TrafficLimit    int64  `json:"trafficLimit"`
+	TrafficUsed     int64  `json:"trafficUsed"`
+	TrafficResetAt  string `json:"trafficResetAt"`
+	CreatedAt       string `json:"createdAt"`
+	AutoDisabled    bool   `json:"autoDisabled"`
+	BandwidthLimit  int64  `json:"bandwidthLimit"`
+	TLSFingerprint  string `json:"tlsFingerprint"`
 	TLSCert         string `json:"tlsCert"`
 	TLSKey          string `json:"tlsKey"`
 	Domain          string `json:"domain"`
@@ -38,11 +45,14 @@ type meritPort struct {
 	BackendManaged  bool   `json:"backendManaged"`
 }
 type meritNode struct {
-	ID      string      `json:"id"`
-	Name    string      `json:"name"`
-	Address string      `json:"address"`
-	Domain  string      `json:"domain"`
-	Ports   []meritPort `json:"ports"`
+	ID        string       `json:"id"`
+	Name      string       `json:"name"`
+	Address   string       `json:"address"`
+	Domain    string       `json:"domain"`
+	Ports     []meritPort  `json:"ports"`
+	Remark    string       `json:"remark"`
+	CreatedAt string       `json:"createdAt"`
+	Egress    *meritEgress `json:"egress"`
 }
 type meritImportResult struct {
 	Nodes []map[string]string `json:"nodes"`
@@ -74,6 +84,9 @@ func convertMerit(node meritNode) (State, []fleet.Sidecar, []string, error) {
 		if p.Port < 1 || p.Port > 65535 || p.Password == "" {
 			return state, nil, nil, fmt.Errorf("invalid port %d", p.Port)
 		}
+		if p.TrafficUsed < 0 || p.TrafficLimit < 0 || p.BandwidthLimit < 0 {
+			return state, nil, nil, errors.New("negative legacy traffic or limit")
+		}
 		typeName := p.ProxyType
 		if typeName == "" {
 			typeName = "mieru"
@@ -85,16 +98,28 @@ func convertMerit(node meritNode) (State, []fleet.Sidecar, []string, error) {
 			if p.TrafficLimit > 0 {
 				client.Total = uint64(p.TrafficLimit)
 			}
-			in := Inbound{ID: id, Name: xrayImportName(valueOr(p.Label, typeName+"-"+strconv.Itoa(p.Port))), Type: typeName, Listen: "0.0.0.0", Port: p.Port, Enabled: p.Enabled, Clients: []Client{client}, TrafficReset: "monthly"}
+			client.CreatedAt = p.CreatedAt
+			client.Traffic = TrafficStats{LegacyCombined: uint64(p.TrafficUsed), AllTimeLegacyCombined: uint64(p.TrafficUsed)}
+			in := Inbound{ID: id, Name: xrayImportName(valueOr(p.Label, typeName+"-"+strconv.Itoa(p.Port))) + "-" + id[:6], Type: typeName, Listen: "0.0.0.0", Port: p.Port, Enabled: p.Enabled || p.AutoDisabled, Clients: []Client{client}, TrafficReset: "monthly", CreatedAt: p.CreatedAt, Notes: node.Remark, LastTrafficReset: p.TrafficResetAt, Traffic: client.Traffic, LegacySeed: &legacyTrafficSeed{Combined: uint64(p.TrafficUsed), ResetAt: p.TrafficResetAt}}
+			if p.TrafficUsed > 0 {
+				logs = append(logs, fmt.Sprintf("%s: %d combined legacy bytes retained separately; directional history was never recorded", id, p.TrafficUsed))
+			}
+			if p.BandwidthLimit > 0 {
+				logs = append(logs, fmt.Sprintf("%s: bandwidthLimit=%d retained in recovery archive; legacy versions stored but did not enforce this field", id, p.BandwidthLimit))
+			}
 			if typeName == "mieru" {
 				in.Mieru.Transport = strings.ToUpper(valueOr(p.Protocol, "TCP"))
 			} else {
 				in.TLS = true
+				in.TLSServerName = p.Domain
+				in.TLSFingerprint = p.TLSFingerprint
 				in.Certificate = p.TLSCert
 				in.PrivateKey = p.TLSKey
-				if in.Certificate == "" || in.PrivateKey == "" {
+				if !strings.Contains(in.Certificate, "BEGIN CERTIFICATE") || !strings.Contains(in.PrivateKey, "PRIVATE KEY") {
 					logs = append(logs, fmt.Sprintf("AnyTLS %d needs a centrally managed certificate before publishing", p.Port))
 					in.Enabled = false
+					in.Certificate = ""
+					in.PrivateKey = ""
 				}
 			}
 			state.Inbounds = append(state.Inbounds, in)
@@ -102,8 +127,9 @@ func convertMerit(node meritNode) (State, []fleet.Sidecar, []string, error) {
 			continue
 		}
 		if typeName == "naive" {
-			if p.Domain == "" {
-				return state, nil, nil, errors.New("NaiveProxy requires a domain")
+			if p.Domain == "" || (!p.AutoACME && (!strings.Contains(p.TLSCert, "BEGIN CERTIFICATE") || !strings.Contains(p.TLSKey, "PRIVATE KEY"))) {
+				logs = append(logs, fmt.Sprintf("Na茂veProxy %d excluded from activation; original record retained in recovery archive", p.Port))
+				continue
 			}
 			credentials := base64.StdEncoding.EncodeToString([]byte(p.Username + ":" + p.Password))
 			tlsApp := map[string]any{}
@@ -136,15 +162,18 @@ func convertMerit(node meritNode) (State, []fleet.Sidecar, []string, error) {
 				if err != nil {
 					return state, nil, nil, err
 				}
-				b, _ := json.Marshal(map[string]any{"server": host, "server_port": num, "password": p.BackendPassword, "method": valueOr(p.BackendCipher, "2022-blake3-aes-128-gcm"), "mode": "tcp_only"})
+				b, _ := json.Marshal(map[string]any{"server": host, "server_port": num, "password": p.BackendPassword, "method": valueOr(p.BackendCipher, "aes-256-gcm"), "mode": "tcp_only"})
 				sidecars = append(sidecars, fleet.Sidecar{ID: id + "-backend", Kind: "shadowsocks", Enabled: p.Enabled, Config: string(b), Metering: "unmetered"})
 			}
 			b, _ := json.Marshal(cfg)
 			serverName, _, _ := net.SplitHostPort(cfg.Handshake)
-			sidecars = append(sidecars, fleet.Sidecar{ID: id, Kind: "shadowtls", Enabled: p.Enabled, Config: string(b), Port: p.Port, Username: valueOr(p.Username, "shadowtls-"+id), Password: p.Password, ServerName: serverName, BackendPassword: p.BackendPassword, Cipher: valueOr(p.BackendCipher, "2022-blake3-aes-128-gcm"), Metering: "unmetered"})
+			sidecars = append(sidecars, fleet.Sidecar{ID: id, Kind: "shadowtls", Enabled: p.Enabled, Config: string(b), Port: p.Port, Username: valueOr(p.Username, "shadowtls-"+id), Password: p.Password, ServerName: valueOr(p.Domain, serverName), BackendPassword: p.BackendPassword, Cipher: valueOr(p.BackendCipher, "aes-256-gcm"), Metering: "unmetered"})
 			continue
 		}
 		return state, nil, nil, fmt.Errorf("unsupported legacy proxy type %q", typeName)
+	}
+	if err := convertMeritEgress(node, &state); err != nil {
+		return state, nil, nil, err
 	}
 	return state, sidecars, logs, nil
 }
@@ -154,19 +183,11 @@ func (a *App) handleMeritImport(w http.ResponseWriter, r *http.Request) {
 		writeJSON(w, 405, apiResponse{})
 		return
 	}
-	var input struct {
-		Nodes []meritNode `json:"nodes"`
-	}
-	decoder := json.NewDecoder(io.LimitReader(r.Body, 64<<20))
-	if err := decoder.Decode(&input); err != nil {
+	input, raw, err := decodeMeritBackup(r.Body)
+	if err != nil {
 		writeJSON(w, 400, apiResponse{Message: err.Error()})
 		return
 	}
-	if len(input.Nodes) == 0 || len(input.Nodes) > 500 {
-		writeJSON(w, 400, apiResponse{Message: "import requires 1-500 nodes"})
-		return
-	}
-	result := meritImportResult{Log: []string{"Traffic history and old subscription tokens are not migrated. Generate new subscriptions in control.", "Old API keys are discarded. Issue a node-specific enrollment token and join each node."}}
 	type converted struct {
 		node     meritNode
 		state    State
@@ -174,15 +195,19 @@ func (a *App) handleMeritImport(w http.ResponseWriter, r *http.Request) {
 		log      []string
 	}
 	plans := []converted{}
-	seenNodes := map[string]bool{}
+	seen := map[string]bool{}
 	for _, node := range input.Nodes {
-		if seenNodes[node.ID] {
+		if seen[node.ID] {
 			writeJSON(w, 400, apiResponse{Message: "duplicate legacy node ID"})
 			return
 		}
-		seenNodes[node.ID] = true
+		seen[node.ID] = true
 		state, sidecars, logs, err := convertMerit(node)
 		if err != nil {
+			writeJSON(w, 400, apiResponse{Message: err.Error()})
+			return
+		}
+		if _, err = renderStateConfigAt(state, 0); err != nil {
 			writeJSON(w, 400, apiResponse{Message: err.Error()})
 			return
 		}
@@ -191,36 +216,68 @@ func (a *App) handleMeritImport(w http.ResponseWriter, r *http.Request) {
 	f := a.fleet
 	f.mu.Lock()
 	defer f.mu.Unlock()
+	before, err := a.exportFleetBackup()
+	if err != nil {
+		writeJSON(w, 500, apiResponse{Message: err.Error()})
+		return
+	}
+	journal := filepath.Join(f.dataDir, "fleet-restore-transaction.json")
+	if err = fleet.WriteFile(journal, before, 0600); err != nil {
+		writeJSON(w, 500, apiResponse{Message: err.Error()})
+		return
+	}
+	rollback := func(cause error) {
+		if restoreErr := a.restoreFleetBackupTransaction(before, false); restoreErr != nil {
+			cause = fmt.Errorf("import: %v; rollback: %w", cause, restoreErr)
+		} else {
+			_ = os.Remove(journal)
+		}
+		writeJSON(w, 500, apiResponse{Message: cause.Error()})
+	}
+	result := meritImportResult{Log: []string{"Current administrator and panel path retained. Source-only fields are preserved in the protected backup recovery archive.", "Old API keys, transient tasks and cloud credentials are not activated; enroll each node with a fresh node-specific token."}}
+	ids := []string{}
 	for _, plan := range plans {
 		hash := sha256.Sum256([]byte("merit:" + plan.node.ID))
 		n, created, err := f.store.ImportNode("merit-"+hex.EncodeToString(hash[:16]), plan.node.Name, valueOr(plan.node.Address, plan.node.Domain))
 		if err != nil {
-			writeJSON(w, 500, apiResponse{Message: err.Error(), Data: result})
+			rollback(err)
 			return
 		}
-		if !created {
+		ids = append(ids, n.ID)
+		if created {
+			editor, err := f.editor(n.ID)
+			if err == nil {
+				editor.manager.mu.Lock()
+				editor.manager.state = plan.state
+				err = editor.manager.saveLocked()
+				editor.manager.mu.Unlock()
+			}
+			if err == nil {
+				_, err = f.publish(n.ID, editor, plan.sidecars)
+			}
+			if err != nil {
+				rollback(err)
+				return
+			}
+		} else {
 			result.Log = append(result.Log, "Already imported node "+plan.node.ID+"; existing edits preserved.")
-			result.Nodes = append(result.Nodes, map[string]string{"oldNodeId": plan.node.ID, "nodeId": n.ID})
-			continue
 		}
-		editor, err := f.editor(n.ID)
-		if err == nil {
-			editor.manager.mu.Lock()
-			editor.manager.state = plan.state
-			err = editor.manager.saveLocked()
-			editor.manager.mu.Unlock()
-		}
-		if err == nil {
-			_, err = f.publish(n.ID, editor, plan.sidecars)
-		}
-		if err != nil {
-			result.Log = append(result.Log, "Node "+n.ID+" imported as a draft: "+err.Error())
-		}
-		result.Nodes = append(result.Nodes, map[string]string{"oldNodeId": plan.node.ID, "nodeId": n.ID, "oldSubscription": "not retained", "newSubscription": "GET /api/fleet/subscriptions"})
+		result.Nodes = append(result.Nodes, map[string]string{"oldNodeId": plan.node.ID, "nodeId": n.ID, "oldSubscription": "retained when settings.subToken is present", "newSubscription": "GET /api/fleet/subscriptions"})
 		result.Log = append(result.Log, plan.log...)
 	}
-	if err := a.refreshFleetSubscriptions(); err != nil {
-		writeJSON(w, 500, apiResponse{Message: err.Error(), Data: result})
+	a.manager.mu.Lock()
+	appendLegacyMigration(&a.manager.state, raw, ids)
+	err = a.manager.saveLocked()
+	a.manager.mu.Unlock()
+	if err == nil {
+		err = a.refreshFleetSubscriptions()
+	}
+	if err != nil {
+		rollback(err)
+		return
+	}
+	if err = os.Remove(journal); err != nil {
+		rollback(err)
 		return
 	}
 	writeJSON(w, 200, apiResponse{OK: true, Data: result})

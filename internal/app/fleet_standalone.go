@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"github.com/RomanovCaesar/m-ui/internal/agent"
 	"github.com/RomanovCaesar/m-ui/internal/fleet"
-	"io"
 	"net/http"
 	"sync"
 	"time"
@@ -36,8 +35,8 @@ func (a *App) handleStandaloneImport(w http.ResponseWriter, r *http.Request) {
 		writeJSON(w, 409, apiResponse{Message: "import managed nodes through control"})
 		return
 	}
-	var input struct{ Nodes []meritNode }
-	if err := json.NewDecoder(io.LimitReader(r.Body, 64<<20)).Decode(&input); err != nil {
+	input, raw, err := decodeMeritBackup(r.Body)
+	if err != nil {
 		writeJSON(w, 400, apiResponse{Message: err.Error()})
 		return
 	}
@@ -65,6 +64,44 @@ func (a *App) handleStandaloneImport(w http.ResponseWriter, r *http.Request) {
 	m.mu.Lock()
 	state := copyState(m.state)
 	m.mu.Unlock()
+	appendLegacyMigration(&state, raw, []string{chosen.ID})
+	for _, out := range converted.Outbounds {
+		exists := false
+		for _, old := range state.Outbounds {
+			if old.ID == out.ID {
+				exists = true
+				break
+			}
+			if old.Name == out.Name {
+				writeJSON(w, 400, apiResponse{Message: "legacy outbound conflicts with existing outbound"})
+				return
+			}
+		}
+		if !exists {
+			state.Outbounds = append(state.Outbounds, out)
+		}
+	}
+	if len(converted.Outbounds) > 0 || chosen.Egress != nil {
+		rules := []MihomoRoutingRule{}
+		for _, rule := range converted.RoutingRules {
+			if rule.Type != "MATCH" {
+				rules = append(rules, rule)
+			}
+		}
+		for _, rule := range state.RoutingRules {
+			exists := false
+			for _, newRule := range rules {
+				if newRule.ID == rule.ID {
+					exists = true
+					break
+				}
+			}
+			if !exists {
+				rules = append(rules, rule)
+			}
+		}
+		state.RoutingRules = rules
+	}
 	for _, in := range converted.Inbounds {
 		duplicate := false
 		for _, old := range state.Inbounds {
@@ -124,7 +161,7 @@ func (a *App) handleStandaloneImport(w http.ResponseWriter, r *http.Request) {
 		writeJSON(w, 400, apiResponse{Message: err.Error()})
 		return
 	}
-	logs = append(logs, "Traffic history and legacy subscription tokens were not imported. Existing local settings were retained.")
+	logs = append(logs, "Combined legacy counters, source archive and subscription alias retained. Existing local identity retained.")
 	writeJSON(w, 200, apiResponse{OK: true, Data: meritImportResult{Nodes: []map[string]string{{"oldNodeId": chosen.ID, "nodeId": "standalone"}}, Log: logs}})
 }
 

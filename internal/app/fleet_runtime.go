@@ -68,9 +68,9 @@ func (n *nodeRuntime) Snapshot() fleet.Status {
 	m.mu.Lock()
 	status.Running = m.runningLocked()
 	for _, in := range m.state.Inbounds {
-		status.Traffic[in.ID] = fleet.Usage{Up: in.Traffic.Up, Down: in.Traffic.Down, AllTimeUp: in.Traffic.AllTimeUp, AllTimeDown: in.Traffic.AllTimeDown}
+		status.Traffic[in.ID] = fleet.Usage{LegacyCombined: in.Traffic.LegacyCombined, AllTimeLegacyCombined: in.Traffic.AllTimeLegacyCombined, Up: in.Traffic.Up, Down: in.Traffic.Down, AllTimeUp: in.Traffic.AllTimeUp, AllTimeDown: in.Traffic.AllTimeDown}
 		for _, c := range in.Clients {
-			status.Traffic[in.ID+":"+c.ID] = fleet.Usage{Up: c.Traffic.Up, Down: c.Traffic.Down, AllTimeUp: c.Traffic.AllTimeUp, AllTimeDown: c.Traffic.AllTimeDown, LastOnline: c.LastOnline, ExpiryTime: c.ExpiryTime, RenewCount: c.RenewCount, FirstOnline: c.FirstOnline, LastTrafficReset: c.LastTrafficReset}
+			status.Traffic[in.ID+":"+c.ID] = fleet.Usage{LegacyCombined: c.Traffic.LegacyCombined, AllTimeLegacyCombined: c.Traffic.AllTimeLegacyCombined, Up: c.Traffic.Up, Down: c.Traffic.Down, AllTimeUp: c.Traffic.AllTimeUp, AllTimeDown: c.Traffic.AllTimeDown, LastOnline: c.LastOnline, ExpiryTime: c.ExpiryTime, RenewCount: c.RenewCount, FirstOnline: c.FirstOnline, LastTrafficReset: c.LastTrafficReset}
 		}
 	}
 	m.mu.Unlock()
@@ -204,6 +204,10 @@ func (n *nodeRuntime) Apply(ctx context.Context, desired fleet.DesiredState) err
 	m.mu.Unlock()
 	defer func() { m.mu.Lock(); m.fleetApplying = false; m.mu.Unlock() }()
 	incoming.Settings = old.Settings
+	if desired.NodeID != "standalone" {
+		incoming.LegacyMigrations = old.LegacyMigrations
+	}
+	seedLegacyTraffic(&incoming, old)
 	var policy State
 	_ = json.Unmarshal(desired.Model, &policy)
 	var previousPolicy State

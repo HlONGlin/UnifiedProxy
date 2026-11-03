@@ -182,6 +182,7 @@ func (f *fleetConsole) publish(id string, app *App, sidecars []fleet.Sidecar) (*
 	state.Traffic = TrafficTotals{}
 	state.OutboundTraffic = nil
 	state.SubscriptionTokens = nil
+	state.LegacyMigrations = nil
 	for i := range state.Inbounds {
 		in := &state.Inbounds[i]
 		in.Traffic = TrafficStats{}
@@ -338,7 +339,7 @@ func (a *App) handleRemotePanel(w http.ResponseWriter, r *http.Request, id strin
 			for j := range in.Clients {
 				c := &in.Clients[j]
 				if u, ok := n.Status.Traffic[in.ID+":"+c.ID]; ok {
-					c.Traffic = TrafficStats{Up: u.Up, Down: u.Down, AllTimeUp: u.AllTimeUp, AllTimeDown: u.AllTimeDown}
+					c.Traffic = TrafficStats{LegacyCombined: u.LegacyCombined, AllTimeLegacyCombined: u.AllTimeLegacyCombined, Up: u.Up, Down: u.Down, AllTimeUp: u.AllTimeUp, AllTimeDown: u.AllTimeDown}
 					c.LastOnline = u.LastOnline
 				}
 			}

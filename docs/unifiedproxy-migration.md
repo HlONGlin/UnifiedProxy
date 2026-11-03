@@ -26,7 +26,7 @@ Sidecar、中央证书、WebDAV 和更新流程。合并产物遵循 GPL-3.0；U
 go test ./...
 go vet ./...
 bash scripts/build-fleet.sh dev
-# Windows: powershell -File scripts/build-fleet.ps1 -Version dev
+# 本项目的构建/测试只在 orca-linux /workspace 执行。
 ```
 
 ## 接入
@@ -84,8 +84,8 @@ Sidecar、成功回执后吊销登记，不递归删除用户磁盘目录。
 listener + Client，保留用户名/密码；Naive/ShadowTLS → Sidecar。重复导入同一
 legacy Node ID 不覆盖后续编辑。旧管理员、API Key、历史任务不成为新系统配置。
 
-流量历史、旧订阅 token 不迁移，转换日志可下载并列出新 per-user 订阅入口。
-缺证书的 AnyTLS 导为禁用草稿；旧节点上的文件路径不能当作控制端可读证书。
+旧版双向合计流量独立保存为 legacyCombined，配额与月度重置继续计算该值；不伪造上传/下载明细。带 settings.subToken 的原 /<panelPath>/sub?token= 地址保留别名，涵盖同一次导入的全部节点。原始 JSON（含未知字段）进入受保护恢复档案，随 ZIP/Fleet 备份导出，普通 state API 和节点策略不暴露档案。
+AnyTLS 的内联 PEM、SNI、指纹完整迁移；只有旧证书路径时禁用该入站并明确提示补传证书。ShadowTLS 默认旧版 aes-256-gcm，保留受管后端。NaïveProxy 记录不足时只归档，不阻断其余协议。
 独立面板可导入一个源节点：填写 legacy nodeId（文件仅一个节点时留空），
 保留无冲突本地入站和设置；需已安装实际 Mihomo 验证。多台旧节点应在控制端导入。
 

@@ -109,15 +109,17 @@ type Status struct {
 }
 
 type Usage struct {
-	Up               uint64 `json:"up"`
-	Down             uint64 `json:"down"`
-	AllTimeUp        uint64 `json:"allTimeUp"`
-	AllTimeDown      uint64 `json:"allTimeDown"`
-	ExpiryTime       int64  `json:"expiryTime,omitempty"`
-	RenewCount       int    `json:"renewCount,omitempty"`
-	FirstOnline      string `json:"firstOnline,omitempty"`
-	LastTrafficReset string `json:"lastTrafficReset,omitempty"`
-	LastOnline       string `json:"lastOnline,omitempty"`
+	LegacyCombined        uint64 `json:"legacyCombined,omitempty"`
+	AllTimeLegacyCombined uint64 `json:"allTimeLegacyCombined,omitempty"`
+	Up                    uint64 `json:"up"`
+	Down                  uint64 `json:"down"`
+	AllTimeUp             uint64 `json:"allTimeUp"`
+	AllTimeDown           uint64 `json:"allTimeDown"`
+	ExpiryTime            int64  `json:"expiryTime,omitempty"`
+	RenewCount            int    `json:"renewCount,omitempty"`
+	FirstOnline           string `json:"firstOnline,omitempty"`
+	LastTrafficReset      string `json:"lastTrafficReset,omitempty"`
+	LastOnline            string `json:"lastOnline,omitempty"`
 }
 
 type Poll struct {

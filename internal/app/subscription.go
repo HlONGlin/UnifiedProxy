@@ -41,6 +41,7 @@ type subscriptionPageData struct {
 	Downloaded      string
 	Uploaded        string
 	Usage           string
+	LegacyCombined  string
 	Total           string
 	LastOnline      string
 	Expiry          string
@@ -474,6 +475,9 @@ func (a *App) subscriptionSnapshot(path string) (subscriptionSnapshot, subscript
 var subscriptionFontName = regexp.MustCompile(`^[a-z0-9-]+\.woff2$`)
 
 func (a *App) handleSubscriptionRequest(w http.ResponseWriter, r *http.Request) bool {
+	if a.handleLegacySubscription(w, r) {
+		return true
+	}
 	a.manager.mu.Lock()
 	assetPath := subscriptionAssetPublicPath(a.manager.state.Settings)
 	a.manager.mu.Unlock()
@@ -597,6 +601,9 @@ func setSubscriptionHeaders(w http.ResponseWriter, snapshot subscriptionSnapshot
 	w.Header().Set("Profile-Title", "base64:"+base64.StdEncoding.EncodeToString([]byte(snapshot.Username)))
 	w.Header().Set("Profile-Update-Interval", "24")
 	w.Header().Set("Cache-Control", "no-store")
+	if legacy := subscriptionLegacyBytes(snapshot.Clients); legacy > 0 {
+		w.Header().Set("X-UnifiedProxy-Legacy-Combined", fmt.Sprint(legacy))
+	}
 }
 
 func subscriptionServerHost(r *http.Request) string {
@@ -659,7 +666,7 @@ func renderSubscriptionPageAt(w http.ResponseWriter, r *http.Request, snapshot s
 		UITheme:         normalizeUITheme(snapshot.Settings.UITheme),
 		DefaultLanguage: settingsLanguage(snapshot.Settings),
 		Status:          status, Downloaded: formatSubscriptionBytes(down), Uploaded: formatSubscriptionBytes(up),
-		Usage: formatSubscriptionBytes(up + down), Total: "∞", LastOnline: lastOnline, Expiry: "No expiry", Nodes: nodes,
+		Usage: formatSubscriptionBytes(up + down + subscriptionLegacyBytes(snapshot.Clients)), Total: "∞", LastOnline: lastOnline, Expiry: "No expiry", Nodes: nodes, LegacyCombined: formatSubscriptionBytes(subscriptionLegacyBytes(snapshot.Clients)),
 	}
 	if !data.ClashEnabled {
 		data.ClashURL = ""
@@ -841,6 +848,7 @@ func subscriptionShareURL(inbound Inbound, client Client, server string) string 
 		return fmt.Sprintf("tuic://%s:%s@%s:%d?%s#%s", url.QueryEscape(uuid), url.QueryEscape(password), server, port, values.Encode(), name)
 	case "anytls":
 		values := url.Values{}
+		values.Set("fp", valueOr(inbound.TLSFingerprint, "chrome"))
 		if inbound.TLSServerName != "" {
 			values.Set("sni", inbound.TLSServerName)
 		}
@@ -988,6 +996,7 @@ func subscriptionProxy(inbound Inbound, client Client, server string) map[string
 		}
 	case "anytls":
 		proxy["type"], proxy["password"] = "anytls", client.Password
+		proxy["client-fingerprint"] = valueOr(inbound.TLSFingerprint, "chrome")
 		if inbound.TLSServerName != "" {
 			proxy["sni"] = inbound.TLSServerName
 		}

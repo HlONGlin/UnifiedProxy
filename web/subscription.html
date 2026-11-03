@@ -66,6 +66,7 @@
       <tr><td data-i18n="downloaded">Downloaded</td><td>{{.Downloaded}}</td></tr>
       <tr><td data-i18n="uploaded">Uploaded</td><td>{{.Uploaded}}</td></tr>
       <tr><td data-i18n="usage">Usage</td><td>{{.Usage}}</td></tr>
+      {{if ne .LegacyCombined "0 B"}}<tr><td>Legacy combined usage / 旧版双向合计</td><td>{{.LegacyCombined}}</td></tr>{{end}}
       <tr><td data-i18n="totalQuota">Total quota</td><td>{{.Total}}</td></tr>
       <tr><td data-i18n="lastOnline">Last Online</td><td id="last-online-value" data-value="{{.LastOnline}}">{{.LastOnline}}</td></tr>
       <tr><td data-i18n="expiry">Expiry</td><td id="expiry-value" data-value="{{.Expiry}}">{{.Expiry}}</td></tr>

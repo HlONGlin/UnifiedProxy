@@ -101,6 +101,7 @@ func (a *App) fleetSubscriptionSnapshot(path string) (subscriptionSnapshot, subs
 		if json.Unmarshal(node.Desired.Model, &state) != nil {
 			continue
 		}
+		seedLegacyTraffic(&state, State{})
 		for _, in := range state.Inbounds {
 			in.Name = node.Name + " / " + in.Name
 			for _, client := range in.Clients {
@@ -108,14 +109,14 @@ func (a *App) fleetSubscriptionSnapshot(path string) (subscriptionSnapshot, subs
 					continue
 				}
 				if usage, ok := node.Status.Traffic[in.ID+":"+client.ID]; ok {
-					client.Traffic = TrafficStats{Up: usage.Up, Down: usage.Down, AllTimeUp: usage.AllTimeUp, AllTimeDown: usage.AllTimeDown}
+					client.Traffic = TrafficStats{LegacyCombined: usage.LegacyCombined, AllTimeLegacyCombined: usage.AllTimeLegacyCombined, Up: usage.Up, Down: usage.Down, AllTimeUp: usage.AllTimeUp, AllTimeDown: usage.AllTimeDown}
 					client.LastOnline = usage.LastOnline
 					if node.Status.Revision == node.Desired.Revision && node.Status.Digest == node.Desired.Digest && usage.ExpiryTime > client.ExpiryTime {
 						client.ExpiryTime = usage.ExpiryTime
 					}
 				}
 				if usage, ok := node.Status.Traffic[in.ID]; ok {
-					in.Traffic = TrafficStats{Up: usage.Up, Down: usage.Down, AllTimeUp: usage.AllTimeUp, AllTimeDown: usage.AllTimeDown}
+					in.Traffic = TrafficStats{LegacyCombined: usage.LegacyCombined, AllTimeLegacyCombined: usage.AllTimeLegacyCombined, Up: usage.Up, Down: usage.Down, AllTimeUp: usage.AllTimeUp, AllTimeDown: usage.AllTimeDown}
 				}
 				snapshot.Clients = append(snapshot.Clients, subscriptionClient{Inbound: in, Client: client, Server: node.Address})
 			}

@@ -106,6 +106,15 @@ func (a *App) handleBackup(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		defer file.Close()
+		// Raw MieruPilot stores and full fleet backups share the normal upload
+		// entry; ZIP v1/v2 continues through the existing strict validator.
+		var prefix [512]byte
+		n, _ := file.Read(prefix[:])
+		_, _ = file.Seek(0, io.SeekStart)
+		if strings.HasPrefix(strings.TrimSpace(string(prefix[:n])), "{") {
+			a.importJSONBackup(w, r, file)
+			return
+		}
 		outcome, err := a.importBackup(file, r.FormValue("replaceIdentity") == "1")
 		if err != nil {
 			writeJSON(w, http.StatusBadRequest, apiResponse{Message: a.tr(err.Error())})

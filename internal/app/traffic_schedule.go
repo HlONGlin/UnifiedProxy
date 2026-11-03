@@ -168,6 +168,7 @@ func renewClient(client *Client, now time.Time) bool {
 	client.RenewCount += renewals
 	if expiry.After(now) {
 		client.Traffic.Up, client.Traffic.Down = 0, 0
+		client.Traffic.LegacyCombined = 0
 	}
 	return true
 }
@@ -210,8 +211,10 @@ func (m *CoreManager) applyScheduledTrafficResets() {
 		if inbound.TrafficReset != "" && inbound.TrafficReset != "never" &&
 			trafficResetDue(inbound.TrafficReset, inbound.TrafficResetDay, scheduleStart(inbound.LastTrafficReset, inbound.CreatedAt, now), now) {
 			inbound.Traffic.Up, inbound.Traffic.Down = 0, 0
+			inbound.Traffic.LegacyCombined = 0
 			for clientIndex := range inbound.Clients {
 				inbound.Clients[clientIndex].Traffic.Up, inbound.Clients[clientIndex].Traffic.Down = 0, 0
+				inbound.Clients[clientIndex].Traffic.LegacyCombined = 0
 			}
 			inbound.LastTrafficReset = now.Format(time.RFC3339)
 			m.addLogLocked(fmt.Sprintf("Inbound %s 已执行周期流量重置（%s）", inbound.Name, inbound.TrafficReset))
@@ -228,6 +231,7 @@ func (m *CoreManager) applyScheduledTrafficResets() {
 			}
 			if trafficResetDue(client.TrafficReset, client.TrafficResetDay, scheduleStart(client.LastTrafficReset, client.CreatedAt, now), now) {
 				client.Traffic.Up, client.Traffic.Down = 0, 0
+				client.Traffic.LegacyCombined = 0
 				client.LastTrafficReset = now.Format(time.RFC3339)
 				m.addLogLocked(fmt.Sprintf("客户端 %s/%s 已执行周期流量重置（%s）", inbound.Name, client.Name, client.TrafficReset))
 				changed = true

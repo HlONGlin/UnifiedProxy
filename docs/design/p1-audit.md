@@ -77,7 +77,7 @@ ID 为后续实际回归记录的主键。除注明外入口均在 index.html。
 
 | 来源 | 结构/实际源代码证据 | 当前缺口 |
 |---|---|---|
-| 最早有业务数据的 `18224d0`（2026-10-05） | store.persisted：admin/settings.subToken/nodes；Port 无 proxyType 时为 Mieru | 原始 Node remark/日期与 subToken 未迁移 |
+| 最早有业务数据的 `aa45551`（其后的 `18224d0` 是修正提交）（2026-10-05） | store.persisted：admin/settings.subToken/nodes；Port 无 proxyType 时为 Mieru | 原始 Node remark/日期与 subToken 未迁移 |
 | 后续 merit / UnifiedProxy 1.x | 上述增加 panelPath、egress、流量/限速/自动禁用、TLS/SNI、ShadowTLS 后端、审计 | 当前转换器只读部分字段；流量与旧订阅丢弃 |
 | m-ui 备份 ZIP | manifest + state.json + peers/cross/templates 等文件 | 原路径保留并测试，不得用旧 JSON 导入覆盖 |
 | 合并版 Fleet JSON | format=1 / panel / fleet / files / drafts | 现有事务恢复与回滚保留，新增兼容接入不得弱化校验 |

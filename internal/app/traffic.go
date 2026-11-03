@@ -281,7 +281,7 @@ func (m *CoreManager) recordExternalClientDeltaLocked(inboundID string, client C
 	entry.ID, entry.InboundID = client.ID, inboundID
 	entry.Enable, entry.Email, entry.UUID = client.Enabled, client.Name, client.UUID
 	entry.ExpiryTime, entry.Total = client.ExpiryTime, int64(client.Total)
-	entry.AllTime = int64(client.Traffic.AllTimeUp + client.Traffic.AllTimeDown)
+	entry.AllTime = int64(client.Traffic.allTime())
 	entry.LastOnline = parseTimeMillis(client.LastOnline)
 	entry.Up += int64(upload)
 	entry.Down += int64(download)
@@ -568,15 +568,18 @@ func (a *App) handleTrafficReset(w http.ResponseWriter, r *http.Request) {
 	if input.All || input.InboundsOnly || input.ClientsOnly {
 		if input.All || input.InboundsOnly {
 			a.manager.state.Traffic.Up, a.manager.state.Traffic.Down = 0, 0
+			a.manager.state.Traffic.LegacyCombined = 0
 		}
 		for inboundIndex := range a.manager.state.Inbounds {
 			inbound := &a.manager.state.Inbounds[inboundIndex]
 			if input.All || input.InboundsOnly {
 				inbound.Traffic.Up, inbound.Traffic.Down = 0, 0
+				inbound.Traffic.LegacyCombined = 0
 			}
 			if input.All || input.ClientsOnly {
 				for clientIndex := range inbound.Clients {
 					inbound.Clients[clientIndex].Traffic.Up, inbound.Clients[clientIndex].Traffic.Down = 0, 0
+					inbound.Clients[clientIndex].Traffic.LegacyCombined = 0
 				}
 			}
 		}
@@ -588,10 +591,12 @@ func (a *App) handleTrafficReset(w http.ResponseWriter, r *http.Request) {
 			}
 			if input.ClientID == "" {
 				inbound.Traffic.Up, inbound.Traffic.Down = 0, 0
+				inbound.Traffic.LegacyCombined = 0
 			} else {
 				for clientIndex := range inbound.Clients {
 					if inbound.Clients[clientIndex].ID == input.ClientID {
 						inbound.Clients[clientIndex].Traffic.Up, inbound.Clients[clientIndex].Traffic.Down = 0, 0
+						inbound.Clients[clientIndex].Traffic.LegacyCombined = 0
 					}
 				}
 			}
