@@ -1,102 +1,41 @@
-[简体中文](/README.md) | [English](/README.en.md) | [繁體中文](/README.zh_TW.md) | [日本語](/README.ja.md) | [Русский](/README.ru.md) | [فارسی](/README.fa.md) | [Tiếng Việt](/README.vi.md) | [Español](/README.es.md) | [Türkçe](/README.tr.md) | [Українська](/README.uk.md) | [Português (Brasil)](/README.pt_BR.md)
-
 <p align="center">
-  <img src="./web/media/unifiedproxy.svg" alt="UnifiedProxy" width="96">
+  <img src="./media/unifiedproxy-banner.svg" alt="UnifiedProxy — Standalone / Control / Agent" width="1200">
 </p>
 
 # UnifiedProxy
 
-[![License: GPL-3.0](https://img.shields.io/badge/License-GPL--3.0-blue.svg)](LICENSE)
+**一个工作台，管理单机代理与整支节点舰队。**
 
-UnifiedProxy 将 Mihomo 原生面板与舰队管理整合为同一应用，支持独立、控制端和 Agent 三种模式，保留入站、客户端、订阅、多控、签名任务、Sidecar、中央证书、WebDAV 备份及健康检查更新。界面支持 11 种语言，采用五套配色 × 独立明暗，默认 T0 黑白浅色。
+UnifiedProxy 把 Mihomo 原生配置、用户订阅和跨节点运维放进同一应用。可以从单机面板开始，也可以由控制端统一编辑节点策略，再交给 Agent 校验、应用和回报。日常配置、历史数据迁移与运行维护共用同一套工作流。
 
-从[部署与迁移指南](docs/unifiedproxy-migration.md)开始。历史备份可导入原凭据、用量和订阅别名；证书文件、节点重新绑定与 NaïveProxy 豁免等边界见[兼容验收](docs/design/legacy-acceptance.md)。
+[简体中文](/README.md) · [English](/README.en.md) · [Languages](#languages)
 
-> [!IMPORTANT]
-> 本项目只应用于您拥有或获授权管理的服务器和网络。请遵守所在地法律、上游服务商条款以及您所访问服务的使用政策。
+[开始部署](#deploy) · [历史备份迁移](#migration) · [工作台预览](#workspace) · [功能验收](docs/design/p5-acceptance.md) · [版本发布](https://github.com/HlONGlin/UnifiedProxy/releases)
 
-### 五套配色
+## 选择部署方式
 
-`data-theme="light|dark"` × `data-color-theme="t0|t1|t2|t3|t4"`
-
-| 主题 | 配色 | 参考对象 |
+| 使用场景 | 入口 | 运行方式 |
 |---|---|---|
-| T0 | 黑白·墨（默认） | Vercel |
-| T1 | 暖纸陶土 | Claude / Anthropic |
-| T2 | 夜紫荧光 | Sentry |
-| T3 | 翡翠绿 | Supabase |
-| T4 | 靛紫 | Stripe |
+| 管理一台服务器 | `m-ui serve` | 本地面板管理本机 Mihomo；保留多控网络与订阅聚合 |
+| 集中管理多台服务器 | `m-ui --control serve` | 保存节点草稿、发布策略、调度签名任务；控制端不运行本机代理内核 |
+| 接受控制端管理 | `m-ui --agent serve` | 显式登记后接入，执行配置与任务；已运行代理在控制端离线时继续工作 |
 
-[主题变量映射与参考对象](docs/design/p2-token-map.md) · [来源与许可说明](NOTICE)
+`control` / `node` 是同一应用的部署入口。节点登记、所有权边界和应急接管见[运行与迁移指南](docs/unifiedproxy-migration.md)。
 
-<p align="center">
-  <img src="./media/screenshots/unifiedproxy/inbounds.png" alt="入站与客户端" width="900">
-</p>
+<a id="deploy"></a>
 
-## 功能
+## 接入与升级
 
-**面板与 Mihomo**
-
-* 仪表盘显示系统、流量、连接和 Mihomo 状态；面板启动时自动启动 Mihomo
-* 生成并校验 Mihomo 原生 YAML，可预览和下载原始配置
-* 从 MetaCubeX 官方发布版本切换 Mihomo 版本，更新 GeoIP / GeoSite / MetaDB
-* 完整备份与恢复：设置、入站、多控身份（可选恢复）、跨面板缓存、订阅模板和多控客户端设备
-* **从 3x-ui 一键迁移：** 导入 `x-ui.db`（v2.9.3–v3.10.2）或 Xray 的 `config.json`，入站、包含配额、到期时间和用量的客户端、出站、负载均衡和路由规则都会加到面板现有内容旁边；Mihomo 做不到的部分写进可下载的转换日志
-* 界面支持英语、简体中文、繁体中文、日语、俄语、波斯语、越南语、西班牙语、土耳其语、乌克兰语和巴西葡萄牙语
-
-**入站与客户端**
-
-* 支持 `mixed`、`socks`、`http`、`shadowsocks`、`snell`、`vmess`、`vless`、`trojan`、`hysteria2`、`tuic`、`anytls`、`mieru`、`sudoku`、`shadowquic`、`trusttunnel` 和 `hysteria2-realm` 监听
-* TLS、Reality、ShadowTLS、RestTLS、TLSMirror、JLS、Trojan SS、XHTTP、mKCP、Mekya 和混淆设置
-* 每个客户端的凭据、流量配额、到期时间、流量重置周期、到期自动续期和在线状态；入站也可设置总量和到期
-* 分享链接、二维码、通过 Mihomo 监听器 YAML 导入入站、批量重置流量
-
-**订阅**
-
-* 浏览器订阅页，显示用量、配额、到期时间和节点，可一键导入 Clash Caesar
-* **订阅模板**：每个订阅都是完整的客户端配置，可使用内置的中国 / 俄罗斯 / 伊朗模板，也可导入自己的 Mihomo 模板
-* 为 Mihomo/Clash、Stash、sing-box、Surge、Surfboard、Loon、Quantumult X、Egern 生成完整配置；为 V2Box、V2RayNG、Shadowrocket 等分享链接类客户端提供节点列表
-* 每个用户独立的订阅令牌，可选独立订阅端口
-
-**Mihomo 设置**
-
-* 基础设置：运行模式、直连 IP 版本、IPv6、TCP 并发、统计、日志和基础分流
-* 出站（包括 Snell、WireGuard、OpenVPN）和策略组，支持表单、原生 YAML 和分享链接转换
-* 自上而下匹配的路由规则，支持 `AND` 组合规则
-* Cloudflare WARP 出站，以及按国家和运营商选择的 VPNGate 家宽出口
-
-**多控网络（Multi-control）**
-
-* 无主节点的 P2P 面板网络，使用签名身份
-* 在可信面板之间加密同步入站
-* 跨面板订阅聚合
-* 客户端设备：[Clash Caesar](https://github.com/RomanovCaesar/clash-caesar) 导入插件文件、用面板管理员账号登录一次，即可查看网络里所有面板的在线情况，并通过任意一个能连上的面板拉取各面板订阅或融合订阅
-
-## 截图
-
-以下为当前 UnifiedProxy 界面的中文演示数据截图；每套配色均支持浅色与深色。
-
-<table>
-  <tr><td width="50%"><img src="./media/screenshots/unifiedproxy/inbounds.png" alt="入站与客户端"><br><sub>入站与客户端</sub></td><td width="50%"><img src="./media/screenshots/unifiedproxy/client-edit.png" alt="客户端配额与到期"><br><sub>客户端配额与到期</sub></td></tr>
-  <tr><td width="50%"><img src="./media/screenshots/unifiedproxy/outbounds.png" alt="出站与策略组"><br><sub>出站与策略组</sub></td><td width="50%"><img src="./media/screenshots/unifiedproxy/routing.png" alt="分流规则"><br><sub>分流规则</sub></td></tr>
-  <tr><td width="50%"><img src="./media/screenshots/unifiedproxy/xray-import.png" alt="Xray / 3x-ui 导入"><br><sub>Xray / 3x-ui 导入</sub></td><td width="50%"><img src="./media/screenshots/unifiedproxy/fleet.png" alt="舰队控制台"><br><sub>舰队控制台</sub></td></tr>
-  <tr><td width="50%"><img src="./media/screenshots/unifiedproxy/login.png" alt="登录"><br><sub>登录</sub></td><td width="50%"><img src="./media/screenshots/unifiedproxy/subscription-mobile.png" alt="手机订阅页"><br><sub>手机订阅页</sub></td></tr>
-  <tr><td width="50%"><img src="./media/screenshots/unifiedproxy/t0-light.png" alt="T0 浅色"><br><sub>T0 浅色</sub></td><td width="50%"><img src="./media/screenshots/unifiedproxy/t0-dark.png" alt="T0 深色"><br><sub>T0 深色</sub></td></tr>
-  <tr><td width="50%"><img src="./media/screenshots/unifiedproxy/t1-light.png" alt="T1 浅色"><br><sub>T1 浅色</sub></td><td width="50%"><img src="./media/screenshots/unifiedproxy/t1-dark.png" alt="T1 深色"><br><sub>T1 深色</sub></td></tr>
-  <tr><td width="50%"><img src="./media/screenshots/unifiedproxy/t2-light.png" alt="T2 浅色"><br><sub>T2 浅色</sub></td><td width="50%"><img src="./media/screenshots/unifiedproxy/t2-dark.png" alt="T2 深色"><br><sub>T2 深色</sub></td></tr>
-  <tr><td width="50%"><img src="./media/screenshots/unifiedproxy/t3-light.png" alt="T3 浅色"><br><sub>T3 浅色</sub></td><td width="50%"><img src="./media/screenshots/unifiedproxy/t3-dark.png" alt="T3 深色"><br><sub>T3 深色</sub></td></tr>
-  <tr><td width="50%"><img src="./media/screenshots/unifiedproxy/t4-light.png" alt="T4 浅色"><br><sub>T4 浅色</sub></td><td width="50%"><img src="./media/screenshots/unifiedproxy/t4-dark.png" alt="T4 深色"><br><sub>T4 深色</sub></td></tr>
-</table>
-
-## Linux 安装
-
-在使用 systemd 或 OpenRC 的 Linux 上以 `root` 执行：
+在使用 systemd 或 OpenRC 的 Linux 服务器上，以 `root` 执行：
 
 ```bash
 bash <(curl -Ls https://raw.githubusercontent.com/HlONGlin/UnifiedProxy/main/install.sh)
 ```
 
-安装器会选择一个未占用的五位数面板端口，并生成 16 位面板路径、14 位用户名和 16 位密码，安装结束时只打印一次访问地址和凭据。也可以显式指定：
+安装结束时会显示一次访问地址和随机凭据：未占用的五位数端口、16 位面板路径、14 位用户名和 16 位密码。程序位于 `/usr/local/m-ui`，数据位于 `/usr/local/m-ui/data`；命令与路径沿用兼容名称，便于原有部署升级。
+
+<details>
+<summary>手动指定端口、路径和凭据</summary>
 
 ```bash
 bash <(curl -Ls https://raw.githubusercontent.com/HlONGlin/UnifiedProxy/main/install.sh) \
@@ -106,15 +45,10 @@ bash <(curl -Ls https://raw.githubusercontent.com/HlONGlin/UnifiedProxy/main/ins
   --password 'ChangeThisA12345'
 ```
 
-UnifiedProxy 安装在 `/usr/local/m-ui`，数据保存在 `/usr/local/m-ui/data`。安装器还会下载适配当前架构的 Mihomo 内核；已有内核默认保留，传入 `--update-mihomo` 才会替换。
+</details>
 
-`m-ui update` 升级 UnifiedProxy 并保留全部设置。更新前会把数据目录快照到 `data/backups/`，保留最近 3 份。
-
-发布包提供 `386`、`amd64`、`arm64`、`armv5`、`armv6`、`armv7` 和 `s390x` 的 `m-ui-linux-<architecture>.tar.gz`，以及 `m-ui-windows-amd64.zip`。
-
-## Docker
-
-Docker 镜像面向 Linux amd64，包含 UnifiedProxy 和一个固定版本、经过校验的 Mihomo 内核。Compose 使用主机网络，面板里新增的入站端口无需额外端口映射即可使用。
+<details>
+<summary>使用 Docker Compose</summary>
 
 ```bash
 git clone https://github.com/HlONGlin/UnifiedProxy.git
@@ -124,44 +58,177 @@ docker compose up -d --build
 docker compose logs m-ui
 ```
 
-从本仓库构建。版本发布工作流可发布 `ghcr.io/hlonglin/unifiedproxy:<tag>` 与 `latest`；确认对应 UnifiedProxy 镜像已发布后再使用 `docker compose pull`。`MUI_PASSWORD` / `MUI_PATH` 为空时首次生成，并在日志打印一次。服务名与数据卷继续使用 `m-ui`、`m-ui-data` 和 `m-ui-core`，升级时保留这些卷。
+镜像面向 Linux amd64，内置固定版本并经过校验的 Mihomo。Compose 采用主机网络，新增入站端口无需额外映射。未填写的 `MUI_PASSWORD` / `MUI_PATH` 在首次启动时生成，并在日志中显示一次。
 
-## TLS 证书
+默认从本仓库构建；发布工作流可提供 `ghcr.io/hlonglin/unifiedproxy:<tag>` 和 `latest`，对应镜像发布后可使用 `docker compose pull`。升级时保留服务名 `m-ui` 及数据卷 `m-ui-data`、`m-ui-core`。
 
-首次交互安装时可以选择：Let's Encrypt 域名证书、Let's Encrypt 短期 IPv4 证书、已有证书和私钥，或跳过 TLS。安装后运行：
+</details>
+
+已有部署运行 `m-ui update`，更新前自动在 `data/backups/` 创建数据快照，保留最近 3 份。安装器保留已有 Mihomo 内核；显式传入 `--update-mihomo` 才替换。发布包提供 `386`、`amd64`、`arm64`、`armv5`、`armv6`、`armv7`、`s390x` 的 `m-ui-linux-<architecture>.tar.gz`，以及 `m-ui-windows-amd64.zip`。
+
+<a id="workspace"></a>
+
+## 工作台与五套配色
+
+以舰队视图查看节点，再进入节点对应的入站、客户端、路由与运行操作。以下图片来自当前界面的中文演示数据。
+
+![UnifiedProxy 舰队工作台](./media/screenshots/unifiedproxy/fleet.png)
+
+<details>
+<summary>日常配置：入站、客户端与出站</summary>
+
+**入站与客户端**
+
+![入站与客户端](./media/screenshots/unifiedproxy/inbounds.png)
+
+**客户端配额与到期**
+
+![客户端配额与到期](./media/screenshots/unifiedproxy/client-edit.png)
+
+**出站与策略组**
+
+![出站与策略组](./media/screenshots/unifiedproxy/outbounds.png)
+
+</details>
+
+<details>
+<summary>路由与迁移：分流规则、Xray / 3x-ui 导入</summary>
+
+**分流规则**
+
+![分流规则](./media/screenshots/unifiedproxy/routing.png)
+
+**Xray / 3x-ui 导入**
+
+![Xray / 3x-ui 导入](./media/screenshots/unifiedproxy/xray-import.png)
+
+</details>
+
+<details>
+<summary>访问入口：登录与移动端订阅</summary>
+
+**登录页**
+
+![登录页](./media/screenshots/unifiedproxy/login.png)
+
+**手机订阅页**
+
+![手机订阅页](./media/screenshots/unifiedproxy/subscription-mobile.png)
+
+</details>
+
+配色和明暗各自独立：`data-color-theme="t0|t1|t2|t3|t4"` × `data-theme="light|dark"`，默认 T0 黑白浅色。五套配色共用布局、线性图标和交互规则。
+
+<details>
+<summary>展开五套配色的十种明暗实拍</summary>
+
+| 主题 | 配色参考 | 浅色实拍 | 深色实拍 |
+|---|---|---|---|
+| T0 · 黑白·墨（默认） | Vercel | <img src="./media/screenshots/unifiedproxy/t0-light.png" alt="T0 浅色" width="240"> | <img src="./media/screenshots/unifiedproxy/t0-dark.png" alt="T0 深色" width="240"> |
+| T1 · 暖纸陶土 | Claude / Anthropic | <img src="./media/screenshots/unifiedproxy/t1-light.png" alt="T1 浅色" width="240"> | <img src="./media/screenshots/unifiedproxy/t1-dark.png" alt="T1 深色" width="240"> |
+| T2 · 夜紫荧光 | Sentry | <img src="./media/screenshots/unifiedproxy/t2-light.png" alt="T2 浅色" width="240"> | <img src="./media/screenshots/unifiedproxy/t2-dark.png" alt="T2 深色" width="240"> |
+| T3 · 翡翠绿 | Supabase | <img src="./media/screenshots/unifiedproxy/t3-light.png" alt="T3 浅色" width="240"> | <img src="./media/screenshots/unifiedproxy/t3-dark.png" alt="T3 深色" width="240"> |
+| T4 · 靛紫 | Stripe | <img src="./media/screenshots/unifiedproxy/t4-light.png" alt="T4 浅色" width="240"> | <img src="./media/screenshots/unifiedproxy/t4-dark.png" alt="T4 深色" width="240"> |
+
+</details>
+
+配色参考明确标注为 Vercel、Claude / Anthropic、Sentry、Supabase 和 Stripe。变量映射、色值调整和使用边界见[主题设计记录](docs/design/p2-token-map.md)；逐页检查与对比度测量见[P5 审查](docs/design/p5-acceptance.md)。
+
+<a id="capabilities"></a>
+
+## 可以在这里完成什么
+
+| 工作 | 对应能力 |
+|---|---|
+| 维护整支舰队 | 节点登记、签名任务、节点草稿、策略发布、回执与审计，失败恢复和应急接管 |
+| 配置代理服务 | Mihomo 原生 YAML、入站与客户端、出站与策略组、分流规则、内核及地理数据更新 |
+| 交付用户订阅 | 凭据、配额、到期、续期、分享链接与二维码，多种客户端配置及跨面板聚合 |
+| 保存并恢复部署 | 原面板备份、旧 UnifiedProxy JSON、3x-ui / Xray 导入、WebDAV 备份、中央证书和健康检查更新 |
+
+<details>
+<summary>代理配置与运行观测</summary>
+
+* 仪表盘查看系统资源、流量、连接和 Mihomo 状态；本机面板启动时自动启动内核。
+* 表单与原生 YAML 共用配置模型，生成后校验，可预览及下载原始配置；出站同时支持分享链接转换。
+* 入站支持 `mixed`、`socks`、`http`、`shadowsocks`、`snell`、`vmess`、`vless`、`trojan`、`hysteria2`、`tuic`、`anytls`、`mieru`、`sudoku`、`shadowquic`、`trusttunnel`、`hysteria2-realm`。
+* 可配置 TLS、Reality、ShadowTLS、RestTLS、TLSMirror、JLS、Trojan SS、XHTTP、mKCP、Mekya 及混淆；支持 Mihomo 监听器 YAML 导入。
+* 基础设置包含运行模式、直连 IP 版本、IPv6、TCP 并发、统计与日志。出站包含 Snell、WireGuard、OpenVPN，支持自上而下的路由规则与 `AND` 条件。
+* 可使用 Cloudflare WARP，以及按国家和运营商选择的 VPNGate 家宽出口；从 MetaCubeX 官方发布源切换内核，更新 GeoIP / GeoSite / MetaDB。
+
+</details>
+
+<details>
+<summary>用户、订阅与多控网络</summary>
+
+* 客户端分别设置凭据、流量配额、到期时间、重置周期和到期自动续期，查看在线状态，批量重置流量；入站也支持总量与到期限制。
+* 每位用户拥有独立订阅令牌，可设置独立订阅端口。浏览器订阅页显示用量、配额、到期与节点，支持分享链接、二维码及一键导入 Clash Caesar。
+* 使用内置的中国 / 俄罗斯 / 伊朗模板，或导入自定义 Mihomo 模板，生成完整客户端配置。
+* 完整配置覆盖 Mihomo / Clash、Stash、sing-box、Surge、Surfboard、Loon、Quantumult X、Egern；节点列表覆盖 V2Box、V2RayNG、Shadowrocket 等分享链接客户端。
+* 独立模式保留使用签名身份的无主 P2P 多控网络：在可信面板间加密同步入站、聚合订阅。[Clash Caesar](https://github.com/RomanovCaesar/clash-caesar) 导入网络文件并以管理员身份登录后，可经任一可达面板获取各面板或合并订阅。
+* 面板与管理菜单支持英语、简体中文、繁体中文、日语、俄语、波斯语、越南语、西班牙语、土耳其语、乌克兰语和巴西葡萄牙语。
+
+</details>
+
+<details>
+<summary>舰队、备份与维护保障</summary>
+
+* 同一程序提供独立、控制端和 Agent 模式，使用签名通道下发任务，按节点保存期望配置；应用过程包含校验、热重载和健康检查，失败时恢复。
+* 提供 Sidecar 编排、中央证书、WebDAV 备份及健康检查更新；旧节点接入需要显式登记。
+* 完整备份包括设置、入站、可选恢复的多控身份、跨面板缓存、订阅模板和多控客户端设备。
+* 旧 JSON、原面板 ZIP 与舰队备份的入口及恢复范围见[历史兼容验收](docs/design/legacy-acceptance.md)。
+
+</details>
+
+<a id="migration"></a>
+
+## 把历史数据带过来
+
+| 数据来源 | 迁移结果 | 需要留意 |
+|---|---|---|
+| 最早及后续 UnifiedProxy `merit.json` | 节点、原凭据、配额、历史合计用量、出站规则和旧订阅别名；原始数据进入受保护恢复档案 | 旧 Agent 重新登记；只存证书路径时补传 PEM；NaïveProxy 按既定豁免处理 |
+| 现有面板备份 | 恢复设置、入站、订阅模板及可选多控身份；识别原 ZIP 与舰队备份 | 升级前保留完整数据快照 |
+| 3x-ui / Xray | 导入 `x-ui.db`（v2.9.3–v3.10.2）或 `config.json`，将入站、含配额/到期/用量的客户端、出站、负载均衡与路由追加到现有配置 | 不受 Mihomo 支持的配置写入可下载的转换日志 |
+
+旧双向合计用量单独保存为 `legacyCombined`，用于配额及订阅总用量，不伪造上传和下载明细。带原订阅令牌的旧地址保留别名。旧版未实际执行的 `bandwidthLimit` 只归档；多候选 SOCKS5 出站改用轮询分配，候选及认证保留。
+
+迁移步骤见[运行与迁移指南](docs/unifiedproxy-migration.md)，最早备份、回滚和真实 Mihomo 传输的验证范围见[历史兼容验收](docs/design/legacy-acceptance.md)。
+
+<a id="operations"></a>
+
+## 日常维护与证书
+
+| 操作 | 命令 |
+|---|---|
+| 打开菜单 / 切换中文 | `m-ui` / `m-ui --lang zh-cn` |
+| 启动、停止、重启 | `m-ui start` / `m-ui stop` / `m-ui restart` |
+| 查看状态与日志 / 清理日志 | `m-ui status` / `m-ui logs` / `m-ui clear-logs` |
+| 设置面板 / 调整端口 | `m-ui settings` / `m-ui configure` / `m-ui set-port` |
+| 重置凭据 / 面板路径 | `m-ui reset-credentials` / `m-ui reset-path` |
+| 更新程序 / 管理菜单 | `m-ui update` / `m-ui update-menu` |
+| 开启 / 关闭开机启动 | `m-ui enable` / `m-ui disable` |
+| 卸载 | `m-ui uninstall` |
+
+菜单记住所选语言，安装脚本为英文。证书入口：
 
 ```bash
 m-ui ssl
 ```
 
-菜单可以申请域名和 IP 证书；80 端口不可用时可通过 Cloudflare DNS API 申请域名与通配符证书；还可以续期、吊销、查看证书，以及应用已有证书。证书文件只有叶子证书时，UnifiedProxy 会自动补全证书链，因为 Mihomo Party、FlClash 等客户端会拒绝这样的证书。
+首次交互安装可选择 Let's Encrypt 域名证书、短期 IPv4 证书、已有证书与私钥，或跳过 TLS。菜单提供申请、续期、吊销、查看和应用操作；80 端口不可用时，可通过 Cloudflare DNS API 申请域名及通配符证书。仅含叶子证书的文件会自动补全证书链，以适配 Mihomo Party、FlClash 等客户端。
 
-## 管理命令
+<a id="docs"></a>
 
-```text
-m-ui                  # 打开交互菜单
-m-ui start | stop | restart | status | logs
-m-ui settings | configure | set-port
-m-ui reset-credentials | reset-path
-m-ui update | update-menu | ssl
-m-ui enable | disable | clear-logs | uninstall
-m-ui --lang <code>    # 菜单语言，例如：m-ui --lang zh-cn
-```
+## 按任务查阅文档
 
-管理菜单支持和面板相同的 11 种语言，并会记住你的选择。安装脚本保持英文。
+| 你要完成的事 | 文档 |
+|---|---|
+| 部署、登记节点、迁移或应急接管 | [运行与迁移指南](docs/unifiedproxy-migration.md) |
+| 对接控制端、Agent 和任务模型 | [模型映射与协议](docs/fleet-protocol.md) |
+| 核对旧数据支持范围 | [历史兼容验收](docs/design/legacy-acceptance.md) |
+| 了解主题变量及设计参考 | [主题设计记录](docs/design/p2-token-map.md) |
+| 查看功能与视觉验证证据 | [P5 审查](docs/design/p5-acceptance.md) · [P6 收尾](docs/design/p6-completion.md) |
 
-## 文档
-
-* [部署与迁移](docs/unifiedproxy-migration.md)
-* [模型与协议](docs/fleet-protocol.md)
-* [功能与兼容验收](docs/design/legacy-acceptance.md)
-* [主题变量与参考对象](docs/design/p2-token-map.md)
-* [P5 视觉及功能审查](docs/design/p5-acceptance.md)
-* [版本发布](https://github.com/HlONGlin/UnifiedProxy/releases)
-
-## 开发
-
-构建、测试与预览仅在 orca-linux 的 Linux 容器 `/workspace` 内执行。Windows 仅用于文件编辑和 Git。
+构建、测试与预览只在 orca-linux 容器的 `/workspace` 执行；Windows 用于编辑文件与 Git 操作。
 
 ```bash
 test "$PWD" = /workspace && test -f /.dockerenv
@@ -170,17 +237,29 @@ go vet ./...
 go test ./...
 ```
 
-使用 `MUI_VERSION` 或 Git 标签指定版本，通过 `-X main.version=...` 注入构建。详见[构建与部署](docs/unifiedproxy-migration.md)及[主题变量](docs/design/p2-token-map.md)。
+`MUI_VERSION` 或 Git 标签指定版本，通过 `-X main.version=...` 注入构建；舰队构建与部署步骤见[指南](docs/unifiedproxy-migration.md)。
 
-## 致谢
+## 项目来源与许可
 
-* [MetaCubeX/mihomo](https://github.com/MetaCubeX/mihomo)：代理内核与配置模型
-* [MHSanaei/3x-ui](https://github.com/MHSanaei/3x-ui)：界面信息密度与操作流程
-* [Sub-Store](https://github.com/sub-store-org/Sub-Store)：客户端订阅格式的参考实现
-* m-ui（GPL-3.0）、UnifiedProxy（MIT）：合并来源与许可说明见 [NOTICE](NOTICE) 和 [MIT 许可声明](licenses/UnifiedProxy-MIT.txt)。
-* [Lucide](https://lucide.dev)：线性图标，采用 ISC 许可；见[图标来源与许可](web/licenses/LICENSE-Lucide.txt)。
-* Vercel / Claude（Anthropic）/ Sentry / Supabase / Stripe：五套配色的[参考对象](docs/design/p2-token-map.md)，参考资料由 VoltAgent/awesome-design-md（MIT）整理。
+| 来源 | 在 UnifiedProxy 中的用途与声明 |
+|---|---|
+| m-ui | Mihomo 面板基础、入站/客户端和订阅等能力；保留 GPL-3.0 归属 |
+| 原 UnifiedProxy（MieruPilot / merit） | 舰队生命周期、任务队列、旧备份迁移及 Sidecar 相关能力；保留 [MIT 声明](licenses/UnifiedProxy-MIT.txt) |
+| [MetaCubeX/mihomo](https://github.com/MetaCubeX/mihomo) | 代理内核与原生配置模型 |
+| [MHSanaei/3x-ui](https://github.com/MHSanaei/3x-ui) · [Sub-Store](https://github.com/sub-store-org/Sub-Store) | 管理流程和客户端订阅格式的参考 |
+| [Lucide](https://lucide.dev) | 线性图标，保留 [ISC 许可](web/licenses/LICENSE-Lucide.txt) |
 
-## 许可证
+五套配色参考由 VoltAgent/awesome-design-md（MIT）整理，参考对象已在[主题设计记录](docs/design/p2-token-map.md)逐项标注，不代表品牌关联或背书。
 
-UnifiedProxy 使用 [GNU 通用公共许可证第 3 版（GPL-3.0）](LICENSE) 授权。Mihomo 分享链接转换代码的 GPL-3.0 来源说明见 [`internal/mihomoconvert/NOTICE.md`](internal/mihomoconvert/NOTICE.md)。
+合并发行版采用 [GNU 通用公共许可证第 3 版（GPL-3.0）](LICENSE)。完整来源说明见 [NOTICE](NOTICE)，分享链接转换代码的归属见 [转换模块声明](internal/mihomoconvert/NOTICE.md)。
+
+> 请在拥有或获授权管理的服务器和网络中使用，并遵守所在地法律、上游服务商条款及所访问服务的使用政策。
+
+<a id="languages"></a>
+
+<details>
+<summary>多语言文档 / Languages</summary>
+
+[简体中文](/README.md) | [English](/README.en.md) | [繁體中文](/README.zh_TW.md) | [日本語](/README.ja.md) | [Русский](/README.ru.md) | [فارسی](/README.fa.md) | [Tiếng Việt](/README.vi.md) | [Español](/README.es.md) | [Türkçe](/README.tr.md) | [Українська](/README.uk.md) | [Português (Brasil)](/README.pt_BR.md)
+
+</details>

@@ -1,7 +1,5 @@
-[简体中文](/README.md) | [English](/README.en.md) | [繁體中文](/README.zh_TW.md) | [日本語](/README.ja.md) | [Русский](/README.ru.md) | [فارسی](/README.fa.md) | [Tiếng Việt](/README.vi.md) | [Español](/README.es.md) | [Türkçe](/README.tr.md) | [Українська](/README.uk.md) | [Português (Brasil)](/README.pt_BR.md)
-
 <p align="center">
-  <img src="./web/media/unifiedproxy.svg" alt="UnifiedProxy" width="96">
+  <img src="./media/unifiedproxy-banner.svg" alt="UnifiedProxy — Standalone / Control / Agent" width="1200">
 </p>
 
 # UnifiedProxy
@@ -12,76 +10,9 @@ O UnifiedProxy integra um painel nativo do Mihomo à gestão de nós nos modos i
 
 Comece por [implantação e migração](docs/unifiedproxy-migration.md). Backups antigos preservam credenciais, consumo e aliases de assinatura; arquivos de certificado, novo registro de nós e a exceção NaïveProxy estão no [registro de compatibilidade](docs/design/legacy-acceptance.md).
 
-> [!IMPORTANT]
-> Use este projeto apenas em servidores e redes que sejam seus ou que você tenha autorização para administrar. Respeite a legislação local, os termos dos seus provedores e as políticas dos serviços que você acessa.
+[简体中文](/README.md) · [English](/README.en.md) · [Languages](#languages)
 
-### Cinco paletas
-
-`data-theme="light|dark"` × `data-color-theme="t0|t1|t2|t3|t4"`
-
-| Theme | Palette | Reference |
-|---|---|---|
-| T0 | Preto e branco (padrão) | Vercel |
-| T1 | Papel quente e terracota | Claude / Anthropic |
-| T2 | Violeta noturno | Sentry |
-| T3 | Esmeralda | Supabase |
-| T4 | Índigo | Stripe |
-
-[Tokens / references](docs/design/p2-token-map.md) · [NOTICE](NOTICE)
-
-<p align="center">
-  <img src="./media/screenshots/unifiedproxy/inbounds.png" alt="Entradas" width="900">
-</p>
-
-## Recursos
-
-**Painel e Mihomo**
-* Painel inicial com o estado do sistema, do tráfego, das conexões e do Mihomo; o Mihomo inicia automaticamente com o painel
-* Geração e validação do YAML nativo do Mihomo, com visualização e download da configuração
-* Troca de versão do Mihomo a partir das versões oficiais da MetaCubeX e atualização de GeoIP / GeoSite / MetaDB
-* Backup e restauração completos: configurações, entradas, identidade do Multi-control (opcional), cache entre painéis, modelos de assinatura e dispositivos cliente do Multi-control
-* **Migração do 3x-ui com um clique:** importe o `x-ui.db` (v2.9.3–v3.10.2) ou o `config.json` do Xray; entradas, clientes com limite, validade e tráfego, saídas, balanceadores e regras de roteamento são adicionados ao que o painel já tem, e um log de conversão para download lista tudo o que o Mihomo não consegue fazer
-* Interface em inglês, chinês simplificado, chinês tradicional, japonês, russo, persa, vietnamita, espanhol, turco, ucraniano e português do Brasil
-
-**Entradas e clientes**
-* Listeners `mixed`, `socks`, `http`, `shadowsocks`, `snell`, `vmess`, `vless`, `trojan`, `hysteria2`, `tuic`, `anytls`, `mieru`, `sudoku`, `shadowquic`, `trusttunnel` e `hysteria2-realm`
-* Configurações de TLS, Reality, ShadowTLS, RestTLS, TLSMirror, JLS, Trojan SS, XHTTP, mKCP, Mekya e ofuscação
-* Credenciais, cotas de tráfego, expiração, redefinições periódicas, renovação automática e status online por cliente; também limites por entrada
-* Links de compartilhamento, QR codes, importação de entradas a partir do YAML de um listener do Mihomo e redefinição de tráfego em massa
-
-**Assinaturas**
-* Página de assinatura no navegador com uso, cota, expiração, nós e importação para o Clash Caesar com um clique
-* **Modelos de assinatura:** cada assinatura é um perfil completo de cliente, gerado a partir do modelo embutido (China / Rússia / Irã) ou do seu próprio modelo do Mihomo
-* Perfis completos para Mihomo/Clash, Stash, sing-box, Surge, Surfboard, Loon, Quantumult X e Egern; listas de nós para V2Box, V2RayNG, Shadowrocket e outros clientes de links
-* Token de assinatura por usuário e porta de assinatura dedicada opcional
-
-**Configurações do Mihomo**
-* Basics: modo de roteamento, versão de IP para conexões diretas, IPv6, TCP simultâneo, estatísticas, logs e roteamento básico
-* Saídas (incluindo Snell, WireGuard e OpenVPN) e grupos de políticas, com formulário, YAML nativo e conversão de links
-* Regras de roteamento avaliadas de cima para baixo, incluindo regras `AND`
-* Saídas do Cloudflare WARP e saídas residenciais do VPNGate por país e provedor
-
-**Multi-control**
-* Rede P2P de painéis sem nó mestre, com identidades assinadas
-* Sincronização criptografada de entradas entre painéis confiáveis
-* Agregação de assinaturas entre painéis
-* Dispositivos cliente: o [Clash Caesar](https://github.com/RomanovCaesar/clash-caesar) importa o arquivo de rede, entra uma vez com a conta de administrador do painel e então vê todos os painéis e obtém a assinatura de qualquer painel ou a combinada por qualquer painel alcançável
-
-## Capturas de tela
-
-Interface atual do UnifiedProxy com dados de demonstração em chinês. Todas as paletas oferecem os modos claro e escuro.
-
-<table>
-  <tr><td width="50%"><img src="./media/screenshots/unifiedproxy/inbounds.png" alt="Entradas"><br><sub>Entradas</sub></td><td width="50%"><img src="./media/screenshots/unifiedproxy/client-edit.png" alt="Cota e validade"><br><sub>Cota e validade</sub></td></tr>
-  <tr><td width="50%"><img src="./media/screenshots/unifiedproxy/outbounds.png" alt="Saídas"><br><sub>Saídas</sub></td><td width="50%"><img src="./media/screenshots/unifiedproxy/routing.png" alt="Rotas"><br><sub>Rotas</sub></td></tr>
-  <tr><td width="50%"><img src="./media/screenshots/unifiedproxy/xray-import.png" alt="Importação Xray / 3x-ui"><br><sub>Importação Xray / 3x-ui</sub></td><td width="50%"><img src="./media/screenshots/unifiedproxy/fleet.png" alt="Frota"><br><sub>Frota</sub></td></tr>
-  <tr><td width="50%"><img src="./media/screenshots/unifiedproxy/login.png" alt="Login"><br><sub>Login</sub></td><td width="50%"><img src="./media/screenshots/unifiedproxy/subscription-mobile.png" alt="Assinatura móvel"><br><sub>Assinatura móvel</sub></td></tr>
-  <tr><td width="50%"><img src="./media/screenshots/unifiedproxy/t0-light.png" alt="T0 light"><br><sub>T0 light</sub></td><td width="50%"><img src="./media/screenshots/unifiedproxy/t0-dark.png" alt="T0 dark"><br><sub>T0 dark</sub></td></tr>
-  <tr><td width="50%"><img src="./media/screenshots/unifiedproxy/t1-light.png" alt="T1 light"><br><sub>T1 light</sub></td><td width="50%"><img src="./media/screenshots/unifiedproxy/t1-dark.png" alt="T1 dark"><br><sub>T1 dark</sub></td></tr>
-  <tr><td width="50%"><img src="./media/screenshots/unifiedproxy/t2-light.png" alt="T2 light"><br><sub>T2 light</sub></td><td width="50%"><img src="./media/screenshots/unifiedproxy/t2-dark.png" alt="T2 dark"><br><sub>T2 dark</sub></td></tr>
-  <tr><td width="50%"><img src="./media/screenshots/unifiedproxy/t3-light.png" alt="T3 light"><br><sub>T3 light</sub></td><td width="50%"><img src="./media/screenshots/unifiedproxy/t3-dark.png" alt="T3 dark"><br><sub>T3 dark</sub></td></tr>
-  <tr><td width="50%"><img src="./media/screenshots/unifiedproxy/t4-light.png" alt="T4 light"><br><sub>T4 light</sub></td><td width="50%"><img src="./media/screenshots/unifiedproxy/t4-dark.png" alt="T4 dark"><br><sub>T4 dark</sub></td></tr>
-</table>
+<a id="deploy"></a>
 
 ## Instalação no Linux
 
@@ -107,7 +38,8 @@ O UnifiedProxy é instalado em `/usr/local/m-ui` e guarda os dados em `/usr/loca
 
 Cada versão inclui `m-ui-linux-<architecture>.tar.gz` para `386`, `amd64`, `arm64`, `armv5`, `armv6`, `armv7` e `s390x`, além de `m-ui-windows-amd64.zip`.
 
-## Docker
+<details>
+<summary>Docker</summary>
 
 A imagem Docker é para Linux amd64 e inclui o UnifiedProxy e um núcleo do Mihomo de versão fixa e verificado. O Compose usa a rede do host, então as portas das entradas adicionadas no painel funcionam sem mapeamentos extras.
 
@@ -120,6 +52,132 @@ docker compose logs m-ui
 ```
 
 Compile a partir deste repositório. Versões com tags podem publicar `ghcr.io/hlonglin/unifiedproxy:<tag>` e `latest`; use `docker compose pull` quando a imagem correspondente do UnifiedProxy estiver disponível. `MUI_PASSWORD` / `MUI_PATH` vazios são gerados no primeiro início e exibidos uma vez no log. Por compatibilidade, mantenha o serviço `m-ui` e os volumes `m-ui-data`, `m-ui-core` ao atualizar.
+
+</details>
+
+<a id="workspace"></a>
+
+## Capturas de tela
+
+![Frota](./media/screenshots/unifiedproxy/fleet.png)
+
+<details>
+<summary>Capturas de tela</summary>
+
+**Entradas**
+
+![Entradas](./media/screenshots/unifiedproxy/inbounds.png)
+
+**Cota e validade**
+
+![Cota e validade](./media/screenshots/unifiedproxy/client-edit.png)
+
+**Saídas**
+
+![Saídas](./media/screenshots/unifiedproxy/outbounds.png)
+
+**Rotas**
+
+![Rotas](./media/screenshots/unifiedproxy/routing.png)
+
+**Importação Xray / 3x-ui**
+
+![Importação Xray / 3x-ui](./media/screenshots/unifiedproxy/xray-import.png)
+
+**Login**
+
+![Login](./media/screenshots/unifiedproxy/login.png)
+
+**Assinatura móvel**
+
+![Assinatura móvel](./media/screenshots/unifiedproxy/subscription-mobile.png)
+
+</details>
+
+### Cinco paletas
+
+`data-theme="light|dark"` × `data-color-theme="t0|t1|t2|t3|t4"`
+
+| Theme | Palette | Reference |
+|---|---|---|
+| T0 | Preto e branco (padrão) | Vercel |
+| T1 | Papel quente e terracota | Claude / Anthropic |
+| T2 | Violeta noturno | Sentry |
+| T3 | Esmeralda | Supabase |
+| T4 | Índigo | Stripe |
+
+[Tokens / references](docs/design/p2-token-map.md) · [NOTICE](NOTICE)
+
+<details>
+<summary>T0–T4 · light / dark</summary>
+
+| | light | dark |
+|---|---|---|
+| T0 | <img src="./media/screenshots/unifiedproxy/t0-light.png" alt="T0 light" width="240"> | <img src="./media/screenshots/unifiedproxy/t0-dark.png" alt="T0 dark" width="240"> |
+| T1 | <img src="./media/screenshots/unifiedproxy/t1-light.png" alt="T1 light" width="240"> | <img src="./media/screenshots/unifiedproxy/t1-dark.png" alt="T1 dark" width="240"> |
+| T2 | <img src="./media/screenshots/unifiedproxy/t2-light.png" alt="T2 light" width="240"> | <img src="./media/screenshots/unifiedproxy/t2-dark.png" alt="T2 dark" width="240"> |
+| T3 | <img src="./media/screenshots/unifiedproxy/t3-light.png" alt="T3 light" width="240"> | <img src="./media/screenshots/unifiedproxy/t3-dark.png" alt="T3 dark" width="240"> |
+| T4 | <img src="./media/screenshots/unifiedproxy/t4-light.png" alt="T4 light" width="240"> | <img src="./media/screenshots/unifiedproxy/t4-dark.png" alt="T4 dark" width="240"> |
+
+</details>
+
+<a id="capabilities"></a>
+
+## Recursos
+
+<details>
+<summary>Multi-control</summary>
+
+* Rede P2P de painéis sem nó mestre, com identidades assinadas
+* Sincronização criptografada de entradas entre painéis confiáveis
+* Agregação de assinaturas entre painéis
+* Dispositivos cliente: o [Clash Caesar](https://github.com/RomanovCaesar/clash-caesar) importa o arquivo de rede, entra uma vez com a conta de administrador do painel e então vê todos os painéis e obtém a assinatura de qualquer painel ou a combinada por qualquer painel alcançável
+
+</details>
+
+<details>
+<summary>Assinaturas</summary>
+
+* Página de assinatura no navegador com uso, cota, expiração, nós e importação para o Clash Caesar com um clique
+* **Modelos de assinatura:** cada assinatura é um perfil completo de cliente, gerado a partir do modelo embutido (China / Rússia / Irã) ou do seu próprio modelo do Mihomo
+* Perfis completos para Mihomo/Clash, Stash, sing-box, Surge, Surfboard, Loon, Quantumult X e Egern; listas de nós para V2Box, V2RayNG, Shadowrocket e outros clientes de links
+* Token de assinatura por usuário e porta de assinatura dedicada opcional
+
+</details>
+
+<details>
+<summary>Entradas e clientes</summary>
+
+* Listeners `mixed`, `socks`, `http`, `shadowsocks`, `snell`, `vmess`, `vless`, `trojan`, `hysteria2`, `tuic`, `anytls`, `mieru`, `sudoku`, `shadowquic`, `trusttunnel` e `hysteria2-realm`
+* Configurações de TLS, Reality, ShadowTLS, RestTLS, TLSMirror, JLS, Trojan SS, XHTTP, mKCP, Mekya e ofuscação
+* Credenciais, cotas de tráfego, expiração, redefinições periódicas, renovação automática e status online por cliente; também limites por entrada
+* Links de compartilhamento, QR codes, importação de entradas a partir do YAML de um listener do Mihomo e redefinição de tráfego em massa
+
+</details>
+
+<details>
+<summary>Configurações do Mihomo</summary>
+
+* Basics: modo de roteamento, versão de IP para conexões diretas, IPv6, TCP simultâneo, estatísticas, logs e roteamento básico
+* Saídas (incluindo Snell, WireGuard e OpenVPN) e grupos de políticas, com formulário, YAML nativo e conversão de links
+* Regras de roteamento avaliadas de cima para baixo, incluindo regras `AND`
+* Saídas do Cloudflare WARP e saídas residenciais do VPNGate por país e provedor
+
+</details>
+
+<details>
+<summary>Painel e Mihomo</summary>
+
+* Painel inicial com o estado do sistema, do tráfego, das conexões e do Mihomo; o Mihomo inicia automaticamente com o painel
+* Geração e validação do YAML nativo do Mihomo, com visualização e download da configuração
+* Troca de versão do Mihomo a partir das versões oficiais da MetaCubeX e atualização de GeoIP / GeoSite / MetaDB
+* Backup e restauração completos: configurações, entradas, identidade do Multi-control (opcional), cache entre painéis, modelos de assinatura e dispositivos cliente do Multi-control
+* **Migração do 3x-ui com um clique:** importe o `x-ui.db` (v2.9.3–v3.10.2) ou o `config.json` do Xray; entradas, clientes com limite, validade e tráfego, saídas, balanceadores e regras de roteamento são adicionados ao que o painel já tem, e um log de conversão para download lista tudo o que o Mihomo não consegue fazer
+* Interface em inglês, chinês simplificado, chinês tradicional, japonês, russo, persa, vietnamita, espanhol, turco, ucraniano e português do Brasil
+
+</details>
+
+<a id="operations"></a>
 
 ## Certificados TLS
 
@@ -134,16 +192,18 @@ O menu permite emitir certificados para domínios e IPs, obter certificados de d
 ## Comandos de gerenciamento
 
 ```text
-m-ui                  interactive menu
+m-ui                  # abrir o menu interativo
 m-ui start | stop | restart | status | logs
 m-ui settings | configure | set-port
 m-ui reset-credentials | reset-path
 m-ui update | update-menu | ssl
 m-ui enable | disable | clear-logs | uninstall
-m-ui --lang <code>    menu language, e.g. m-ui --lang pt-br
+m-ui --lang <code>    idioma do menu, por exemplo: m-ui --lang pt-br
 ```
 
 O menu fala os mesmos 11 idiomas do painel e lembra a sua escolha. O instalador continua em inglês.
+
+<a id="docs"></a>
 
 ## Documentação
 
@@ -174,8 +234,20 @@ go test ./...
 * [Sub-Store](https://github.com/sub-store-org/Sub-Store): comportamento de referência dos formatos de assinatura
 * m-ui (GPL-3.0), UnifiedProxy (MIT): [NOTICE](NOTICE), [MIT notice](licenses/UnifiedProxy-MIT.txt).
 * [Lucide](https://lucide.dev): ISC; [icon attribution](web/licenses/LICENSE-Lucide.txt).
-* Vercel / Claude (Anthropic) / Sentry / Supabase / Stripe: [palette references](docs/design/p2-token-map.md), via VoltAgent/awesome-design-md (MIT).
+* Referências das paletas: Vercel / Claude (Anthropic) / Sentry / Supabase / Stripe. A coleção VoltAgent/awesome-design-md usa a licença MIT; consulte o [registro de design dos temas](docs/design/p2-token-map.md).
 
 ## Licença
 
 O UnifiedProxy é distribuído sob a [GNU General Public License version 3](LICENSE). O código de conversão de links do Mihomo mantém sua atribuição GPL-3.0 em [`internal/mihomoconvert/NOTICE.md`](internal/mihomoconvert/NOTICE.md).
+
+> [!IMPORTANT]
+> Use este projeto apenas em servidores e redes que sejam seus ou que você tenha autorização para administrar. Respeite a legislação local, os termos dos seus provedores e as políticas dos serviços que você acessa.
+
+<a id="languages"></a>
+
+<details>
+<summary>多语言文档 / Languages</summary>
+
+[简体中文](/README.md) | [English](/README.en.md) | [繁體中文](/README.zh_TW.md) | [日本語](/README.ja.md) | [Русский](/README.ru.md) | [فارسی](/README.fa.md) | [Tiếng Việt](/README.vi.md) | [Español](/README.es.md) | [Türkçe](/README.tr.md) | [Українська](/README.uk.md) | [Português (Brasil)](/README.pt_BR.md)
+
+</details>

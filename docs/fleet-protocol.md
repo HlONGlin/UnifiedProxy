@@ -9,9 +9,12 @@
 | Naive Port | Caddy Sidecar | 域名、凭据、PEM 或原 ACME 策略 |
 | ShadowTLS Port | shadow-tls + 可选 ssserver Sidecar | 托管后端只绑定回环 |
 | TrafficLimit | Client.total，字节 | 本地执行；Sidecar 不计量 |
-| TrafficUsed/TrafficRaw | 不迁移 | 不当成新内核运行计数 |
-| 全局旧订阅/token | 新 per-user token | 日志说明，重新分发 |
+| TrafficUsed/TrafficRaw | Client.legacyCombined | 保留旧双向合计，用于配额和订阅总用量；不伪造上传/下载明细 |
+| 全局旧订阅/token | 旧地址别名 + 新逐用户令牌 | 保留原 panelPath/sub?token= 地址，覆盖同次导入的全部节点 |
 | UP Task | fleet.Task | 幂等键、租约、有效期、能力、回执 |
+
+历史数据的迁移与外部条件以[历史兼容验收](design/legacy-acceptance.md)为准；
+NaïveProxy 属于明确豁免项，不完整记录仅归档，不阻止其他支持协议导入。
 
 desired.model 是原有 State，不是第二套 Port/UserCred 数据库；控制端额外保存
 Node/Token/Task/Rollout/Audit，节点草稿在 fleet-nodes/<id>/。实际 YAML 用原生

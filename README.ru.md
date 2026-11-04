@@ -1,7 +1,5 @@
-[简体中文](/README.md) | [English](/README.en.md) | [繁體中文](/README.zh_TW.md) | [日本語](/README.ja.md) | [Русский](/README.ru.md) | [فارسی](/README.fa.md) | [Tiếng Việt](/README.vi.md) | [Español](/README.es.md) | [Türkçe](/README.tr.md) | [Українська](/README.uk.md) | [Português (Brasil)](/README.pt_BR.md)
-
 <p align="center">
-  <img src="./web/media/unifiedproxy.svg" alt="UnifiedProxy" width="96">
+  <img src="./media/unifiedproxy-banner.svg" alt="UnifiedProxy — Standalone / Control / Agent" width="1200">
 </p>
 
 # UnifiedProxy
@@ -12,76 +10,9 @@ UnifiedProxy объединяет панель с нативной конфиг�
 
 Начните с [развёртывания и миграции](docs/unifiedproxy-migration.md). Старые резервные копии сохраняют учётные данные, расход и адреса подписок; требования к файлам сертификатов, повторной регистрации узлов и исключение NaïveProxy описаны в [проверке совместимости](docs/design/legacy-acceptance.md).
 
-> [!IMPORTANT]
-> Используйте проект только на серверах и в сетях, которыми вы владеете или которыми вам разрешено управлять. Соблюдайте местное законодательство, условия провайдеров и правила сервисов, к которым вы обращаетесь.
+[简体中文](/README.md) · [English](/README.en.md) · [Languages](#languages)
 
-### Пять палитр
-
-`data-theme="light|dark"` × `data-color-theme="t0|t1|t2|t3|t4"`
-
-| Theme | Palette | Reference |
-|---|---|---|
-| T0 | Чёрно-белая (по умолчанию) | Vercel |
-| T1 | Тёплая бумага и терракота | Claude / Anthropic |
-| T2 | Ночной фиолетовый | Sentry |
-| T3 | Изумрудная | Supabase |
-| T4 | Индиго | Stripe |
-
-[Tokens / references](docs/design/p2-token-map.md) · [NOTICE](NOTICE)
-
-<p align="center">
-  <img src="./media/screenshots/unifiedproxy/inbounds.png" alt="Входящие" width="900">
-</p>
-
-## Возможности
-
-**Панель и Mihomo**
-* Дашборд с состоянием системы, трафика, соединений и Mihomo; Mihomo запускается вместе с панелью
-* Генерация и проверка конфигурации в родном YAML Mihomo, просмотр и скачивание итогового файла
-* Переключение версий Mihomo из официальных релизов MetaCubeX, обновление GeoIP / GeoSite / MetaDB
-* Полное резервное копирование и восстановление: настройки, входы, идентичность Multi-control (по желанию), кэш межпанельных подписок, шаблоны подписок и клиентские устройства Multi-control
-* **Переход с 3x-ui в один клик:** импорт `x-ui.db` (v2.9.3–v3.10.2) или `config.json` от Xray; входы, клиенты с лимитами, сроками и трафиком, исходящие, балансировщики и правила маршрутизации добавляются к тому, что уже есть в панели, а всё, что Mihomo не умеет, перечислено в скачиваемом журнале преобразования
-* Интерфейс на английском, упрощённом и традиционном китайском, японском, русском, персидском, вьетнамском, испанском, турецком, украинском и бразильском португальском
-
-**Входы и клиенты**
-* Слушатели `mixed`, `socks`, `http`, `shadowsocks`, `snell`, `vmess`, `vless`, `trojan`, `hysteria2`, `tuic`, `anytls`, `mieru`, `sudoku`, `shadowquic`, `trusttunnel` и `hysteria2-realm`
-* Настройки TLS, Reality, ShadowTLS, RestTLS, TLSMirror, JLS, Trojan SS, XHTTP, mKCP, Mekya и обфускации
-* Учётные данные, лимиты трафика, срок действия, периодический сброс, автопродление и онлайн-статус для каждого клиента; лимиты и на уровне входа
-* Ссылки и QR-коды, импорт входов из YAML-описания слушателя Mihomo, массовый сброс трафика
-
-**Подписки**
-* Страница подписки в браузере: расход, лимит, срок действия, узлы и импорт в Clash Caesar в один клик
-* **Шаблоны подписок:** каждая подписка — это полный профиль клиента, собранный из встроенного шаблона (Китай / Россия / Иран) или вашего собственного шаблона Mihomo
-* Полные профили для Mihomo/Clash, Stash, sing-box, Surge, Surfboard, Loon, Quantumult X и Egern; списки узлов для V2Box, V2RayNG, Shadowrocket и других клиентов со ссылками
-* Отдельный токен подписки для каждого пользователя и необязательный отдельный порт подписок
-
-**Настройки Mihomo**
-* Basics: режим маршрутизации, версия IP для прямых соединений, IPv6, параллельный TCP, статистика, журналы и базовая маршрутизация
-* Исходящие (включая Snell, WireGuard и OpenVPN) и группы политик: форма, родной YAML и преобразование ссылок
-* Правила маршрутизации, проверяемые сверху вниз, включая правила `AND`
-* Исходящие Cloudflare WARP и домашние IP через VPNGate с выбором страны и провайдера
-
-**Multi-control**
-* P2P-сеть панелей без главного узла, с подписанными идентичностями
-* Зашифрованная синхронизация входов между доверенными панелями
-* Объединение подписок с нескольких панелей
-* Клиентские устройства: [Clash Caesar](https://github.com/RomanovCaesar/clash-caesar) импортирует файл сети, один раз входит с учётной записью администратора панели и затем видит все панели и получает подписку любой панели или объединённую через любую доступную панель
-
-## Скриншоты
-
-Текущий интерфейс UnifiedProxy с демонстрационными данными на китайском. Все палитры имеют светлый и тёмный режим.
-
-<table>
-  <tr><td width="50%"><img src="./media/screenshots/unifiedproxy/inbounds.png" alt="Входящие"><br><sub>Входящие</sub></td><td width="50%"><img src="./media/screenshots/unifiedproxy/client-edit.png" alt="Квоты и срок клиента"><br><sub>Квоты и срок клиента</sub></td></tr>
-  <tr><td width="50%"><img src="./media/screenshots/unifiedproxy/outbounds.png" alt="Исходящие"><br><sub>Исходящие</sub></td><td width="50%"><img src="./media/screenshots/unifiedproxy/routing.png" alt="Маршрутизация"><br><sub>Маршрутизация</sub></td></tr>
-  <tr><td width="50%"><img src="./media/screenshots/unifiedproxy/xray-import.png" alt="Импорт Xray / 3x-ui"><br><sub>Импорт Xray / 3x-ui</sub></td><td width="50%"><img src="./media/screenshots/unifiedproxy/fleet.png" alt="Парк узлов"><br><sub>Парк узлов</sub></td></tr>
-  <tr><td width="50%"><img src="./media/screenshots/unifiedproxy/login.png" alt="Вход"><br><sub>Вход</sub></td><td width="50%"><img src="./media/screenshots/unifiedproxy/subscription-mobile.png" alt="Мобильная подписка"><br><sub>Мобильная подписка</sub></td></tr>
-  <tr><td width="50%"><img src="./media/screenshots/unifiedproxy/t0-light.png" alt="T0 light"><br><sub>T0 light</sub></td><td width="50%"><img src="./media/screenshots/unifiedproxy/t0-dark.png" alt="T0 dark"><br><sub>T0 dark</sub></td></tr>
-  <tr><td width="50%"><img src="./media/screenshots/unifiedproxy/t1-light.png" alt="T1 light"><br><sub>T1 light</sub></td><td width="50%"><img src="./media/screenshots/unifiedproxy/t1-dark.png" alt="T1 dark"><br><sub>T1 dark</sub></td></tr>
-  <tr><td width="50%"><img src="./media/screenshots/unifiedproxy/t2-light.png" alt="T2 light"><br><sub>T2 light</sub></td><td width="50%"><img src="./media/screenshots/unifiedproxy/t2-dark.png" alt="T2 dark"><br><sub>T2 dark</sub></td></tr>
-  <tr><td width="50%"><img src="./media/screenshots/unifiedproxy/t3-light.png" alt="T3 light"><br><sub>T3 light</sub></td><td width="50%"><img src="./media/screenshots/unifiedproxy/t3-dark.png" alt="T3 dark"><br><sub>T3 dark</sub></td></tr>
-  <tr><td width="50%"><img src="./media/screenshots/unifiedproxy/t4-light.png" alt="T4 light"><br><sub>T4 light</sub></td><td width="50%"><img src="./media/screenshots/unifiedproxy/t4-dark.png" alt="T4 dark"><br><sub>T4 dark</sub></td></tr>
-</table>
+<a id="deploy"></a>
 
 ## Установка в Linux
 
@@ -107,7 +38,8 @@ UnifiedProxy устанавливается в `/usr/local/m-ui`, данные �
 
 В релизах есть `m-ui-linux-<architecture>.tar.gz` для `386`, `amd64`, `arm64`, `armv5`, `armv6`, `armv7` и `s390x`, а также `m-ui-windows-amd64.zip`.
 
-## Docker
+<details>
+<summary>Docker</summary>
 
 Образ Docker собран для Linux amd64 и содержит UnifiedProxy и проверенное ядро Mihomo фиксированной версии. Compose использует сеть хоста, поэтому порты входов, добавленных в панели, работают без отдельного проброса портов.
 
@@ -120,6 +52,132 @@ docker compose logs m-ui
 ```
 
 Собирайте из этого репозитория. Релизы с тегами могут публиковать `ghcr.io/hlonglin/unifiedproxy:<tag>` и `latest`; используйте `docker compose pull` после публикации нужного образа UnifiedProxy. Пустые `MUI_PASSWORD` / `MUI_PATH` генерируются при первом запуске и один раз выводятся в журнал. Для совместимости сохранены сервис `m-ui` и тома `m-ui-data`, `m-ui-core`; сохраняйте тома при обновлении.
+
+</details>
+
+<a id="workspace"></a>
+
+## Скриншоты
+
+![Парк узлов](./media/screenshots/unifiedproxy/fleet.png)
+
+<details>
+<summary>Скриншоты</summary>
+
+**Входящие**
+
+![Входящие](./media/screenshots/unifiedproxy/inbounds.png)
+
+**Квоты и срок клиента**
+
+![Квоты и срок клиента](./media/screenshots/unifiedproxy/client-edit.png)
+
+**Исходящие**
+
+![Исходящие](./media/screenshots/unifiedproxy/outbounds.png)
+
+**Маршрутизация**
+
+![Маршрутизация](./media/screenshots/unifiedproxy/routing.png)
+
+**Импорт Xray / 3x-ui**
+
+![Импорт Xray / 3x-ui](./media/screenshots/unifiedproxy/xray-import.png)
+
+**Вход**
+
+![Вход](./media/screenshots/unifiedproxy/login.png)
+
+**Мобильная подписка**
+
+![Мобильная подписка](./media/screenshots/unifiedproxy/subscription-mobile.png)
+
+</details>
+
+### Пять палитр
+
+`data-theme="light|dark"` × `data-color-theme="t0|t1|t2|t3|t4"`
+
+| Theme | Palette | Reference |
+|---|---|---|
+| T0 | Чёрно-белая (по умолчанию) | Vercel |
+| T1 | Тёплая бумага и терракота | Claude / Anthropic |
+| T2 | Ночной фиолетовый | Sentry |
+| T3 | Изумрудная | Supabase |
+| T4 | Индиго | Stripe |
+
+[Tokens / references](docs/design/p2-token-map.md) · [NOTICE](NOTICE)
+
+<details>
+<summary>T0–T4 · light / dark</summary>
+
+| | light | dark |
+|---|---|---|
+| T0 | <img src="./media/screenshots/unifiedproxy/t0-light.png" alt="T0 light" width="240"> | <img src="./media/screenshots/unifiedproxy/t0-dark.png" alt="T0 dark" width="240"> |
+| T1 | <img src="./media/screenshots/unifiedproxy/t1-light.png" alt="T1 light" width="240"> | <img src="./media/screenshots/unifiedproxy/t1-dark.png" alt="T1 dark" width="240"> |
+| T2 | <img src="./media/screenshots/unifiedproxy/t2-light.png" alt="T2 light" width="240"> | <img src="./media/screenshots/unifiedproxy/t2-dark.png" alt="T2 dark" width="240"> |
+| T3 | <img src="./media/screenshots/unifiedproxy/t3-light.png" alt="T3 light" width="240"> | <img src="./media/screenshots/unifiedproxy/t3-dark.png" alt="T3 dark" width="240"> |
+| T4 | <img src="./media/screenshots/unifiedproxy/t4-light.png" alt="T4 light" width="240"> | <img src="./media/screenshots/unifiedproxy/t4-dark.png" alt="T4 dark" width="240"> |
+
+</details>
+
+<a id="capabilities"></a>
+
+## Возможности
+
+<details>
+<summary>Multi-control</summary>
+
+* P2P-сеть панелей без главного узла, с подписанными идентичностями
+* Зашифрованная синхронизация входов между доверенными панелями
+* Объединение подписок с нескольких панелей
+* Клиентские устройства: [Clash Caesar](https://github.com/RomanovCaesar/clash-caesar) импортирует файл сети, один раз входит с учётной записью администратора панели и затем видит все панели и получает подписку любой панели или объединённую через любую доступную панель
+
+</details>
+
+<details>
+<summary>Подписки</summary>
+
+* Страница подписки в браузере: расход, лимит, срок действия, узлы и импорт в Clash Caesar в один клик
+* **Шаблоны подписок:** каждая подписка — это полный профиль клиента, собранный из встроенного шаблона (Китай / Россия / Иран) или вашего собственного шаблона Mihomo
+* Полные профили для Mihomo/Clash, Stash, sing-box, Surge, Surfboard, Loon, Quantumult X и Egern; списки узлов для V2Box, V2RayNG, Shadowrocket и других клиентов со ссылками
+* Отдельный токен подписки для каждого пользователя и необязательный отдельный порт подписок
+
+</details>
+
+<details>
+<summary>Входы и клиенты</summary>
+
+* Слушатели `mixed`, `socks`, `http`, `shadowsocks`, `snell`, `vmess`, `vless`, `trojan`, `hysteria2`, `tuic`, `anytls`, `mieru`, `sudoku`, `shadowquic`, `trusttunnel` и `hysteria2-realm`
+* Настройки TLS, Reality, ShadowTLS, RestTLS, TLSMirror, JLS, Trojan SS, XHTTP, mKCP, Mekya и обфускации
+* Учётные данные, лимиты трафика, срок действия, периодический сброс, автопродление и онлайн-статус для каждого клиента; лимиты и на уровне входа
+* Ссылки и QR-коды, импорт входов из YAML-описания слушателя Mihomo, массовый сброс трафика
+
+</details>
+
+<details>
+<summary>Настройки Mihomo</summary>
+
+* Basics: режим маршрутизации, версия IP для прямых соединений, IPv6, параллельный TCP, статистика, журналы и базовая маршрутизация
+* Исходящие (включая Snell, WireGuard и OpenVPN) и группы политик: форма, родной YAML и преобразование ссылок
+* Правила маршрутизации, проверяемые сверху вниз, включая правила `AND`
+* Исходящие Cloudflare WARP и домашние IP через VPNGate с выбором страны и провайдера
+
+</details>
+
+<details>
+<summary>Панель и Mihomo</summary>
+
+* Дашборд с состоянием системы, трафика, соединений и Mihomo; Mihomo запускается вместе с панелью
+* Генерация и проверка конфигурации в родном YAML Mihomo, просмотр и скачивание итогового файла
+* Переключение версий Mihomo из официальных релизов MetaCubeX, обновление GeoIP / GeoSite / MetaDB
+* Полное резервное копирование и восстановление: настройки, входы, идентичность Multi-control (по желанию), кэш межпанельных подписок, шаблоны подписок и клиентские устройства Multi-control
+* **Переход с 3x-ui в один клик:** импорт `x-ui.db` (v2.9.3–v3.10.2) или `config.json` от Xray; входы, клиенты с лимитами, сроками и трафиком, исходящие, балансировщики и правила маршрутизации добавляются к тому, что уже есть в панели, а всё, что Mihomo не умеет, перечислено в скачиваемом журнале преобразования
+* Интерфейс на английском, упрощённом и традиционном китайском, японском, русском, персидском, вьетнамском, испанском, турецком, украинском и бразильском португальском
+
+</details>
+
+<a id="operations"></a>
 
 ## TLS-сертификаты
 
@@ -134,16 +192,18 @@ m-ui ssl
 ## Команды управления
 
 ```text
-m-ui                  interactive menu
+m-ui                  # открыть меню
 m-ui start | stop | restart | status | logs
 m-ui settings | configure | set-port
 m-ui reset-credentials | reset-path
 m-ui update | update-menu | ssl
 m-ui enable | disable | clear-logs | uninstall
-m-ui --lang <code>    menu language, e.g. m-ui --lang ru
+m-ui --lang <code>    язык меню, например: m-ui --lang ru
 ```
 
 Меню поддерживает те же 11 языков, что и панель, и запоминает выбор. Установщик остаётся на английском.
+
+<a id="docs"></a>
 
 ## Документация
 
@@ -174,8 +234,20 @@ go test ./...
 * [Sub-Store](https://github.com/sub-store-org/Sub-Store): эталонное поведение форматов подписок для клиентов
 * m-ui (GPL-3.0), UnifiedProxy (MIT): [NOTICE](NOTICE), [MIT notice](licenses/UnifiedProxy-MIT.txt).
 * [Lucide](https://lucide.dev): ISC; [icon attribution](web/licenses/LICENSE-Lucide.txt).
-* Vercel / Claude (Anthropic) / Sentry / Supabase / Stripe: [palette references](docs/design/p2-token-map.md), via VoltAgent/awesome-design-md (MIT).
+* Референсы палитр: Vercel / Claude (Anthropic) / Sentry / Supabase / Stripe. Подборка VoltAgent/awesome-design-md распространяется по MIT; подробности приведены в [описании тем](docs/design/p2-token-map.md).
 
 ## Лицензия
 
 UnifiedProxy распространяется по лицензии [GNU General Public License version 3](LICENSE). Код преобразования ссылок Mihomo сохраняет указание на GPL-3.0 в [`internal/mihomoconvert/NOTICE.md`](internal/mihomoconvert/NOTICE.md).
+
+> [!IMPORTANT]
+> Используйте проект только на серверах и в сетях, которыми вы владеете или которыми вам разрешено управлять. Соблюдайте местное законодательство, условия провайдеров и правила сервисов, к которым вы обращаетесь.
+
+<a id="languages"></a>
+
+<details>
+<summary>多语言文档 / Languages</summary>
+
+[简体中文](/README.md) | [English](/README.en.md) | [繁體中文](/README.zh_TW.md) | [日本語](/README.ja.md) | [Русский](/README.ru.md) | [فارسی](/README.fa.md) | [Tiếng Việt](/README.vi.md) | [Español](/README.es.md) | [Türkçe](/README.tr.md) | [Українська](/README.uk.md) | [Português (Brasil)](/README.pt_BR.md)
+
+</details>
