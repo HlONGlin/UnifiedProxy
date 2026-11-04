@@ -1,38 +1,36 @@
 [English](/README.md) | [简体中文](/README.zh_CN.md) | [繁體中文](/README.zh_TW.md) | [日本語](/README.ja.md) | [Русский](/README.ru.md) | [فارسی](/README.fa.md) | [Tiếng Việt](/README.vi.md) | [Español](/README.es.md) | [Türkçe](/README.tr.md) | [Українська](/README.uk.md) | [Português (Brasil)](/README.pt_BR.md)
 
 <p align="center">
-  <img src="./media/m-ui_logo.png" alt="m-ui logo" width="420">
+  <img src="./web/media/unifiedproxy.svg" alt="UnifiedProxy" width="96">
 </p>
 
-# m-ui
+# UnifiedProxy
 
-The UnifiedProxy integration is implemented in this checkout: standalone,
-control and Agent modes share the same program, with signed fleet tasks,
-native Inbound/Client management, NaiveProxy and ShadowTLS sidecars,
-central certificates, WebDAV backups and guarded upgrades.
-Start with the [deployment and migration guide](docs/unifiedproxy-migration.md),
-[model/protocol specification](docs/fleet-protocol.md), and
-[acceptance record](docs/fleet-acceptance.md).
-The combined distribution is GPL-3.0; the UnifiedProxy MIT notice is retained.
-Existing standalone users keep their current data directory and start command;
-enrollment is explicit. Public release and live-server acceptance are recorded
-separately from local implementation and tests.
+[![License: GPL-3.0](https://img.shields.io/badge/License-GPL--3.0-blue.svg)](LICENSE)
 
-[![Release](https://img.shields.io/github/v/release/RomanovCaesar/m-ui.svg)](https://github.com/RomanovCaesar/m-ui/releases)
-[![Build](https://img.shields.io/github/actions/workflow/status/RomanovCaesar/m-ui/release.yml.svg)](https://github.com/RomanovCaesar/m-ui/actions)
-[![Go Version](https://img.shields.io/github/go-mod/go-version/RomanovCaesar/m-ui.svg)](https://github.com/RomanovCaesar/m-ui/blob/main/go.mod)
-[![Downloads](https://img.shields.io/github/downloads/RomanovCaesar/m-ui/total.svg)](https://github.com/RomanovCaesar/m-ui/releases/latest)
-[![License](https://img.shields.io/github/license/RomanovCaesar/m-ui.svg)](https://github.com/RomanovCaesar/m-ui/blob/main/LICENSE)
+UnifiedProxy combines a Mihomo-native server panel with standalone, control and Agent modes. Manage inbounds, clients, subscriptions, signed fleet tasks, sidecars, central certificates, WebDAV backups and guarded upgrades in 11 languages. The interface uses five palettes with independent light/dark modes; T0 black and white + light is the default.
 
-A server management panel powered by [Mihomo](https://github.com/MetaCubeX/mihomo). Its workflow follows 3x-ui, its interface comes in three themes (shadcn by default, Material Design 3 and Apple's Liquid Glass), and its configuration model is Mihomo's native YAML. The panel is available in 11 languages.
+Start with the [deployment and migration guide](docs/unifiedproxy-migration.md). Supported historical backups can be imported with their credentials, usage and subscription aliases; see the [compatibility record](docs/design/legacy-acceptance.md) for certificate files, node re-enrollment and the NaïveProxy exception.
 
 > [!IMPORTANT]
 > Use this project only on servers and networks that you own or are authorized to administer. Follow local law, upstream provider terms, and the policies of the services you access.
 
-For complete documentation, visit the [m-ui Wiki](https://github.com/RomanovCaesar/m-ui/wiki). Subscribe to our [Telegram channel](https://t.me/MihomoUI) for development news.
+### Five palettes
+
+`data-theme="light|dark"` × `data-color-theme="t0|t1|t2|t3|t4"`
+
+| Theme | Palette | Reference |
+|---|---|---|
+| T0 | Black and white (default) | Vercel |
+| T1 | Warm paper and clay | Claude / Anthropic |
+| T2 | Night violet | Sentry |
+| T3 | Emerald | Supabase |
+| T4 | Indigo | Stripe |
+
+[Tokens / references](docs/design/p2-token-map.md) · [NOTICE](NOTICE)
 
 <p align="center">
-  <img src="./media/screenshots/en/inbounds.png" alt="Inbounds and clients" width="900">
+  <img src="./media/screenshots/unifiedproxy/inbounds.png" alt="Inbounds" width="900">
 </p>
 
 ## Features
@@ -71,11 +69,18 @@ For complete documentation, visit the [m-ui Wiki](https://github.com/RomanovCaes
 
 ## Screenshots
 
+Current UnifiedProxy UI, captured with Chinese demo data. Each palette supports light and dark.
+
 <table>
-  <tr><td width="50%"><img src="./media/screenshots/en/dashboard.png" alt="Overview"><br><sub>Overview</sub></td><td width="50%"><img src="./media/screenshots/en/client-edit.png" alt="Client: quota, expiry, traffic reset and auto-renewal"><br><sub>Client: quota, expiry, traffic reset and auto-renewal</sub></td></tr>
-  <tr><td width="50%"><img src="./media/screenshots/en/outbounds.png" alt="Outbounds and proxy groups"><br><sub>Outbounds and proxy groups</sub></td><td width="50%"><img src="./media/screenshots/en/routing.png" alt="Routing rules"><br><sub>Routing rules</sub></td></tr>
-  <tr><td width="50%"><img src="./media/screenshots/en/xray-import.png" alt="Import from Xray / 3x-ui"><br><sub>Import from Xray / 3x-ui</sub></td><td width="50%"><img src="./media/screenshots/en/theme-shadcn-dark.png" alt="shadcn theme, dark"><br><sub>shadcn theme, dark</sub></td></tr>
-  <tr><td width="50%"><img src="./media/screenshots/en/theme-md3.png" alt="Material Design 3 theme"><br><sub>Material Design 3 theme</sub></td><td width="50%"><img src="./media/screenshots/en/theme-liquid.png" alt="Liquid Glass theme"><br><sub>Liquid Glass theme</sub></td></tr>
+  <tr><td width="50%"><img src="./media/screenshots/unifiedproxy/inbounds.png" alt="Inbounds"><br><sub>Inbounds</sub></td><td width="50%"><img src="./media/screenshots/unifiedproxy/client-edit.png" alt="Client quota and expiry"><br><sub>Client quota and expiry</sub></td></tr>
+  <tr><td width="50%"><img src="./media/screenshots/unifiedproxy/outbounds.png" alt="Outbounds"><br><sub>Outbounds</sub></td><td width="50%"><img src="./media/screenshots/unifiedproxy/routing.png" alt="Routing"><br><sub>Routing</sub></td></tr>
+  <tr><td width="50%"><img src="./media/screenshots/unifiedproxy/xray-import.png" alt="Xray / 3x-ui import"><br><sub>Xray / 3x-ui import</sub></td><td width="50%"><img src="./media/screenshots/unifiedproxy/fleet.png" alt="Fleet"><br><sub>Fleet</sub></td></tr>
+  <tr><td width="50%"><img src="./media/screenshots/unifiedproxy/login.png" alt="Login"><br><sub>Login</sub></td><td width="50%"><img src="./media/screenshots/unifiedproxy/subscription-mobile.png" alt="Mobile subscription"><br><sub>Mobile subscription</sub></td></tr>
+  <tr><td width="50%"><img src="./media/screenshots/unifiedproxy/t0-light.png" alt="T0 light"><br><sub>T0 light</sub></td><td width="50%"><img src="./media/screenshots/unifiedproxy/t0-dark.png" alt="T0 dark"><br><sub>T0 dark</sub></td></tr>
+  <tr><td width="50%"><img src="./media/screenshots/unifiedproxy/t1-light.png" alt="T1 light"><br><sub>T1 light</sub></td><td width="50%"><img src="./media/screenshots/unifiedproxy/t1-dark.png" alt="T1 dark"><br><sub>T1 dark</sub></td></tr>
+  <tr><td width="50%"><img src="./media/screenshots/unifiedproxy/t2-light.png" alt="T2 light"><br><sub>T2 light</sub></td><td width="50%"><img src="./media/screenshots/unifiedproxy/t2-dark.png" alt="T2 dark"><br><sub>T2 dark</sub></td></tr>
+  <tr><td width="50%"><img src="./media/screenshots/unifiedproxy/t3-light.png" alt="T3 light"><br><sub>T3 light</sub></td><td width="50%"><img src="./media/screenshots/unifiedproxy/t3-dark.png" alt="T3 dark"><br><sub>T3 dark</sub></td></tr>
+  <tr><td width="50%"><img src="./media/screenshots/unifiedproxy/t4-light.png" alt="T4 light"><br><sub>T4 light</sub></td><td width="50%"><img src="./media/screenshots/unifiedproxy/t4-dark.png" alt="T4 dark"><br><sub>T4 dark</sub></td></tr>
 </table>
 
 ## Linux installation
@@ -83,38 +88,38 @@ For complete documentation, visit the [m-ui Wiki](https://github.com/RomanovCaes
 Run as `root` on a Linux system using systemd or OpenRC:
 
 ```bash
-bash <(curl -Ls https://raw.githubusercontent.com/RomanovCaesar/m-ui/main/install.sh)
+bash <(curl -Ls https://raw.githubusercontent.com/HlONGlin/UnifiedProxy/main/install.sh)
 ```
 
 The installer picks an unused five-digit panel port and generates a 16-character panel path, a 14-character username, and a 16-character password. It prints the access URL and credentials once at the end. You can also set them explicitly:
 
 ```bash
-bash <(curl -Ls https://raw.githubusercontent.com/RomanovCaesar/m-ui/main/install.sh) \
+bash <(curl -Ls https://raw.githubusercontent.com/HlONGlin/UnifiedProxy/main/install.sh) \
   --port 34567 \
   --path MyPanelA1b2C3d4 \
   --username AdminUserA1234 \
   --password 'ChangeThisA12345'
 ```
 
-m-ui is installed under `/usr/local/m-ui`, with its data in `/usr/local/m-ui/data`. The installer also downloads a Mihomo core for the current architecture; an existing core is kept unless you pass `--update-mihomo`.
+UnifiedProxy is installed under `/usr/local/m-ui`, with its data in `/usr/local/m-ui/data`. The installer also downloads a Mihomo core for the current architecture; an existing core is kept unless you pass `--update-mihomo`.
 
-`m-ui update` upgrades m-ui and keeps all settings. Before updating, it snapshots the data directory into `data/backups/` and keeps the newest 3 snapshots.
+`m-ui update` upgrades UnifiedProxy and keeps all settings. Before updating, it snapshots the data directory into `data/backups/` and keeps the newest 3 snapshots.
 
 Releases contain `m-ui-linux-<architecture>.tar.gz` for `386`, `amd64`, `arm64`, `armv5`, `armv6`, `armv7`, and `s390x`, plus `m-ui-windows-amd64.zip`.
 
 ## Docker
 
-The Docker image targets Linux amd64 and contains m-ui plus a pinned, checksum-verified Mihomo core. The Compose file uses host networking, so inbound ports added in the panel work without extra port mappings.
+The Docker image targets Linux amd64 and contains UnifiedProxy plus a pinned, checksum-verified Mihomo core. The Compose file uses host networking, so inbound ports added in the panel work without extra port mappings.
 
 ```bash
-git clone https://github.com/RomanovCaesar/m-ui.git
-cd m-ui
+git clone https://github.com/HlONGlin/UnifiedProxy.git
+cd UnifiedProxy
 cp .env.example .env
 docker compose up -d --build
 docker compose logs m-ui
 ```
 
-If `MUI_PASSWORD` and `MUI_PATH` are empty, the first start generates them and prints the URL and credentials once in the log. Releases also publish `ghcr.io/romanovcaesar/m-ui:<tag>` and `latest`; use `docker compose pull` instead of building when the image is available to you. Data lives in the `m-ui-data` and `m-ui-core` volumes; do not run `docker compose down -v` unless you want to delete it.
+Build from this repository. Tagged releases may publish `ghcr.io/hlonglin/unifiedproxy:<tag>` and `latest`; use `docker compose pull` only after the corresponding UnifiedProxy image is available. Empty `MUI_PASSWORD` / `MUI_PATH` are generated once and printed in the log. Compatibility service names and data volumes remain `m-ui`, `m-ui-data` and `m-ui-core`; retain these volumes when upgrading.
 
 ## TLS certificates
 
@@ -124,7 +129,7 @@ The first interactive installation offers a Let's Encrypt domain certificate, a 
 m-ui ssl
 ```
 
-The menu can issue domain and IP certificates, use the Cloudflare DNS API for domain and wildcard certificates when port 80 is unavailable, renew, revoke, list, and apply an existing certificate pair. m-ui completes certificate files that contain only the leaf certificate, because clients such as Mihomo Party and FlClash reject them.
+The menu can issue domain and IP certificates, use the Cloudflare DNS API for domain and wildcard certificates when port 80 is unavailable, renew, revoke, list, and apply an existing certificate pair. UnifiedProxy completes certificate files that contain only the leaf certificate, because clients such as Mihomo Party and FlClash reject them.
 
 ## Management commands
 
@@ -142,38 +147,35 @@ The menu speaks the same 11 languages as the panel and remembers your choice. Th
 
 ## Documentation
 
-* [Installation](https://github.com/RomanovCaesar/m-ui/wiki/Installation) and [Panel Configuration](https://github.com/RomanovCaesar/m-ui/wiki/Configuration)
-* [Migrating from 3x-ui](https://github.com/RomanovCaesar/m-ui/wiki/Migrating-from-3x-ui)
-* [Inbounds and Clients](https://github.com/RomanovCaesar/m-ui/wiki/Inbounds) and [Mihomo Settings](https://github.com/RomanovCaesar/m-ui/wiki/Mihomo-Settings)
-* [Subscriptions](https://github.com/RomanovCaesar/m-ui/wiki/Subscriptions) and [Subscription Templates](https://github.com/RomanovCaesar/m-ui/wiki/Subscription-Templates)
-* [Multi-control](https://github.com/RomanovCaesar/m-ui/wiki/Multi-control), [Cloudflare WARP](https://github.com/RomanovCaesar/m-ui/wiki/Cloudflare-WARP), and [VPNGate](https://github.com/RomanovCaesar/m-ui/wiki/VPNGate)
-* [Maintenance](https://github.com/RomanovCaesar/m-ui/wiki/Maintenance), [API](https://github.com/RomanovCaesar/m-ui/wiki/API), and [Common Questions](https://github.com/RomanovCaesar/m-ui/wiki/Common-questions-and-problems)
+* [Deployment and migration](docs/unifiedproxy-migration.md)
+* [Model and protocol](docs/fleet-protocol.md)
+* [Acceptance and compatibility](docs/design/legacy-acceptance.md)
+* [Theme tokens and references](docs/design/p2-token-map.md)
+* [P5 visual and functional audit](docs/design/p5-acceptance.md)
+* [Releases](https://github.com/HlONGlin/UnifiedProxy/releases)
 
 ## Development
 
-Run from source on Windows; the panel opens at `http://127.0.0.1:2053` with the account `admin` / `admin`:
+Build, test and preview only in the orca-linux Linux container, at `/workspace`. Windows is used for editing and Git only.
 
-```powershell
-.\scripts\run.ps1
+```bash
+test "$PWD" = /workspace && test -f /.dockerenv
+go build ./...
+go vet ./...
+go test ./...
 ```
 
-Build Windows and Linux amd64 binaries, or all release archives:
-
-```powershell
-.\scripts\build.ps1
-.\scripts\build-release.ps1
-```
-
-Validate with `go test ./...` and `go vet ./...`. The version is injected with `-X main.version=...` from `MUI_VERSION` or the current Git tag. See [Development and Releases](https://github.com/RomanovCaesar/m-ui/wiki/Development) for the source layout and release flow, and [`LIQUID-GLASS.md`](LIQUID-GLASS.md) for the interface.
+`MUI_VERSION` / Git tag → `-X main.version=...`. [Fleet build / deployment](docs/unifiedproxy-migration.md) · [Design tokens](docs/design/p2-token-map.md).
 
 ## Acknowledgements
 
 * [MetaCubeX/mihomo](https://github.com/MetaCubeX/mihomo): the proxy core and configuration model
 * [MHSanaei/3x-ui](https://github.com/MHSanaei/3x-ui): interface density and workflow
 * [Sub-Store](https://github.com/sub-store-org/Sub-Store): reference behavior for client subscription formats
-* [liquid-glass-webgl](https://github.com/martin65536/liquid-glass-webgl): the Liquid Glass controls (Apache-2.0, see [`NOTICE`](NOTICE))
-* [Lucide](https://lucide.dev) and [Material Symbols](https://github.com/google/material-design-icons) icons, [Geist](https://github.com/vercel/geist-font) and [Roboto](https://github.com/googlefonts/roboto-classic) fonts: the shadcn and Material Design 3 themes (ISC, Apache-2.0 and OFL-1.1, see [`NOTICE`](NOTICE))
+* m-ui (GPL-3.0), UnifiedProxy (MIT): [NOTICE](NOTICE), [MIT notice](licenses/UnifiedProxy-MIT.txt).
+* [Lucide](https://lucide.dev): ISC; [icon attribution](web/licenses/LICENSE-Lucide.txt).
+* Vercel / Claude (Anthropic) / Sentry / Supabase / Stripe: [palette references](docs/design/p2-token-map.md), via VoltAgent/awesome-design-md (MIT).
 
 ## License
 
-m-ui is licensed under the [GNU General Public License version 3](LICENSE). The Mihomo sharing-link conversion code keeps its GPL-3.0 attribution in [`internal/mihomoconvert/NOTICE.md`](internal/mihomoconvert/NOTICE.md).
+UnifiedProxy is licensed under the [GNU General Public License version 3](LICENSE). The Mihomo sharing-link conversion code keeps its GPL-3.0 attribution in [`internal/mihomoconvert/NOTICE.md`](internal/mihomoconvert/NOTICE.md).

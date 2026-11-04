@@ -2,7 +2,7 @@ name: m-ui
 
 services:
   m-ui:
-    image: ghcr.io/romanovcaesar/m-ui:${MUI_IMAGE_TAG:-latest}
+    image: ghcr.io/hlonglin/unifiedproxy:${MUI_IMAGE_TAG:-latest}
     build:
       context: .
       args:

@@ -46,9 +46,10 @@ def shot(page,folder,name):
  # --highlight is the violet CTA color, so it must not be counted as fluorescence.
  discipline.append({'theme':folder.name,'surface':name,'tokens':tokens,'accent_pixel_share':pixel_share(tokens['primary']),'highlight_pixel_share':pixel_share(tokens['highlight']),'fluorescent_pixel_share':pixel_share('#c2ef4e') if folder.name.startswith('t2') else 0})
 def main():
- parser=argparse.ArgumentParser();parser.add_argument('--quick',action='store_true');parser.add_argument('--fleet',action='store_true');parser.add_argument('--operations-only',action='store_true');parser.add_argument('--login-only',action='store_true');args=parser.parse_args()
+ global OUT
+ parser=argparse.ArgumentParser();parser.add_argument('--quick',action='store_true');parser.add_argument('--fleet',action='store_true');parser.add_argument('--operations-only',action='store_true');parser.add_argument('--login-only',action='store_true');parser.add_argument('--output',default=str(OUT));args=parser.parse_args()
+ OUT=Path(args.output);OUT.mkdir(parents=True,exist_ok=True)
  if args.fleet:
-  global OUT
   OUT=OUT/'fleet';OUT.mkdir(parents=True,exist_ok=True)
  if args.operations_only:
   OUT=OUT/'operations';OUT.mkdir(parents=True,exist_ok=True)

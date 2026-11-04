@@ -1,26 +1,36 @@
 [English](/README.md) | [简体中文](/README.zh_CN.md) | [繁體中文](/README.zh_TW.md) | [日本語](/README.ja.md) | [Русский](/README.ru.md) | [فارسی](/README.fa.md) | [Tiếng Việt](/README.vi.md) | [Español](/README.es.md) | [Türkçe](/README.tr.md) | [Українська](/README.uk.md) | [Português (Brasil)](/README.pt_BR.md)
 
 <p align="center">
-  <img src="./media/m-ui_logo.png" alt="m-ui logo" width="420">
+  <img src="./web/media/unifiedproxy.svg" alt="UnifiedProxy" width="96">
 </p>
 
-# m-ui
+# UnifiedProxy
 
-[![Release](https://img.shields.io/github/v/release/RomanovCaesar/m-ui.svg)](https://github.com/RomanovCaesar/m-ui/releases)
-[![Build](https://img.shields.io/github/actions/workflow/status/RomanovCaesar/m-ui/release.yml.svg)](https://github.com/RomanovCaesar/m-ui/actions)
-[![Go Version](https://img.shields.io/github/go-mod/go-version/RomanovCaesar/m-ui.svg)](https://github.com/RomanovCaesar/m-ui/blob/main/go.mod)
-[![Downloads](https://img.shields.io/github/downloads/RomanovCaesar/m-ui/total.svg)](https://github.com/RomanovCaesar/m-ui/releases/latest)
-[![License](https://img.shields.io/github/license/RomanovCaesar/m-ui.svg)](https://github.com/RomanovCaesar/m-ui/blob/main/LICENSE)
+[![License: GPL-3.0](https://img.shields.io/badge/License-GPL--3.0-blue.svg)](LICENSE)
 
-[Mihomo](https://github.com/MetaCubeX/mihomo) çekirdeğini kullanan bir sunucu yönetim paneli. İş akışı 3x-ui'ye, arayüzü üç temaya (varsayılan shadcn, Material Design 3 ve Apple'ın Liquid Glass tasarımı), yapılandırma modeli ise Mihomo'nun yerel YAML biçimine dayanır. Panel 11 dilde kullanılabilir.
+UnifiedProxy, Mihomo yerel panelini bağımsız, kontrol ve Agent modlarında düğüm filosu yönetimiyle birleştirir. Gelen bağlantılar, istemciler, abonelikler, imzalı görevler, Sidecar, sertifikalar, WebDAV yedekleri ve güncellemeler 11 dilde yönetilir. Beş renk paleti açık/koyu moddan bağımsızdır; varsayılan T0 siyah beyaz ve açık moddur.
+
+[Dağıtım ve geçiş](docs/unifiedproxy-migration.md) ile başlayın. Eski yedeklerin kimlik bilgileri, kullanım ve abonelik takma adları korunur; sertifika dosyaları, düğüm kaydı ve NaïveProxy istisnası [uyumluluk kaydında](docs/design/legacy-acceptance.md) açıklanır.
 
 > [!IMPORTANT]
 > Bu projeyi yalnızca sahibi olduğunuz veya yönetme yetkiniz bulunan sunucu ve ağlarda kullanın. Yerel yasalara, sağlayıcı koşullarına ve eriştiğiniz hizmetlerin politikalarına uyun.
 
-Tüm belgeler [m-ui Wiki](https://github.com/RomanovCaesar/m-ui/wiki) sayfasındadır (İngilizce). Geliştirme haberleri için [Telegram kanalımızı](https://t.me/MihomoUI) takip edin.
+### Beş palet
+
+`data-theme="light|dark"` × `data-color-theme="t0|t1|t2|t3|t4"`
+
+| Theme | Palette | Reference |
+|---|---|---|
+| T0 | Siyah beyaz (varsayılan) | Vercel |
+| T1 | Sıcak kâğıt ve kil | Claude / Anthropic |
+| T2 | Gece moru | Sentry |
+| T3 | Zümrüt | Supabase |
+| T4 | İndigo | Stripe |
+
+[Tokens / references](docs/design/p2-token-map.md) · [NOTICE](NOTICE)
 
 <p align="center">
-  <img src="./media/screenshots/en/inbounds.png" alt="Inbound'lar ve istemciler" width="900">
+  <img src="./media/screenshots/unifiedproxy/inbounds.png" alt="Gelen bağlantılar" width="900">
 </p>
 
 ## Özellikler
@@ -59,11 +69,18 @@ Tüm belgeler [m-ui Wiki](https://github.com/RomanovCaesar/m-ui/wiki) sayfasınd
 
 ## Ekran görüntüleri
 
+Güncel UnifiedProxy arayüzü, Çince örnek verilerle gösterilir. Her palet açık ve koyu modu destekler.
+
 <table>
-  <tr><td width="50%"><img src="./media/screenshots/en/dashboard.png" alt="Genel bakış"><br><sub>Genel bakış</sub></td><td width="50%"><img src="./media/screenshots/en/client-edit.png" alt="İstemci: kota, bitiş tarihi, trafik sıfırlama ve otomatik yenileme"><br><sub>İstemci: kota, bitiş tarihi, trafik sıfırlama ve otomatik yenileme</sub></td></tr>
-  <tr><td width="50%"><img src="./media/screenshots/en/outbounds.png" alt="Outbound'lar ve proxy grupları"><br><sub>Outbound'lar ve proxy grupları</sub></td><td width="50%"><img src="./media/screenshots/en/routing.png" alt="Yönlendirme kuralları"><br><sub>Yönlendirme kuralları</sub></td></tr>
-  <tr><td width="50%"><img src="./media/screenshots/en/xray-import.png" alt="Xray / 3x-ui'den içe aktarma"><br><sub>Xray / 3x-ui'den içe aktarma</sub></td><td width="50%"><img src="./media/screenshots/en/theme-shadcn-dark.png" alt="shadcn teması, koyu"><br><sub>shadcn teması, koyu</sub></td></tr>
-  <tr><td width="50%"><img src="./media/screenshots/en/theme-md3.png" alt="Material Design 3 teması"><br><sub>Material Design 3 teması</sub></td><td width="50%"><img src="./media/screenshots/en/theme-liquid.png" alt="Liquid Glass teması"><br><sub>Liquid Glass teması</sub></td></tr>
+  <tr><td width="50%"><img src="./media/screenshots/unifiedproxy/inbounds.png" alt="Gelen bağlantılar"><br><sub>Gelen bağlantılar</sub></td><td width="50%"><img src="./media/screenshots/unifiedproxy/client-edit.png" alt="Kota ve son tarih"><br><sub>Kota ve son tarih</sub></td></tr>
+  <tr><td width="50%"><img src="./media/screenshots/unifiedproxy/outbounds.png" alt="Giden bağlantılar"><br><sub>Giden bağlantılar</sub></td><td width="50%"><img src="./media/screenshots/unifiedproxy/routing.png" alt="Yönlendirme"><br><sub>Yönlendirme</sub></td></tr>
+  <tr><td width="50%"><img src="./media/screenshots/unifiedproxy/xray-import.png" alt="Xray / 3x-ui içe aktarma"><br><sub>Xray / 3x-ui içe aktarma</sub></td><td width="50%"><img src="./media/screenshots/unifiedproxy/fleet.png" alt="Filo"><br><sub>Filo</sub></td></tr>
+  <tr><td width="50%"><img src="./media/screenshots/unifiedproxy/login.png" alt="Giriş"><br><sub>Giriş</sub></td><td width="50%"><img src="./media/screenshots/unifiedproxy/subscription-mobile.png" alt="Mobil abonelik"><br><sub>Mobil abonelik</sub></td></tr>
+  <tr><td width="50%"><img src="./media/screenshots/unifiedproxy/t0-light.png" alt="T0 light"><br><sub>T0 light</sub></td><td width="50%"><img src="./media/screenshots/unifiedproxy/t0-dark.png" alt="T0 dark"><br><sub>T0 dark</sub></td></tr>
+  <tr><td width="50%"><img src="./media/screenshots/unifiedproxy/t1-light.png" alt="T1 light"><br><sub>T1 light</sub></td><td width="50%"><img src="./media/screenshots/unifiedproxy/t1-dark.png" alt="T1 dark"><br><sub>T1 dark</sub></td></tr>
+  <tr><td width="50%"><img src="./media/screenshots/unifiedproxy/t2-light.png" alt="T2 light"><br><sub>T2 light</sub></td><td width="50%"><img src="./media/screenshots/unifiedproxy/t2-dark.png" alt="T2 dark"><br><sub>T2 dark</sub></td></tr>
+  <tr><td width="50%"><img src="./media/screenshots/unifiedproxy/t3-light.png" alt="T3 light"><br><sub>T3 light</sub></td><td width="50%"><img src="./media/screenshots/unifiedproxy/t3-dark.png" alt="T3 dark"><br><sub>T3 dark</sub></td></tr>
+  <tr><td width="50%"><img src="./media/screenshots/unifiedproxy/t4-light.png" alt="T4 light"><br><sub>T4 light</sub></td><td width="50%"><img src="./media/screenshots/unifiedproxy/t4-dark.png" alt="T4 dark"><br><sub>T4 dark</sub></td></tr>
 </table>
 
 ## Linux kurulumu
@@ -71,38 +88,38 @@ Tüm belgeler [m-ui Wiki](https://github.com/RomanovCaesar/m-ui/wiki) sayfasınd
 systemd veya OpenRC kullanan bir Linux sisteminde `root` olarak çalıştırın:
 
 ```bash
-bash <(curl -Ls https://raw.githubusercontent.com/RomanovCaesar/m-ui/main/install.sh)
+bash <(curl -Ls https://raw.githubusercontent.com/HlONGlin/UnifiedProxy/main/install.sh)
 ```
 
 Yükleyici boş bir beş haneli panel portu seçer; 16 karakterlik bir panel yolu, 14 karakterlik bir kullanıcı adı ve 16 karakterlik bir parola oluşturur. Erişim adresi ve kimlik bilgileri sonunda yalnızca bir kez gösterilir. Bunları kendiniz de belirleyebilirsiniz:
 
 ```bash
-bash <(curl -Ls https://raw.githubusercontent.com/RomanovCaesar/m-ui/main/install.sh) \
+bash <(curl -Ls https://raw.githubusercontent.com/HlONGlin/UnifiedProxy/main/install.sh) \
   --port 34567 \
   --path MyPanelA1b2C3d4 \
   --username AdminUserA1234 \
   --password 'ChangeThisA12345'
 ```
 
-m-ui `/usr/local/m-ui` dizinine kurulur ve verilerini `/usr/local/m-ui/data` içinde tutar. Yükleyici geçerli mimari için bir Mihomo çekirdeği de indirir; mevcut çekirdek, `--update-mihomo` kullanılmadıkça korunur.
+UnifiedProxy `/usr/local/m-ui` dizinine kurulur ve verilerini `/usr/local/m-ui/data` içinde tutar. Yükleyici geçerli mimari için bir Mihomo çekirdeği de indirir; mevcut çekirdek, `--update-mihomo` kullanılmadıkça korunur.
 
-`m-ui update`, tüm ayarları koruyarak m-ui'yi günceller. Güncellemeden önce veri dizininin anlık görüntüsünü `data/backups/` içine alır ve en yeni 3 tanesini saklar.
+`m-ui update`, tüm ayarları koruyarak UnifiedProxy'yi günceller. Güncellemeden önce veri dizininin anlık görüntüsünü `data/backups/` içine alır ve en yeni 3 tanesini saklar.
 
 Her sürümde `386`, `amd64`, `arm64`, `armv5`, `armv6`, `armv7` ve `s390x` için `m-ui-linux-<architecture>.tar.gz` ile `m-ui-windows-amd64.zip` bulunur.
 
 ## Docker
 
-Docker imajı Linux amd64 içindir ve m-ui ile sabit sürümlü, doğrulanmış bir Mihomo çekirdeği içerir. Compose ana makine ağını kullanır; panelde eklediğiniz girişlerin portları ek port eşlemesi gerekmeden çalışır.
+Docker imajı Linux amd64 içindir ve UnifiedProxy ile sabit sürümlü, doğrulanmış bir Mihomo çekirdeği içerir. Compose ana makine ağını kullanır; panelde eklediğiniz girişlerin portları ek port eşlemesi gerekmeden çalışır.
 
 ```bash
-git clone https://github.com/RomanovCaesar/m-ui.git
-cd m-ui
+git clone https://github.com/HlONGlin/UnifiedProxy.git
+cd UnifiedProxy
 cp .env.example .env
 docker compose up -d --build
 docker compose logs m-ui
 ```
 
-`MUI_PASSWORD` ve `MUI_PATH` boşsa ilk başlatmada oluşturulur; adres ve kimlik bilgileri günlüğe bir kez yazılır. Her sürüm ayrıca `ghcr.io/romanovcaesar/m-ui:<tag>` ve `latest` yayınlar; imaj sizin için erişilebilirse derlemek yerine `docker compose pull` kullanabilirsiniz. Veriler `m-ui-data` ve `m-ui-core` birimlerinde tutulur; silmek istemiyorsanız `docker compose down -v` çalıştırmayın.
+Bu depodan derleyin. Etiketli sürümler `ghcr.io/hlonglin/unifiedproxy:<tag>` ve `latest` yayımlayabilir; ilgili UnifiedProxy imajı yayımlandıktan sonra `docker compose pull` kullanın. Boş `MUI_PASSWORD` / `MUI_PATH` ilk açılışta oluşturulur ve günlüğe bir kez yazılır. Uyumluluk için `m-ui` hizmeti ve `m-ui-data`, `m-ui-core` birimleri korunur; yükseltirken bu birimleri saklayın.
 
 ## TLS sertifikaları
 
@@ -112,7 +129,7 @@ docker compose logs m-ui
 m-ui ssl
 ```
 
-Menü; alan adı ve IP sertifikaları almayı, 80 numaralı port kullanılamadığında Cloudflare DNS API ile alan adı ve joker sertifika almayı, yenilemeyi, iptal etmeyi, listelemeyi ve mevcut bir sertifikayı uygulamayı sağlar. Sertifika dosyası yalnızca son sertifikayı içeriyorsa m-ui zinciri otomatik tamamlar, çünkü Mihomo Party ve FlClash gibi istemciler böyle sertifikaları reddeder.
+Menü; alan adı ve IP sertifikaları almayı, 80 numaralı port kullanılamadığında Cloudflare DNS API ile alan adı ve joker sertifika almayı, yenilemeyi, iptal etmeyi, listelemeyi ve mevcut bir sertifikayı uygulamayı sağlar. Sertifika dosyası yalnızca son sertifikayı içeriyorsa UnifiedProxy zinciri otomatik tamamlar, çünkü Mihomo Party ve FlClash gibi istemciler böyle sertifikaları reddeder.
 
 ## Yönetim komutları
 
@@ -130,40 +147,35 @@ Menü, panelle aynı 11 dili destekler ve seçiminizi hatırlar. Yükleyici İng
 
 ## Belgeler
 
-Wiki İngilizce ve Basitleştirilmiş Çince olarak sunulur:
-
-* [Installation](https://github.com/RomanovCaesar/m-ui/wiki/Installation), [Panel Configuration](https://github.com/RomanovCaesar/m-ui/wiki/Configuration)
-* [Migrating from 3x-ui](https://github.com/RomanovCaesar/m-ui/wiki/Migrating-from-3x-ui)
-* [Inbounds and Clients](https://github.com/RomanovCaesar/m-ui/wiki/Inbounds), [Mihomo Settings](https://github.com/RomanovCaesar/m-ui/wiki/Mihomo-Settings)
-* [Subscriptions](https://github.com/RomanovCaesar/m-ui/wiki/Subscriptions), [Subscription Templates](https://github.com/RomanovCaesar/m-ui/wiki/Subscription-Templates)
-* [Multi-control](https://github.com/RomanovCaesar/m-ui/wiki/Multi-control), [Cloudflare WARP](https://github.com/RomanovCaesar/m-ui/wiki/Cloudflare-WARP), [VPNGate](https://github.com/RomanovCaesar/m-ui/wiki/VPNGate)
-* [Maintenance](https://github.com/RomanovCaesar/m-ui/wiki/Maintenance), [API](https://github.com/RomanovCaesar/m-ui/wiki/API), [Common Questions](https://github.com/RomanovCaesar/m-ui/wiki/Common-questions-and-problems)
+* [Dağıtım ve geçiş](docs/unifiedproxy-migration.md)
+* [Model ve protokol](docs/fleet-protocol.md)
+* [İşlev ve uyumluluk](docs/design/legacy-acceptance.md)
+* [Temalar ve kaynaklar](docs/design/p2-token-map.md)
+* [P5 incelemesi](docs/design/p5-acceptance.md)
+* [Sürümler](https://github.com/HlONGlin/UnifiedProxy/releases)
 
 ## Geliştirme
 
-Windows'ta kaynak koddan çalıştırma; panel `http://127.0.0.1:2053` adresinde `admin` / `admin` hesabıyla açılır:
+Derleme, test ve önizleme yalnızca orca-linux Linux konteynerinde `/workspace` içinde yapılır. Windows yalnızca düzenleme ve Git için kullanılır.
 
-```powershell
-.\scripts\run.ps1
+```bash
+test "$PWD" = /workspace && test -f /.dockerenv
+go build ./...
+go vet ./...
+go test ./...
 ```
 
-Windows ve Linux amd64 ikili dosyalarını ya da tüm sürüm arşivlerini derleyin:
-
-```powershell
-.\scripts\build.ps1
-.\scripts\build-release.ps1
-```
-
-`go test ./...` ve `go vet ./...` ile doğrulayın. Sürüm, `MUI_VERSION` değişkeninden veya geçerli Git etiketinden `-X main.version=...` ile eklenir. Kaynak yapısı ve yayın süreci için [Development and Releases](https://github.com/RomanovCaesar/m-ui/wiki/Development), arayüz için [`LIQUID-GLASS.md`](LIQUID-GLASS.md) dosyasına bakın.
+`MUI_VERSION` / Git tag → `-X main.version=...`. [Fleet build / deployment](docs/unifiedproxy-migration.md) · [Design tokens](docs/design/p2-token-map.md).
 
 ## Teşekkürler
 
 * [MetaCubeX/mihomo](https://github.com/MetaCubeX/mihomo): proxy çekirdeği ve yapılandırma modeli
 * [MHSanaei/3x-ui](https://github.com/MHSanaei/3x-ui): arayüz yoğunluğu ve iş akışı
 * [Sub-Store](https://github.com/sub-store-org/Sub-Store): istemci abonelik biçimleri için başvuru davranışı
-* [liquid-glass-webgl](https://github.com/martin65536/liquid-glass-webgl): Liquid Glass denetimleri (Apache-2.0, bkz. [`NOTICE`](NOTICE))
-* [Lucide](https://lucide.dev) ve [Material Symbols](https://github.com/google/material-design-icons) simgeleri, [Geist](https://github.com/vercel/geist-font) ve [Roboto](https://github.com/googlefonts/roboto-classic) yazı tipleri: shadcn ve Material Design 3 temaları (ISC, Apache-2.0 ve OFL-1.1, bkz. [`NOTICE`](NOTICE))
+* m-ui (GPL-3.0), UnifiedProxy (MIT): [NOTICE](NOTICE), [MIT notice](licenses/UnifiedProxy-MIT.txt).
+* [Lucide](https://lucide.dev): ISC; [icon attribution](web/licenses/LICENSE-Lucide.txt).
+* Vercel / Claude (Anthropic) / Sentry / Supabase / Stripe: [palette references](docs/design/p2-token-map.md), via VoltAgent/awesome-design-md (MIT).
 
 ## Lisans
 
-m-ui, [GNU General Public License version 3](LICENSE) lisansıyla dağıtılır. Mihomo bağlantı dönüştürme kodu GPL-3.0 atfını [`internal/mihomoconvert/NOTICE.md`](internal/mihomoconvert/NOTICE.md) içinde korur.
+UnifiedProxy, [GNU General Public License version 3](LICENSE) lisansıyla dağıtılır. Mihomo bağlantı dönüştürme kodu GPL-3.0 atfını [`internal/mihomoconvert/NOTICE.md`](internal/mihomoconvert/NOTICE.md) içinde korur.

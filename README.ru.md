@@ -1,26 +1,36 @@
 [English](/README.md) | [简体中文](/README.zh_CN.md) | [繁體中文](/README.zh_TW.md) | [日本語](/README.ja.md) | [Русский](/README.ru.md) | [فارسی](/README.fa.md) | [Tiếng Việt](/README.vi.md) | [Español](/README.es.md) | [Türkçe](/README.tr.md) | [Українська](/README.uk.md) | [Português (Brasil)](/README.pt_BR.md)
 
 <p align="center">
-  <img src="./media/m-ui_logo.png" alt="m-ui logo" width="420">
+  <img src="./web/media/unifiedproxy.svg" alt="UnifiedProxy" width="96">
 </p>
 
-# m-ui
+# UnifiedProxy
 
-[![Release](https://img.shields.io/github/v/release/RomanovCaesar/m-ui.svg)](https://github.com/RomanovCaesar/m-ui/releases)
-[![Build](https://img.shields.io/github/actions/workflow/status/RomanovCaesar/m-ui/release.yml.svg)](https://github.com/RomanovCaesar/m-ui/actions)
-[![Go Version](https://img.shields.io/github/go-mod/go-version/RomanovCaesar/m-ui.svg)](https://github.com/RomanovCaesar/m-ui/blob/main/go.mod)
-[![Downloads](https://img.shields.io/github/downloads/RomanovCaesar/m-ui/total.svg)](https://github.com/RomanovCaesar/m-ui/releases/latest)
-[![License](https://img.shields.io/github/license/RomanovCaesar/m-ui.svg)](https://github.com/RomanovCaesar/m-ui/blob/main/LICENSE)
+[![License: GPL-3.0](https://img.shields.io/badge/License-GPL--3.0-blue.svg)](LICENSE)
 
-Панель управления сервером на базе [Mihomo](https://github.com/MetaCubeX/mihomo). Логика работы повторяет 3x-ui, интерфейс доступен в трёх темах (shadcn по умолчанию, Material Design 3 и Apple Liquid Glass), а конфигурация строится в родном YAML-формате Mihomo. Панель доступна на 11 языках.
+UnifiedProxy объединяет панель с нативной конфигурацией Mihomo и управление парком узлов: автономный режим, контроллер и Agent. Входящие подключения, клиенты, подписки, подписанные задания, Sidecar, сертификаты, WebDAV и обновления доступны на 11 языках. Пять палитр переключаются независимо от светлого и тёмного режима; по умолчанию — чёрно-белая T0 и светлый режим.
+
+Начните с [развёртывания и миграции](docs/unifiedproxy-migration.md). Старые резервные копии сохраняют учётные данные, расход и адреса подписок; требования к файлам сертификатов, повторной регистрации узлов и исключение NaïveProxy описаны в [проверке совместимости](docs/design/legacy-acceptance.md).
 
 > [!IMPORTANT]
 > Используйте проект только на серверах и в сетях, которыми вы владеете или которыми вам разрешено управлять. Соблюдайте местное законодательство, условия провайдеров и правила сервисов, к которым вы обращаетесь.
 
-Полная документация находится в [m-ui Wiki](https://github.com/RomanovCaesar/m-ui/wiki) (на английском). Новости разработки публикуются в нашем [Telegram-канале](https://t.me/MihomoUI).
+### Пять палитр
+
+`data-theme="light|dark"` × `data-color-theme="t0|t1|t2|t3|t4"`
+
+| Theme | Palette | Reference |
+|---|---|---|
+| T0 | Чёрно-белая (по умолчанию) | Vercel |
+| T1 | Тёплая бумага и терракота | Claude / Anthropic |
+| T2 | Ночной фиолетовый | Sentry |
+| T3 | Изумрудная | Supabase |
+| T4 | Индиго | Stripe |
+
+[Tokens / references](docs/design/p2-token-map.md) · [NOTICE](NOTICE)
 
 <p align="center">
-  <img src="./media/screenshots/en/inbounds.png" alt="Inbound и клиенты" width="900">
+  <img src="./media/screenshots/unifiedproxy/inbounds.png" alt="Входящие" width="900">
 </p>
 
 ## Возможности
@@ -59,11 +69,18 @@
 
 ## Скриншоты
 
+Текущий интерфейс UnifiedProxy с демонстрационными данными на китайском. Все палитры имеют светлый и тёмный режим.
+
 <table>
-  <tr><td width="50%"><img src="./media/screenshots/en/dashboard.png" alt="Обзор"><br><sub>Обзор</sub></td><td width="50%"><img src="./media/screenshots/en/client-edit.png" alt="Клиент: лимит, срок действия, сброс трафика и автопродление"><br><sub>Клиент: лимит, срок действия, сброс трафика и автопродление</sub></td></tr>
-  <tr><td width="50%"><img src="./media/screenshots/en/outbounds.png" alt="Outbound и группы прокси"><br><sub>Outbound и группы прокси</sub></td><td width="50%"><img src="./media/screenshots/en/routing.png" alt="Правила маршрутизации"><br><sub>Правила маршрутизации</sub></td></tr>
-  <tr><td width="50%"><img src="./media/screenshots/en/xray-import.png" alt="Импорт из Xray / 3x-ui"><br><sub>Импорт из Xray / 3x-ui</sub></td><td width="50%"><img src="./media/screenshots/en/theme-shadcn-dark.png" alt="Тема shadcn, тёмная"><br><sub>Тема shadcn, тёмная</sub></td></tr>
-  <tr><td width="50%"><img src="./media/screenshots/en/theme-md3.png" alt="Тема Material Design 3"><br><sub>Тема Material Design 3</sub></td><td width="50%"><img src="./media/screenshots/en/theme-liquid.png" alt="Тема Liquid Glass"><br><sub>Тема Liquid Glass</sub></td></tr>
+  <tr><td width="50%"><img src="./media/screenshots/unifiedproxy/inbounds.png" alt="Входящие"><br><sub>Входящие</sub></td><td width="50%"><img src="./media/screenshots/unifiedproxy/client-edit.png" alt="Квоты и срок клиента"><br><sub>Квоты и срок клиента</sub></td></tr>
+  <tr><td width="50%"><img src="./media/screenshots/unifiedproxy/outbounds.png" alt="Исходящие"><br><sub>Исходящие</sub></td><td width="50%"><img src="./media/screenshots/unifiedproxy/routing.png" alt="Маршрутизация"><br><sub>Маршрутизация</sub></td></tr>
+  <tr><td width="50%"><img src="./media/screenshots/unifiedproxy/xray-import.png" alt="Импорт Xray / 3x-ui"><br><sub>Импорт Xray / 3x-ui</sub></td><td width="50%"><img src="./media/screenshots/unifiedproxy/fleet.png" alt="Парк узлов"><br><sub>Парк узлов</sub></td></tr>
+  <tr><td width="50%"><img src="./media/screenshots/unifiedproxy/login.png" alt="Вход"><br><sub>Вход</sub></td><td width="50%"><img src="./media/screenshots/unifiedproxy/subscription-mobile.png" alt="Мобильная подписка"><br><sub>Мобильная подписка</sub></td></tr>
+  <tr><td width="50%"><img src="./media/screenshots/unifiedproxy/t0-light.png" alt="T0 light"><br><sub>T0 light</sub></td><td width="50%"><img src="./media/screenshots/unifiedproxy/t0-dark.png" alt="T0 dark"><br><sub>T0 dark</sub></td></tr>
+  <tr><td width="50%"><img src="./media/screenshots/unifiedproxy/t1-light.png" alt="T1 light"><br><sub>T1 light</sub></td><td width="50%"><img src="./media/screenshots/unifiedproxy/t1-dark.png" alt="T1 dark"><br><sub>T1 dark</sub></td></tr>
+  <tr><td width="50%"><img src="./media/screenshots/unifiedproxy/t2-light.png" alt="T2 light"><br><sub>T2 light</sub></td><td width="50%"><img src="./media/screenshots/unifiedproxy/t2-dark.png" alt="T2 dark"><br><sub>T2 dark</sub></td></tr>
+  <tr><td width="50%"><img src="./media/screenshots/unifiedproxy/t3-light.png" alt="T3 light"><br><sub>T3 light</sub></td><td width="50%"><img src="./media/screenshots/unifiedproxy/t3-dark.png" alt="T3 dark"><br><sub>T3 dark</sub></td></tr>
+  <tr><td width="50%"><img src="./media/screenshots/unifiedproxy/t4-light.png" alt="T4 light"><br><sub>T4 light</sub></td><td width="50%"><img src="./media/screenshots/unifiedproxy/t4-dark.png" alt="T4 dark"><br><sub>T4 dark</sub></td></tr>
 </table>
 
 ## Установка в Linux
@@ -71,38 +88,38 @@
 Выполните от имени `root` в Linux с systemd или OpenRC:
 
 ```bash
-bash <(curl -Ls https://raw.githubusercontent.com/RomanovCaesar/m-ui/main/install.sh)
+bash <(curl -Ls https://raw.githubusercontent.com/HlONGlin/UnifiedProxy/main/install.sh)
 ```
 
 Установщик выбирает свободный пятизначный порт панели и генерирует путь панели из 16 символов, имя пользователя из 14 символов и пароль из 16 символов. Адрес и учётные данные выводятся один раз в конце установки. Их можно задать явно:
 
 ```bash
-bash <(curl -Ls https://raw.githubusercontent.com/RomanovCaesar/m-ui/main/install.sh) \
+bash <(curl -Ls https://raw.githubusercontent.com/HlONGlin/UnifiedProxy/main/install.sh) \
   --port 34567 \
   --path MyPanelA1b2C3d4 \
   --username AdminUserA1234 \
   --password 'ChangeThisA12345'
 ```
 
-m-ui устанавливается в `/usr/local/m-ui`, данные хранятся в `/usr/local/m-ui/data`. Установщик также скачивает ядро Mihomo для текущей архитектуры; уже установленное ядро сохраняется, если не указан `--update-mihomo`.
+UnifiedProxy устанавливается в `/usr/local/m-ui`, данные хранятся в `/usr/local/m-ui/data`. Установщик также скачивает ядро Mihomo для текущей архитектуры; уже установленное ядро сохраняется, если не указан `--update-mihomo`.
 
-`m-ui update` обновляет m-ui с сохранением всех настроек. Перед обновлением создаётся снимок каталога данных в `data/backups/`; хранятся три последних снимка.
+`m-ui update` обновляет UnifiedProxy с сохранением всех настроек. Перед обновлением создаётся снимок каталога данных в `data/backups/`; хранятся три последних снимка.
 
 В релизах есть `m-ui-linux-<architecture>.tar.gz` для `386`, `amd64`, `arm64`, `armv5`, `armv6`, `armv7` и `s390x`, а также `m-ui-windows-amd64.zip`.
 
 ## Docker
 
-Образ Docker собран для Linux amd64 и содержит m-ui и проверенное ядро Mihomo фиксированной версии. Compose использует сеть хоста, поэтому порты входов, добавленных в панели, работают без отдельного проброса портов.
+Образ Docker собран для Linux amd64 и содержит UnifiedProxy и проверенное ядро Mihomo фиксированной версии. Compose использует сеть хоста, поэтому порты входов, добавленных в панели, работают без отдельного проброса портов.
 
 ```bash
-git clone https://github.com/RomanovCaesar/m-ui.git
-cd m-ui
+git clone https://github.com/HlONGlin/UnifiedProxy.git
+cd UnifiedProxy
 cp .env.example .env
 docker compose up -d --build
 docker compose logs m-ui
 ```
 
-Если `MUI_PASSWORD` и `MUI_PATH` пусты, при первом запуске они генерируются, а адрес и учётные данные один раз выводятся в журнал. Каждый релиз также публикует `ghcr.io/romanovcaesar/m-ui:<tag>` и `latest`; если образ вам доступен, вместо сборки можно выполнить `docker compose pull`. Данные хранятся в томах `m-ui-data` и `m-ui-core`; не запускайте `docker compose down -v`, если не хотите их удалить.
+Собирайте из этого репозитория. Релизы с тегами могут публиковать `ghcr.io/hlonglin/unifiedproxy:<tag>` и `latest`; используйте `docker compose pull` после публикации нужного образа UnifiedProxy. Пустые `MUI_PASSWORD` / `MUI_PATH` генерируются при первом запуске и один раз выводятся в журнал. Для совместимости сохранены сервис `m-ui` и тома `m-ui-data`, `m-ui-core`; сохраняйте тома при обновлении.
 
 ## TLS-сертификаты
 
@@ -112,7 +129,7 @@ docker compose logs m-ui
 m-ui ssl
 ```
 
-В меню можно выпустить сертификаты для домена и IP, получить сертификат для домена и wildcard через Cloudflare DNS API, если порт 80 недоступен, а также продлить, отозвать, посмотреть и применить существующий сертификат. Если файл сертификата содержит только конечный сертификат, m-ui сам дополняет цепочку: клиенты вроде Mihomo Party и FlClash такие сертификаты отклоняют.
+В меню можно выпустить сертификаты для домена и IP, получить сертификат для домена и wildcard через Cloudflare DNS API, если порт 80 недоступен, а также продлить, отозвать, посмотреть и применить существующий сертификат. Если файл сертификата содержит только конечный сертификат, UnifiedProxy сам дополняет цепочку: клиенты вроде Mihomo Party и FlClash такие сертификаты отклоняют.
 
 ## Команды управления
 
@@ -130,40 +147,35 @@ m-ui --lang <code>    menu language, e.g. m-ui --lang ru
 
 ## Документация
 
-Wiki доступна на английском и упрощённом китайском:
-
-* [Installation](https://github.com/RomanovCaesar/m-ui/wiki/Installation), [Panel Configuration](https://github.com/RomanovCaesar/m-ui/wiki/Configuration)
-* [Migrating from 3x-ui](https://github.com/RomanovCaesar/m-ui/wiki/Migrating-from-3x-ui)
-* [Inbounds and Clients](https://github.com/RomanovCaesar/m-ui/wiki/Inbounds), [Mihomo Settings](https://github.com/RomanovCaesar/m-ui/wiki/Mihomo-Settings)
-* [Subscriptions](https://github.com/RomanovCaesar/m-ui/wiki/Subscriptions), [Subscription Templates](https://github.com/RomanovCaesar/m-ui/wiki/Subscription-Templates)
-* [Multi-control](https://github.com/RomanovCaesar/m-ui/wiki/Multi-control), [Cloudflare WARP](https://github.com/RomanovCaesar/m-ui/wiki/Cloudflare-WARP), [VPNGate](https://github.com/RomanovCaesar/m-ui/wiki/VPNGate)
-* [Maintenance](https://github.com/RomanovCaesar/m-ui/wiki/Maintenance), [API](https://github.com/RomanovCaesar/m-ui/wiki/API), [Common Questions](https://github.com/RomanovCaesar/m-ui/wiki/Common-questions-and-problems)
+* [Развёртывание и миграция](docs/unifiedproxy-migration.md)
+* [Модель и протокол](docs/fleet-protocol.md)
+* [Функции и совместимость](docs/design/legacy-acceptance.md)
+* [Темы и источники](docs/design/p2-token-map.md)
+* [Проверка P5](docs/design/p5-acceptance.md)
+* [Релизы](https://github.com/HlONGlin/UnifiedProxy/releases)
 
 ## Разработка
 
-Запуск из исходников в Windows; панель открывается по адресу `http://127.0.0.1:2053`, учётная запись `admin` / `admin`:
+Сборка, тестирование и предпросмотр выполняются только в Linux-контейнере orca-linux в `/workspace`. Windows используется для редактирования и Git.
 
-```powershell
-.\scripts\run.ps1
+```bash
+test "$PWD" = /workspace && test -f /.dockerenv
+go build ./...
+go vet ./...
+go test ./...
 ```
 
-Сборка бинарных файлов для Windows и Linux amd64 или всех архивов релиза:
-
-```powershell
-.\scripts\build.ps1
-.\scripts\build-release.ps1
-```
-
-Проверка: `go test ./...` и `go vet ./...`. Версия внедряется через `-X main.version=...` из `MUI_VERSION` или текущего тега Git. Структура исходников и процесс релиза описаны в [Development and Releases](https://github.com/RomanovCaesar/m-ui/wiki/Development), интерфейс — в [`LIQUID-GLASS.md`](LIQUID-GLASS.md).
+`MUI_VERSION` / Git tag → `-X main.version=...`. [Fleet build / deployment](docs/unifiedproxy-migration.md) · [Design tokens](docs/design/p2-token-map.md).
 
 ## Благодарности
 
 * [MetaCubeX/mihomo](https://github.com/MetaCubeX/mihomo): прокси-ядро и модель конфигурации
 * [MHSanaei/3x-ui](https://github.com/MHSanaei/3x-ui): плотность интерфейса и логика работы
 * [Sub-Store](https://github.com/sub-store-org/Sub-Store): эталонное поведение форматов подписок для клиентов
-* [liquid-glass-webgl](https://github.com/martin65536/liquid-glass-webgl): элементы управления Liquid Glass (Apache-2.0, см. [`NOTICE`](NOTICE))
-* Иконки [Lucide](https://lucide.dev) и [Material Symbols](https://github.com/google/material-design-icons), шрифты [Geist](https://github.com/vercel/geist-font) и [Roboto](https://github.com/googlefonts/roboto-classic): темы shadcn и Material Design 3 (ISC, Apache-2.0 и OFL-1.1, см. [`NOTICE`](NOTICE))
+* m-ui (GPL-3.0), UnifiedProxy (MIT): [NOTICE](NOTICE), [MIT notice](licenses/UnifiedProxy-MIT.txt).
+* [Lucide](https://lucide.dev): ISC; [icon attribution](web/licenses/LICENSE-Lucide.txt).
+* Vercel / Claude (Anthropic) / Sentry / Supabase / Stripe: [palette references](docs/design/p2-token-map.md), via VoltAgent/awesome-design-md (MIT).
 
 ## Лицензия
 
-m-ui распространяется по лицензии [GNU General Public License version 3](LICENSE). Код преобразования ссылок Mihomo сохраняет указание на GPL-3.0 в [`internal/mihomoconvert/NOTICE.md`](internal/mihomoconvert/NOTICE.md).
+UnifiedProxy распространяется по лицензии [GNU General Public License version 3](LICENSE). Код преобразования ссылок Mihomo сохраняет указание на GPL-3.0 в [`internal/mihomoconvert/NOTICE.md`](internal/mihomoconvert/NOTICE.md).

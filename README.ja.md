@@ -1,26 +1,36 @@
 [English](/README.md) | [简体中文](/README.zh_CN.md) | [繁體中文](/README.zh_TW.md) | [日本語](/README.ja.md) | [Русский](/README.ru.md) | [فارسی](/README.fa.md) | [Tiếng Việt](/README.vi.md) | [Español](/README.es.md) | [Türkçe](/README.tr.md) | [Українська](/README.uk.md) | [Português (Brasil)](/README.pt_BR.md)
 
 <p align="center">
-  <img src="./media/m-ui_logo.png" alt="m-ui logo" width="420">
+  <img src="./web/media/unifiedproxy.svg" alt="UnifiedProxy" width="96">
 </p>
 
-# m-ui
+# UnifiedProxy
 
-[![Release](https://img.shields.io/github/v/release/RomanovCaesar/m-ui.svg)](https://github.com/RomanovCaesar/m-ui/releases)
-[![Build](https://img.shields.io/github/actions/workflow/status/RomanovCaesar/m-ui/release.yml.svg)](https://github.com/RomanovCaesar/m-ui/actions)
-[![Go Version](https://img.shields.io/github/go-mod/go-version/RomanovCaesar/m-ui.svg)](https://github.com/RomanovCaesar/m-ui/blob/main/go.mod)
-[![Downloads](https://img.shields.io/github/downloads/RomanovCaesar/m-ui/total.svg)](https://github.com/RomanovCaesar/m-ui/releases/latest)
-[![License](https://img.shields.io/github/license/RomanovCaesar/m-ui.svg)](https://github.com/RomanovCaesar/m-ui/blob/main/LICENSE)
+[![License: GPL-3.0](https://img.shields.io/badge/License-GPL--3.0-blue.svg)](LICENSE)
 
-[Mihomo](https://github.com/MetaCubeX/mihomo) をコアとするサーバー管理パネルです。操作の流れは 3x-ui、画面デザインは shadcn（既定）、Material Design 3、Apple の Liquid Glass の 3 つのテーマから選べ、設定モデルは Mihomo ネイティブの YAML に基づいています。パネルは 11 言語に対応しています。
+UnifiedProxy は Mihomo ネイティブの管理パネルとフリート管理を統合し、単独・コントロール・Agent の各モードに対応します。インバウンド、クライアント、サブスクリプション、署名付きタスク、Sidecar、中央証明書、WebDAV バックアップと更新を 11 言語で管理できます。5 種類の配色と明暗を独立して選べ、既定は T0 白黒のライトです。
+
+[導入と移行](docs/unifiedproxy-migration.md)を参照してください。旧バックアップの認証情報・使用量・サブスクリプション別名を移行できます。証明書ファイル、ノード再登録、NaïveProxy の例外は[互換性記録](docs/design/legacy-acceptance.md)に記載しています。
 
 > [!IMPORTANT]
 > 本プロジェクトは、ご自身が所有する、または管理を許可されたサーバーとネットワークでのみ使用してください。現地の法律、上流プロバイダーの規約、利用するサービスのポリシーを守ってください。
 
-詳しいドキュメントは [m-ui Wiki](https://github.com/RomanovCaesar/m-ui/wiki)（英語）をご覧ください。開発情報は [Telegram チャンネル](https://t.me/MihomoUI) でお知らせしています。
+### 5 種類の配色
+
+`data-theme="light|dark"` × `data-color-theme="t0|t1|t2|t3|t4"`
+
+| Theme | Palette | Reference |
+|---|---|---|
+| T0 | 白黒（既定） | Vercel |
+| T1 | 暖色の紙とテラコッタ | Claude / Anthropic |
+| T2 | 夜のバイオレット | Sentry |
+| T3 | エメラルド | Supabase |
+| T4 | インディゴ | Stripe |
+
+[Tokens / references](docs/design/p2-token-map.md) · [NOTICE](NOTICE)
 
 <p align="center">
-  <img src="./media/screenshots/en/inbounds.png" alt="インバウンドとクライアント" width="900">
+  <img src="./media/screenshots/unifiedproxy/inbounds.png" alt="インバウンド" width="900">
 </p>
 
 ## 機能
@@ -59,11 +69,18 @@
 
 ## スクリーンショット
 
+現行 UnifiedProxy の中国語デモデータによる画面です。全配色でライトとダークを利用できます。
+
 <table>
-  <tr><td width="50%"><img src="./media/screenshots/en/dashboard.png" alt="ダッシュボード"><br><sub>ダッシュボード</sub></td><td width="50%"><img src="./media/screenshots/en/client-edit.png" alt="クライアント：容量・有効期限・トラフィックリセット・自動更新"><br><sub>クライアント：容量・有効期限・トラフィックリセット・自動更新</sub></td></tr>
-  <tr><td width="50%"><img src="./media/screenshots/en/outbounds.png" alt="アウトバウンドとプロキシグループ"><br><sub>アウトバウンドとプロキシグループ</sub></td><td width="50%"><img src="./media/screenshots/en/routing.png" alt="ルーティングルール"><br><sub>ルーティングルール</sub></td></tr>
-  <tr><td width="50%"><img src="./media/screenshots/en/xray-import.png" alt="Xray / 3x-ui からのインポート"><br><sub>Xray / 3x-ui からのインポート</sub></td><td width="50%"><img src="./media/screenshots/en/theme-shadcn-dark.png" alt="shadcn テーマ（ダーク）"><br><sub>shadcn テーマ（ダーク）</sub></td></tr>
-  <tr><td width="50%"><img src="./media/screenshots/en/theme-md3.png" alt="Material Design 3 テーマ"><br><sub>Material Design 3 テーマ</sub></td><td width="50%"><img src="./media/screenshots/en/theme-liquid.png" alt="Liquid Glass テーマ"><br><sub>Liquid Glass テーマ</sub></td></tr>
+  <tr><td width="50%"><img src="./media/screenshots/unifiedproxy/inbounds.png" alt="インバウンド"><br><sub>インバウンド</sub></td><td width="50%"><img src="./media/screenshots/unifiedproxy/client-edit.png" alt="クライアント上限と期限"><br><sub>クライアント上限と期限</sub></td></tr>
+  <tr><td width="50%"><img src="./media/screenshots/unifiedproxy/outbounds.png" alt="アウトバウンド"><br><sub>アウトバウンド</sub></td><td width="50%"><img src="./media/screenshots/unifiedproxy/routing.png" alt="ルーティング"><br><sub>ルーティング</sub></td></tr>
+  <tr><td width="50%"><img src="./media/screenshots/unifiedproxy/xray-import.png" alt="Xray / 3x-ui インポート"><br><sub>Xray / 3x-ui インポート</sub></td><td width="50%"><img src="./media/screenshots/unifiedproxy/fleet.png" alt="フリート"><br><sub>フリート</sub></td></tr>
+  <tr><td width="50%"><img src="./media/screenshots/unifiedproxy/login.png" alt="ログイン"><br><sub>ログイン</sub></td><td width="50%"><img src="./media/screenshots/unifiedproxy/subscription-mobile.png" alt="モバイル購読"><br><sub>モバイル購読</sub></td></tr>
+  <tr><td width="50%"><img src="./media/screenshots/unifiedproxy/t0-light.png" alt="T0 light"><br><sub>T0 light</sub></td><td width="50%"><img src="./media/screenshots/unifiedproxy/t0-dark.png" alt="T0 dark"><br><sub>T0 dark</sub></td></tr>
+  <tr><td width="50%"><img src="./media/screenshots/unifiedproxy/t1-light.png" alt="T1 light"><br><sub>T1 light</sub></td><td width="50%"><img src="./media/screenshots/unifiedproxy/t1-dark.png" alt="T1 dark"><br><sub>T1 dark</sub></td></tr>
+  <tr><td width="50%"><img src="./media/screenshots/unifiedproxy/t2-light.png" alt="T2 light"><br><sub>T2 light</sub></td><td width="50%"><img src="./media/screenshots/unifiedproxy/t2-dark.png" alt="T2 dark"><br><sub>T2 dark</sub></td></tr>
+  <tr><td width="50%"><img src="./media/screenshots/unifiedproxy/t3-light.png" alt="T3 light"><br><sub>T3 light</sub></td><td width="50%"><img src="./media/screenshots/unifiedproxy/t3-dark.png" alt="T3 dark"><br><sub>T3 dark</sub></td></tr>
+  <tr><td width="50%"><img src="./media/screenshots/unifiedproxy/t4-light.png" alt="T4 light"><br><sub>T4 light</sub></td><td width="50%"><img src="./media/screenshots/unifiedproxy/t4-dark.png" alt="T4 dark"><br><sub>T4 dark</sub></td></tr>
 </table>
 
 ## Linux へのインストール
@@ -71,38 +88,38 @@
 systemd または OpenRC を使う Linux で、`root` として実行します：
 
 ```bash
-bash <(curl -Ls https://raw.githubusercontent.com/RomanovCaesar/m-ui/main/install.sh)
+bash <(curl -Ls https://raw.githubusercontent.com/HlONGlin/UnifiedProxy/main/install.sh)
 ```
 
 インストーラーは未使用の 5 桁のパネルポートを選び、16 文字のパネルパス、14 文字のユーザー名、16 文字のパスワードを生成します。アクセス URL と認証情報は最後に一度だけ表示されます。明示的に指定することもできます：
 
 ```bash
-bash <(curl -Ls https://raw.githubusercontent.com/RomanovCaesar/m-ui/main/install.sh) \
+bash <(curl -Ls https://raw.githubusercontent.com/HlONGlin/UnifiedProxy/main/install.sh) \
   --port 34567 \
   --path MyPanelA1b2C3d4 \
   --username AdminUserA1234 \
   --password 'ChangeThisA12345'
 ```
 
-m-ui は `/usr/local/m-ui` にインストールされ、データは `/usr/local/m-ui/data` に保存されます。インストーラーは現在のアーキテクチャ用の Mihomo コアもダウンロードします。既存のコアは `--update-mihomo` を指定しない限り保持されます。
+UnifiedProxy は `/usr/local/m-ui` にインストールされ、データは `/usr/local/m-ui/data` に保存されます。インストーラーは現在のアーキテクチャ用の Mihomo コアもダウンロードします。既存のコアは `--update-mihomo` を指定しない限り保持されます。
 
-`m-ui update` は設定を保持したまま m-ui を更新します。更新前にデータディレクトリのスナップショットを `data/backups/` に作成し、最新の 3 つを保持します。
+`m-ui update` は設定を保持したまま UnifiedProxy を更新します。更新前にデータディレクトリのスナップショットを `data/backups/` に作成し、最新の 3 つを保持します。
 
 リリースには `386`、`amd64`、`arm64`、`armv5`、`armv6`、`armv7`、`s390x` 向けの `m-ui-linux-<architecture>.tar.gz` と `m-ui-windows-amd64.zip` が含まれます。
 
 ## Docker
 
-Docker イメージは Linux amd64 向けで、m-ui と、バージョン固定かつ検証済みの Mihomo コアを含みます。Compose はホストネットワークを使うため、パネルで追加したインバウンドのポートは追加のポートマッピングなしで使えます。
+Docker イメージは Linux amd64 向けで、UnifiedProxy と、バージョン固定かつ検証済みの Mihomo コアを含みます。Compose はホストネットワークを使うため、パネルで追加したインバウンドのポートは追加のポートマッピングなしで使えます。
 
 ```bash
-git clone https://github.com/RomanovCaesar/m-ui.git
-cd m-ui
+git clone https://github.com/HlONGlin/UnifiedProxy.git
+cd UnifiedProxy
 cp .env.example .env
 docker compose up -d --build
 docker compose logs m-ui
 ```
 
-`MUI_PASSWORD` と `MUI_PATH` が空の場合、初回起動時に自動生成され、URL と認証情報がログに一度だけ表示されます。各リリースは `ghcr.io/romanovcaesar/m-ui:<tag>` と `latest` も公開します。イメージを利用できる場合は、ビルドの代わりに `docker compose pull` を使えます。データは `m-ui-data` と `m-ui-core` のボリュームに保存されます。削除するつもりがない限り `docker compose down -v` は実行しないでください。
+このリポジトリからビルドしてください。タグ付きリリースでは `ghcr.io/hlonglin/unifiedproxy:<tag>` と `latest` を公開できます。対応する UnifiedProxy イメージの公開後に `docker compose pull` を使ってください。空の `MUI_PASSWORD` / `MUI_PATH` は初回に生成されログに一度表示されます。互換性のためサービス名 `m-ui` とボリューム `m-ui-data`、`m-ui-core` を維持し、更新時も保持してください。
 
 ## TLS 証明書
 
@@ -112,7 +129,7 @@ docker compose logs m-ui
 m-ui ssl
 ```
 
-メニューでは、ドメイン証明書と IP 証明書の発行、ポート 80 が使えない場合の Cloudflare DNS API によるドメインとワイルドカード証明書の発行、更新、失効、一覧表示、既存の証明書の適用ができます。証明書ファイルにリーフ証明書しかない場合、m-ui は証明書チェーンを自動で補完します。Mihomo Party や FlClash などのクライアントがそのような証明書を拒否するためです。
+メニューでは、ドメイン証明書と IP 証明書の発行、ポート 80 が使えない場合の Cloudflare DNS API によるドメインとワイルドカード証明書の発行、更新、失効、一覧表示、既存の証明書の適用ができます。証明書ファイルにリーフ証明書しかない場合、UnifiedProxy は証明書チェーンを自動で補完します。Mihomo Party や FlClash などのクライアントがそのような証明書を拒否するためです。
 
 ## 管理コマンド
 
@@ -130,40 +147,35 @@ m-ui --lang <code>    menu language, e.g. m-ui --lang ja
 
 ## ドキュメント
 
-Wiki は英語と簡体字中国語で提供しています：
-
-* [Installation](https://github.com/RomanovCaesar/m-ui/wiki/Installation)、[Panel Configuration](https://github.com/RomanovCaesar/m-ui/wiki/Configuration)
-* [Migrating from 3x-ui](https://github.com/RomanovCaesar/m-ui/wiki/Migrating-from-3x-ui)
-* [Inbounds and Clients](https://github.com/RomanovCaesar/m-ui/wiki/Inbounds)、[Mihomo Settings](https://github.com/RomanovCaesar/m-ui/wiki/Mihomo-Settings)
-* [Subscriptions](https://github.com/RomanovCaesar/m-ui/wiki/Subscriptions)、[Subscription Templates](https://github.com/RomanovCaesar/m-ui/wiki/Subscription-Templates)
-* [Multi-control](https://github.com/RomanovCaesar/m-ui/wiki/Multi-control)、[Cloudflare WARP](https://github.com/RomanovCaesar/m-ui/wiki/Cloudflare-WARP)、[VPNGate](https://github.com/RomanovCaesar/m-ui/wiki/VPNGate)
-* [Maintenance](https://github.com/RomanovCaesar/m-ui/wiki/Maintenance)、[API](https://github.com/RomanovCaesar/m-ui/wiki/API)、[Common Questions](https://github.com/RomanovCaesar/m-ui/wiki/Common-questions-and-problems)
+* [導入と移行](docs/unifiedproxy-migration.md)
+* [モデルとプロトコル](docs/fleet-protocol.md)
+* [機能と互換性](docs/design/legacy-acceptance.md)
+* [テーマと参照元](docs/design/p2-token-map.md)
+* [P5 画面と機能の検証](docs/design/p5-acceptance.md)
+* [リリース](https://github.com/HlONGlin/UnifiedProxy/releases)
 
 ## 開発
 
-Windows でソースから実行します。パネルは `http://127.0.0.1:2053` で開き、アカウントは `admin` / `admin` です：
+ビルド・テスト・プレビューは orca-linux の Linux コンテナ内 `/workspace` でのみ実行します。Windows は編集と Git に使用します。
 
-```powershell
-.\scripts\run.ps1
+```bash
+test "$PWD" = /workspace && test -f /.dockerenv
+go build ./...
+go vet ./...
+go test ./...
 ```
 
-Windows と Linux amd64 のバイナリ、またはすべてのリリースアーカイブをビルドします：
-
-```powershell
-.\scripts\build.ps1
-.\scripts\build-release.ps1
-```
-
-`go test ./...` と `go vet ./...` で検証します。バージョンは `MUI_VERSION` または現在の Git タグから `-X main.version=...` で埋め込まれます。ソース構成とリリースの流れは [Development and Releases](https://github.com/RomanovCaesar/m-ui/wiki/Development)、UI の実装は [`LIQUID-GLASS.md`](LIQUID-GLASS.md) を参照してください。
+`MUI_VERSION` / Git tag → `-X main.version=...`. [Fleet build / deployment](docs/unifiedproxy-migration.md) · [Design tokens](docs/design/p2-token-map.md).
 
 ## 謝辞
 
 * [MetaCubeX/mihomo](https://github.com/MetaCubeX/mihomo)：プロキシコアと設定モデル
 * [MHSanaei/3x-ui](https://github.com/MHSanaei/3x-ui)：画面の情報密度と操作の流れ
 * [Sub-Store](https://github.com/sub-store-org/Sub-Store)：クライアント向けサブスクリプション形式の参考実装
-* [liquid-glass-webgl](https://github.com/martin65536/liquid-glass-webgl)：Liquid Glass コントロール（Apache-2.0、[`NOTICE`](NOTICE) を参照）
-* [Lucide](https://lucide.dev) と [Material Symbols](https://github.com/google/material-design-icons) のアイコン、[Geist](https://github.com/vercel/geist-font) と [Roboto](https://github.com/googlefonts/roboto-classic) のフォント：shadcn と Material Design 3 テーマ（ISC、Apache-2.0、OFL-1.1、[`NOTICE`](NOTICE) を参照）
+* m-ui (GPL-3.0), UnifiedProxy (MIT): [NOTICE](NOTICE), [MIT notice](licenses/UnifiedProxy-MIT.txt).
+* [Lucide](https://lucide.dev): ISC; [icon attribution](web/licenses/LICENSE-Lucide.txt).
+* Vercel / Claude (Anthropic) / Sentry / Supabase / Stripe: [palette references](docs/design/p2-token-map.md), via VoltAgent/awesome-design-md (MIT).
 
 ## ライセンス
 
-m-ui は [GNU General Public License version 3](LICENSE) で提供されています。Mihomo の共有リンク変換コードの GPL-3.0 に関する表記は [`internal/mihomoconvert/NOTICE.md`](internal/mihomoconvert/NOTICE.md) にあります。
+UnifiedProxy は [GNU General Public License version 3](LICENSE) で提供されています。Mihomo の共有リンク変換コードの GPL-3.0 に関する表記は [`internal/mihomoconvert/NOTICE.md`](internal/mihomoconvert/NOTICE.md) にあります。

@@ -1,26 +1,36 @@
 [English](/README.md) | [简体中文](/README.zh_CN.md) | [繁體中文](/README.zh_TW.md) | [日本語](/README.ja.md) | [Русский](/README.ru.md) | [فارسی](/README.fa.md) | [Tiếng Việt](/README.vi.md) | [Español](/README.es.md) | [Türkçe](/README.tr.md) | [Українська](/README.uk.md) | [Português (Brasil)](/README.pt_BR.md)
 
 <p align="center">
-  <img src="./media/m-ui_logo.png" alt="m-ui logo" width="420">
+  <img src="./web/media/unifiedproxy.svg" alt="UnifiedProxy" width="96">
 </p>
 
-# m-ui
+# UnifiedProxy
 
-[![Release](https://img.shields.io/github/v/release/RomanovCaesar/m-ui.svg)](https://github.com/RomanovCaesar/m-ui/releases)
-[![Build](https://img.shields.io/github/actions/workflow/status/RomanovCaesar/m-ui/release.yml.svg)](https://github.com/RomanovCaesar/m-ui/actions)
-[![Go Version](https://img.shields.io/github/go-mod/go-version/RomanovCaesar/m-ui.svg)](https://github.com/RomanovCaesar/m-ui/blob/main/go.mod)
-[![Downloads](https://img.shields.io/github/downloads/RomanovCaesar/m-ui/total.svg)](https://github.com/RomanovCaesar/m-ui/releases/latest)
-[![License](https://img.shields.io/github/license/RomanovCaesar/m-ui.svg)](https://github.com/RomanovCaesar/m-ui/blob/main/LICENSE)
+[![License: GPL-3.0](https://img.shields.io/badge/License-GPL--3.0-blue.svg)](LICENSE)
 
-一個以 [Mihomo](https://github.com/MetaCubeX/mihomo) 為核心的伺服器管理面板。操作流程參考 3x-ui，介面提供 shadcn（預設）、Material Design 3 和 Apple 液態玻璃（Liquid Glass）三種主題，設定模型使用 Mihomo 原生 YAML。面板支援 11 種語言。
+UnifiedProxy 將 Mihomo 原生面板與艦隊管理整合為同一應用，支援獨立、控制端與 Agent 三種模式，保留入站、用戶端、訂閱、多控、簽章任務、Sidecar、中央憑證、WebDAV 備份與健康檢查更新。介面支援 11 種語言，採用五套配色 × 獨立明暗，預設 T0 黑白淺色。
+
+從[部署與遷移指南](docs/unifiedproxy-migration.md)開始。歷史備份可匯入原帳號密碼、用量與訂閱別名；憑證檔案、節點重新綁定及 NaïveProxy 豁免等邊界見[相容驗收](docs/design/legacy-acceptance.md)。
 
 > [!IMPORTANT]
 > 本專案只應用於您擁有或獲授權管理的伺服器和網路。請遵守所在地法律、上游服務商條款，以及您所存取服務的使用政策。
 
-完整文件請參閱 [m-ui Wiki](https://github.com/RomanovCaesar/m-ui/wiki/Home.zh_CN)（簡體中文）。也歡迎關注我們的 [Telegram 頻道](https://t.me/MihomoUI) 取得開發動態。
+### 五套配色
+
+`data-theme="light|dark"` × `data-color-theme="t0|t1|t2|t3|t4"`
+
+| Theme | Palette | Reference |
+|---|---|---|
+| T0 | 黑白·墨（預設） | Vercel |
+| T1 | 暖紙陶土 | Claude / Anthropic |
+| T2 | 夜紫螢光 | Sentry |
+| T3 | 翡翠綠 | Supabase |
+| T4 | 靛紫 | Stripe |
+
+[Tokens / references](docs/design/p2-token-map.md) · [NOTICE](NOTICE)
 
 <p align="center">
-  <img src="./media/screenshots/inbounds.png" alt="入站與用戶端" width="900">
+  <img src="./media/screenshots/unifiedproxy/inbounds.png" alt="入站與用戶端" width="900">
 </p>
 
 ## 功能
@@ -59,11 +69,18 @@
 
 ## 截圖
 
+以下為目前 UnifiedProxy 介面的中文示範資料截圖；每套配色皆支援淺色與深色。
+
 <table>
-  <tr><td width="50%"><img src="./media/screenshots/dashboard.png" alt="儀表板"><br><sub>儀表板</sub></td><td width="50%"><img src="./media/screenshots/client-edit.png" alt="用戶端：配額、到期、流量重置與自動續期"><br><sub>用戶端：配額、到期、流量重置與自動續期</sub></td></tr>
-  <tr><td width="50%"><img src="./media/screenshots/outbounds.png" alt="出站與策略組"><br><sub>出站與策略組</sub></td><td width="50%"><img src="./media/screenshots/routing.png" alt="分流規則"><br><sub>分流規則</sub></td></tr>
-  <tr><td width="50%"><img src="./media/screenshots/xray-import.png" alt="從 Xray / 3x-ui 匯入"><br><sub>從 Xray / 3x-ui 匯入</sub></td><td width="50%"><img src="./media/screenshots/theme-shadcn-dark.png" alt="shadcn 主題（深色）"><br><sub>shadcn 主題（深色）</sub></td></tr>
-  <tr><td width="50%"><img src="./media/screenshots/theme-md3.png" alt="Material Design 3 主題"><br><sub>Material Design 3 主題</sub></td><td width="50%"><img src="./media/screenshots/theme-liquid.png" alt="液態玻璃主題"><br><sub>液態玻璃主題</sub></td></tr>
+  <tr><td width="50%"><img src="./media/screenshots/unifiedproxy/inbounds.png" alt="入站與用戶端"><br><sub>入站與用戶端</sub></td><td width="50%"><img src="./media/screenshots/unifiedproxy/client-edit.png" alt="用戶端配額與到期"><br><sub>用戶端配額與到期</sub></td></tr>
+  <tr><td width="50%"><img src="./media/screenshots/unifiedproxy/outbounds.png" alt="出站與策略群組"><br><sub>出站與策略群組</sub></td><td width="50%"><img src="./media/screenshots/unifiedproxy/routing.png" alt="分流規則"><br><sub>分流規則</sub></td></tr>
+  <tr><td width="50%"><img src="./media/screenshots/unifiedproxy/xray-import.png" alt="Xray / 3x-ui 匯入"><br><sub>Xray / 3x-ui 匯入</sub></td><td width="50%"><img src="./media/screenshots/unifiedproxy/fleet.png" alt="艦隊控制台"><br><sub>艦隊控制台</sub></td></tr>
+  <tr><td width="50%"><img src="./media/screenshots/unifiedproxy/login.png" alt="登入"><br><sub>登入</sub></td><td width="50%"><img src="./media/screenshots/unifiedproxy/subscription-mobile.png" alt="手機訂閱頁"><br><sub>手機訂閱頁</sub></td></tr>
+  <tr><td width="50%"><img src="./media/screenshots/unifiedproxy/t0-light.png" alt="T0 light"><br><sub>T0 light</sub></td><td width="50%"><img src="./media/screenshots/unifiedproxy/t0-dark.png" alt="T0 dark"><br><sub>T0 dark</sub></td></tr>
+  <tr><td width="50%"><img src="./media/screenshots/unifiedproxy/t1-light.png" alt="T1 light"><br><sub>T1 light</sub></td><td width="50%"><img src="./media/screenshots/unifiedproxy/t1-dark.png" alt="T1 dark"><br><sub>T1 dark</sub></td></tr>
+  <tr><td width="50%"><img src="./media/screenshots/unifiedproxy/t2-light.png" alt="T2 light"><br><sub>T2 light</sub></td><td width="50%"><img src="./media/screenshots/unifiedproxy/t2-dark.png" alt="T2 dark"><br><sub>T2 dark</sub></td></tr>
+  <tr><td width="50%"><img src="./media/screenshots/unifiedproxy/t3-light.png" alt="T3 light"><br><sub>T3 light</sub></td><td width="50%"><img src="./media/screenshots/unifiedproxy/t3-dark.png" alt="T3 dark"><br><sub>T3 dark</sub></td></tr>
+  <tr><td width="50%"><img src="./media/screenshots/unifiedproxy/t4-light.png" alt="T4 light"><br><sub>T4 light</sub></td><td width="50%"><img src="./media/screenshots/unifiedproxy/t4-dark.png" alt="T4 dark"><br><sub>T4 dark</sub></td></tr>
 </table>
 
 ## Linux 安裝
@@ -71,38 +88,38 @@
 在使用 systemd 或 OpenRC 的 Linux 上以 `root` 執行：
 
 ```bash
-bash <(curl -Ls https://raw.githubusercontent.com/RomanovCaesar/m-ui/main/install.sh)
+bash <(curl -Ls https://raw.githubusercontent.com/HlONGlin/UnifiedProxy/main/install.sh)
 ```
 
 安裝程式會選擇一個未被占用的五位數面板連接埠，並產生 16 位面板路徑、14 位使用者名稱和 16 位密碼，安裝結束時只顯示一次存取網址和憑證。也可以明確指定：
 
 ```bash
-bash <(curl -Ls https://raw.githubusercontent.com/RomanovCaesar/m-ui/main/install.sh) \
+bash <(curl -Ls https://raw.githubusercontent.com/HlONGlin/UnifiedProxy/main/install.sh) \
   --port 34567 \
   --path MyPanelA1b2C3d4 \
   --username AdminUserA1234 \
   --password 'ChangeThisA12345'
 ```
 
-m-ui 安裝在 `/usr/local/m-ui`，資料儲存在 `/usr/local/m-ui/data`。安裝程式也會下載適用於目前架構的 Mihomo 核心；已有核心預設保留，加上 `--update-mihomo` 才會替換。
+UnifiedProxy 安裝在 `/usr/local/m-ui`，資料儲存在 `/usr/local/m-ui/data`。安裝程式也會下載適用於目前架構的 Mihomo 核心；已有核心預設保留，加上 `--update-mihomo` 才會替換。
 
-`m-ui update` 會升級 m-ui 並保留全部設定。更新前會把資料目錄快照到 `data/backups/`，保留最近 3 份。
+`m-ui update` 會升級 UnifiedProxy 並保留全部設定。更新前會把資料目錄快照到 `data/backups/`，保留最近 3 份。
 
 Release 提供 `386`、`amd64`、`arm64`、`armv5`、`armv6`、`armv7` 和 `s390x` 的 `m-ui-linux-<architecture>.tar.gz`，以及 `m-ui-windows-amd64.zip`。
 
 ## Docker
 
-Docker 映像檔適用於 Linux amd64，內含 m-ui 和一個固定版本、經過校驗的 Mihomo 核心。Compose 使用 host 網路，面板裡新增的 Inbound 連接埠不需要額外的連接埠對應即可使用。
+Docker 映像檔適用於 Linux amd64，內含 UnifiedProxy 和一個固定版本、經過校驗的 Mihomo 核心。Compose 使用 host 網路，面板裡新增的 Inbound 連接埠不需要額外的連接埠對應即可使用。
 
 ```bash
-git clone https://github.com/RomanovCaesar/m-ui.git
-cd m-ui
+git clone https://github.com/HlONGlin/UnifiedProxy.git
+cd UnifiedProxy
 cp .env.example .env
 docker compose up -d --build
 docker compose logs m-ui
 ```
 
-如果 `MUI_PASSWORD` 和 `MUI_PATH` 為空，首次啟動會自動產生，並在日誌裡顯示一次存取網址和憑證。每個版本也會發布 `ghcr.io/romanovcaesar/m-ui:<tag>` 和 `latest`；映像檔可用時，可以用 `docker compose pull` 取代本機建置。資料儲存在 `m-ui-data` 和 `m-ui-core` 兩個磁碟區；除非確定要刪除，否則不要執行 `docker compose down -v`。
+從本儲存庫建置。版本工作流程可發佈 `ghcr.io/hlonglin/unifiedproxy:<tag>` 與 `latest`；確認對應映像已發佈後再執行 `docker compose pull`。`MUI_PASSWORD` / `MUI_PATH` 留空時會在首次啟動生成並輸出一次。為保持相容，服務及資料卷繼續使用 `m-ui`、`m-ui-data`、`m-ui-core`，升級時請保留。
 
 ## TLS 憑證
 
@@ -112,7 +129,7 @@ docker compose logs m-ui
 m-ui ssl
 ```
 
-選單可以申請網域和 IP 憑證；80 連接埠無法使用時，可透過 Cloudflare DNS API 申請網域與萬用字元憑證；也可以續期、撤銷、檢視憑證，以及套用既有憑證。憑證檔案只有葉憑證時，m-ui 會自動補齊憑證鏈，因為 Mihomo Party、FlClash 等用戶端會拒絕這種憑證。
+選單可以申請網域和 IP 憑證；80 連接埠無法使用時，可透過 Cloudflare DNS API 申請網域與萬用字元憑證；也可以續期、撤銷、檢視憑證，以及套用既有憑證。憑證檔案只有葉憑證時，UnifiedProxy 會自動補齊憑證鏈，因為 Mihomo Party、FlClash 等用戶端會拒絕這種憑證。
 
 ## 管理指令
 
@@ -130,40 +147,35 @@ m-ui --lang <code>    menu language, e.g. m-ui --lang zh-tw
 
 ## 文件
 
-以下 Wiki 頁面為簡體中文：
-
-* [安裝](https://github.com/RomanovCaesar/m-ui/wiki/Installation.zh_CN)、[面板設定](https://github.com/RomanovCaesar/m-ui/wiki/Configuration.zh_CN)
-* [從 3x-ui 遷移](https://github.com/RomanovCaesar/m-ui/wiki/Migrating-from-3x-ui.zh_CN)
-* [Inbounds 與 Clients](https://github.com/RomanovCaesar/m-ui/wiki/Inbounds.zh_CN)、[Mihomo 設定](https://github.com/RomanovCaesar/m-ui/wiki/Mihomo-Settings.zh_CN)
-* [訂閱](https://github.com/RomanovCaesar/m-ui/wiki/Subscriptions.zh_CN)、[訂閱範本](https://github.com/RomanovCaesar/m-ui/wiki/Subscription-Templates.zh_CN)
-* [Multi-control](https://github.com/RomanovCaesar/m-ui/wiki/Multi-control.zh_CN)、[Cloudflare WARP](https://github.com/RomanovCaesar/m-ui/wiki/Cloudflare-WARP.zh_CN)、[VPNGate](https://github.com/RomanovCaesar/m-ui/wiki/VPNGate.zh_CN)
-* [維護與管理](https://github.com/RomanovCaesar/m-ui/wiki/Maintenance.zh_CN)、[API](https://github.com/RomanovCaesar/m-ui/wiki/API.zh_CN)、[常見問題](https://github.com/RomanovCaesar/m-ui/wiki/Common-questions-and-problems.zh_CN)
+* [部署與遷移](docs/unifiedproxy-migration.md)
+* [模型與協定](docs/fleet-protocol.md)
+* [功能與相容驗收](docs/design/legacy-acceptance.md)
+* [主題 tokens 與參考對象](docs/design/p2-token-map.md)
+* [P5 視覺與功能審查](docs/design/p5-acceptance.md)
+* [版本發佈](https://github.com/HlONGlin/UnifiedProxy/releases)
 
 ## 開發
 
-在 Windows 上從原始碼執行，面板網址為 `http://127.0.0.1:2053`，帳號 `admin` / `admin`：
+建置、測試與預覽僅在 orca-linux 的 Linux 容器 `/workspace` 執行。Windows 僅用於編輯檔案與 Git。
 
-```powershell
-.\scripts\run.ps1
+```bash
+test "$PWD" = /workspace && test -f /.dockerenv
+go build ./...
+go vet ./...
+go test ./...
 ```
 
-建置 Windows 和 Linux amd64 執行檔，或全部 Release 壓縮檔：
-
-```powershell
-.\scripts\build.ps1
-.\scripts\build-release.ps1
-```
-
-使用 `go test ./...` 和 `go vet ./...` 驗證。版本號取自 `MUI_VERSION` 或目前的 Git tag，透過 `-X main.version=...` 注入。原始碼結構和發布流程見[開發與發布](https://github.com/RomanovCaesar/m-ui/wiki/Development.zh_CN)，介面實作見 [`LIQUID-GLASS.md`](LIQUID-GLASS.md)。
+`MUI_VERSION` / Git tag → `-X main.version=...`. [Fleet build / deployment](docs/unifiedproxy-migration.md) · [Design tokens](docs/design/p2-token-map.md).
 
 ## 致謝
 
 * [MetaCubeX/mihomo](https://github.com/MetaCubeX/mihomo)：代理核心與設定模型
 * [MHSanaei/3x-ui](https://github.com/MHSanaei/3x-ui)：介面資訊密度與操作流程
 * [Sub-Store](https://github.com/sub-store-org/Sub-Store)：用戶端訂閱格式的參考實作
-* [liquid-glass-webgl](https://github.com/martin65536/liquid-glass-webgl)：液態玻璃控制項（Apache-2.0，見 [`NOTICE`](NOTICE)）
-* [Lucide](https://lucide.dev) 與 [Material Symbols](https://github.com/google/material-design-icons) 圖示、[Geist](https://github.com/vercel/geist-font) 與 [Roboto](https://github.com/googlefonts/roboto-classic) 字型：shadcn 和 Material Design 3 主題（ISC、Apache-2.0、OFL-1.1，見 [`NOTICE`](NOTICE)）
+* m-ui (GPL-3.0), UnifiedProxy (MIT): [NOTICE](NOTICE), [MIT notice](licenses/UnifiedProxy-MIT.txt).
+* [Lucide](https://lucide.dev): ISC; [icon attribution](web/licenses/LICENSE-Lucide.txt).
+* Vercel / Claude (Anthropic) / Sentry / Supabase / Stripe: [palette references](docs/design/p2-token-map.md), via VoltAgent/awesome-design-md (MIT).
 
 ## 授權
 
-m-ui 採用 [GNU General Public License version 3](LICENSE) 授權。Mihomo 分享連結轉換程式碼的 GPL-3.0 來源說明見 [`internal/mihomoconvert/NOTICE.md`](internal/mihomoconvert/NOTICE.md)。
+UnifiedProxy 採用 [GNU General Public License version 3](LICENSE) 授權。Mihomo 分享連結轉換程式碼的 GPL-3.0 來源說明見 [`internal/mihomoconvert/NOTICE.md`](internal/mihomoconvert/NOTICE.md)。

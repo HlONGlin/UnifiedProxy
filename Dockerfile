@@ -44,9 +44,9 @@ FROM debian:bookworm-slim
 
 ARG MUI_VERSION=dev
 
-LABEL org.opencontainers.image.title="m-ui" \
+LABEL org.opencontainers.image.title="UnifiedProxy" \
       org.opencontainers.image.description="A server management panel powered by Mihomo" \
-      org.opencontainers.image.source="https://github.com/RomanovCaesar/m-ui" \
+      org.opencontainers.image.source="https://github.com/HlONGlin/UnifiedProxy" \
       org.opencontainers.image.licenses="GPL-3.0-only" \
       org.opencontainers.image.version="${MUI_VERSION}"
 

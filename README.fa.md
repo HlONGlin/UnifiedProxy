@@ -3,26 +3,36 @@
 <div dir="rtl">
 
 <p align="center">
-  <img src="./media/m-ui_logo.png" alt="m-ui logo" width="420">
+  <img src="./web/media/unifiedproxy.svg" alt="UnifiedProxy" width="96">
 </p>
 
-# m-ui
+# UnifiedProxy
 
-[![Release](https://img.shields.io/github/v/release/RomanovCaesar/m-ui.svg)](https://github.com/RomanovCaesar/m-ui/releases)
-[![Build](https://img.shields.io/github/actions/workflow/status/RomanovCaesar/m-ui/release.yml.svg)](https://github.com/RomanovCaesar/m-ui/actions)
-[![Go Version](https://img.shields.io/github/go-mod/go-version/RomanovCaesar/m-ui.svg)](https://github.com/RomanovCaesar/m-ui/blob/main/go.mod)
-[![Downloads](https://img.shields.io/github/downloads/RomanovCaesar/m-ui/total.svg)](https://github.com/RomanovCaesar/m-ui/releases/latest)
-[![License](https://img.shields.io/github/license/RomanovCaesar/m-ui.svg)](https://github.com/RomanovCaesar/m-ui/blob/main/LICENSE)
+[![License: GPL-3.0](https://img.shields.io/badge/License-GPL--3.0-blue.svg)](LICENSE)
 
-یک پنل مدیریت سرور بر پایهٔ هستهٔ [Mihomo](https://github.com/MetaCubeX/mihomo). روند کار آن از 3x-ui، رابط کاربری آن در سه پوسته (پیش‌فرض shadcn، Material Design 3 و Liquid Glass اپل) ارائه می‌شود و و مدل پیکربندی آن از YAML بومی Mihomo پیروی می‌کند. پنل به ۱۱ زبان در دسترس است.
+UnifiedProxy پنل بومی Mihomo را با مدیریت مجموعهٔ گره‌ها در حالت مستقل، کنترل‌کننده و Agent یکپارچه می‌کند. ورودی‌ها، کاربران، اشتراک‌ها، کارهای امضاشده، Sidecar، گواهی مرکزی، پشتیبان WebDAV و به‌روزرسانی در ۱۱ زبان ارائه می‌شوند. پنج پالت رنگ مستقل از حالت روشن و تیره هستند؛ پیش‌فرض T0 سیاه‌وسفید و روشن است.
+
+از [راهنمای استقرار و مهاجرت](docs/unifiedproxy-migration.md) شروع کنید. اطلاعات ورود، مصرف و نام‌های مستعار اشتراک پشتیبان‌های قدیمی منتقل می‌شوند؛ فایل گواهی، ثبت دوبارهٔ گره‌ها و استثنای NaïveProxy در [گزارش سازگاری](docs/design/legacy-acceptance.md) آمده است.
 
 > [!IMPORTANT]
 > این پروژه را فقط روی سرورها و شبکه‌هایی به کار ببرید که مالک آن‌ها هستید یا اجازهٔ مدیریتشان را دارید. قوانین محلی، شرایط ارائه‌دهندگان و سیاست‌های سرویس‌هایی را که به آن‌ها دسترسی دارید رعایت کنید.
 
-مستندات کامل در [ویکی m-ui](https://github.com/RomanovCaesar/m-ui/wiki) (به انگلیسی) است. برای اخبار توسعه، [کانال تلگرام](https://t.me/MihomoUI) ما را دنبال کنید.
+### پنج پالت
+
+`data-theme="light|dark"` × `data-color-theme="t0|t1|t2|t3|t4"`
+
+| Theme | Palette | Reference |
+|---|---|---|
+| T0 | سیاه‌وسفید (پیش‌فرض) | Vercel |
+| T1 | کاغذ گرم و سفالی | Claude / Anthropic |
+| T2 | بنفش شب | Sentry |
+| T3 | زمردی | Supabase |
+| T4 | نیلی | Stripe |
+
+[Tokens / references](docs/design/p2-token-map.md) · [NOTICE](NOTICE)
 
 <p align="center">
-  <img src="./media/screenshots/en/inbounds.png" alt="Inboundها و کلاینت‌ها" width="900">
+  <img src="./media/screenshots/unifiedproxy/inbounds.png" alt="ورودی‌ها" width="900">
 </p>
 
 ## امکانات
@@ -61,11 +71,18 @@
 
 ## تصاویر
 
+تصاویر رابط کنونی UnifiedProxy با داده‌های نمایشی چینی هستند. هر پالت حالت روشن و تیره دارد.
+
 <table>
-  <tr><td width="50%"><img src="./media/screenshots/en/dashboard.png" alt="نمای کلی"><br><sub>نمای کلی</sub></td><td width="50%"><img src="./media/screenshots/en/client-edit.png" alt="کلاینت: سهمیه، انقضا، بازنشانی ترافیک و تمدید خودکار"><br><sub>کلاینت: سهمیه، انقضا، بازنشانی ترافیک و تمدید خودکار</sub></td></tr>
-  <tr><td width="50%"><img src="./media/screenshots/en/outbounds.png" alt="Outboundها و گروه‌های پراکسی"><br><sub>Outboundها و گروه‌های پراکسی</sub></td><td width="50%"><img src="./media/screenshots/en/routing.png" alt="قوانین مسیریابی"><br><sub>قوانین مسیریابی</sub></td></tr>
-  <tr><td width="50%"><img src="./media/screenshots/en/xray-import.png" alt="درون‌ریزی از Xray / 3x-ui"><br><sub>درون‌ریزی از Xray / 3x-ui</sub></td><td width="50%"><img src="./media/screenshots/en/theme-shadcn-dark.png" alt="پوسته shadcn، تیره"><br><sub>پوسته shadcn، تیره</sub></td></tr>
-  <tr><td width="50%"><img src="./media/screenshots/en/theme-md3.png" alt="پوسته Material Design 3"><br><sub>پوسته Material Design 3</sub></td><td width="50%"><img src="./media/screenshots/en/theme-liquid.png" alt="پوسته Liquid Glass"><br><sub>پوسته Liquid Glass</sub></td></tr>
+  <tr><td width="50%"><img src="./media/screenshots/unifiedproxy/inbounds.png" alt="ورودی‌ها"><br><sub>ورودی‌ها</sub></td><td width="50%"><img src="./media/screenshots/unifiedproxy/client-edit.png" alt="سهمیه و انقضای کاربر"><br><sub>سهمیه و انقضای کاربر</sub></td></tr>
+  <tr><td width="50%"><img src="./media/screenshots/unifiedproxy/outbounds.png" alt="خروجی‌ها"><br><sub>خروجی‌ها</sub></td><td width="50%"><img src="./media/screenshots/unifiedproxy/routing.png" alt="مسیریابی"><br><sub>مسیریابی</sub></td></tr>
+  <tr><td width="50%"><img src="./media/screenshots/unifiedproxy/xray-import.png" alt="ورود Xray / 3x-ui"><br><sub>ورود Xray / 3x-ui</sub></td><td width="50%"><img src="./media/screenshots/unifiedproxy/fleet.png" alt="مجموعهٔ گره‌ها"><br><sub>مجموعهٔ گره‌ها</sub></td></tr>
+  <tr><td width="50%"><img src="./media/screenshots/unifiedproxy/login.png" alt="ورود"><br><sub>ورود</sub></td><td width="50%"><img src="./media/screenshots/unifiedproxy/subscription-mobile.png" alt="اشتراک موبایل"><br><sub>اشتراک موبایل</sub></td></tr>
+  <tr><td width="50%"><img src="./media/screenshots/unifiedproxy/t0-light.png" alt="T0 light"><br><sub>T0 light</sub></td><td width="50%"><img src="./media/screenshots/unifiedproxy/t0-dark.png" alt="T0 dark"><br><sub>T0 dark</sub></td></tr>
+  <tr><td width="50%"><img src="./media/screenshots/unifiedproxy/t1-light.png" alt="T1 light"><br><sub>T1 light</sub></td><td width="50%"><img src="./media/screenshots/unifiedproxy/t1-dark.png" alt="T1 dark"><br><sub>T1 dark</sub></td></tr>
+  <tr><td width="50%"><img src="./media/screenshots/unifiedproxy/t2-light.png" alt="T2 light"><br><sub>T2 light</sub></td><td width="50%"><img src="./media/screenshots/unifiedproxy/t2-dark.png" alt="T2 dark"><br><sub>T2 dark</sub></td></tr>
+  <tr><td width="50%"><img src="./media/screenshots/unifiedproxy/t3-light.png" alt="T3 light"><br><sub>T3 light</sub></td><td width="50%"><img src="./media/screenshots/unifiedproxy/t3-dark.png" alt="T3 dark"><br><sub>T3 dark</sub></td></tr>
+  <tr><td width="50%"><img src="./media/screenshots/unifiedproxy/t4-light.png" alt="T4 light"><br><sub>T4 light</sub></td><td width="50%"><img src="./media/screenshots/unifiedproxy/t4-dark.png" alt="T4 dark"><br><sub>T4 dark</sub></td></tr>
 </table>
 
 ## نصب روی لینوکس
@@ -73,38 +90,38 @@
 روی لینوکسی که از systemd یا OpenRC استفاده می‌کند، با کاربر `root` اجرا کنید:
 
 ```bash
-bash <(curl -Ls https://raw.githubusercontent.com/RomanovCaesar/m-ui/main/install.sh)
+bash <(curl -Ls https://raw.githubusercontent.com/HlONGlin/UnifiedProxy/main/install.sh)
 ```
 
 نصب‌کننده یک پورت پنج‌رقمی آزاد انتخاب می‌کند و یک مسیر پنل ۱۶ نویسه‌ای، یک نام کاربری ۱۴ نویسه‌ای و یک رمز عبور ۱۶ نویسه‌ای می‌سازد. نشانی دسترسی و اطلاعات ورود فقط یک بار در پایان نمایش داده می‌شود. می‌توانید آن‌ها را خودتان هم تعیین کنید:
 
 ```bash
-bash <(curl -Ls https://raw.githubusercontent.com/RomanovCaesar/m-ui/main/install.sh) \
+bash <(curl -Ls https://raw.githubusercontent.com/HlONGlin/UnifiedProxy/main/install.sh) \
   --port 34567 \
   --path MyPanelA1b2C3d4 \
   --username AdminUserA1234 \
   --password 'ChangeThisA12345'
 ```
 
-m-ui در `/usr/local/m-ui` نصب می‌شود و داده‌هایش را در `/usr/local/m-ui/data` نگه می‌دارد. نصب‌کننده یک هستهٔ Mihomo متناسب با معماری فعلی هم دانلود می‌کند؛ هستهٔ موجود حفظ می‌شود، مگر اینکه `--update-mihomo` را بدهید.
+UnifiedProxy در `/usr/local/m-ui` نصب می‌شود و داده‌هایش را در `/usr/local/m-ui/data` نگه می‌دارد. نصب‌کننده یک هستهٔ Mihomo متناسب با معماری فعلی هم دانلود می‌کند؛ هستهٔ موجود حفظ می‌شود، مگر اینکه `--update-mihomo` را بدهید.
 
-`m-ui update` با حفظ همهٔ تنظیمات m-ui را به‌روز می‌کند. پیش از به‌روزرسانی، از پوشهٔ داده در `data/backups/` تصویر لحظه‌ای می‌گیرد و ۳ نسخهٔ آخر را نگه می‌دارد.
+`m-ui update` با حفظ همهٔ تنظیمات UnifiedProxy را به‌روز می‌کند. پیش از به‌روزرسانی، از پوشهٔ داده در `data/backups/` تصویر لحظه‌ای می‌گیرد و ۳ نسخهٔ آخر را نگه می‌دارد.
 
 هر انتشار شامل `m-ui-linux-<architecture>.tar.gz` برای `386`، `amd64`، `arm64`، `armv5`، `armv6`، `armv7` و `s390x` و همچنین `m-ui-windows-amd64.zip` است.
 
 ## داکر
 
-ایمیج داکر برای Linux amd64 است و m-ui را همراه با یک هستهٔ Mihomo با نسخهٔ ثابت و بررسی‌شده در خود دارد. Compose از شبکهٔ میزبان استفاده می‌کند، بنابراین پورت ورودی‌هایی که در پنل اضافه می‌کنید بدون نگاشت پورت جداگانه کار می‌کنند.
+ایمیج داکر برای Linux amd64 است و UnifiedProxy را همراه با یک هستهٔ Mihomo با نسخهٔ ثابت و بررسی‌شده در خود دارد. Compose از شبکهٔ میزبان استفاده می‌کند، بنابراین پورت ورودی‌هایی که در پنل اضافه می‌کنید بدون نگاشت پورت جداگانه کار می‌کنند.
 
 ```bash
-git clone https://github.com/RomanovCaesar/m-ui.git
-cd m-ui
+git clone https://github.com/HlONGlin/UnifiedProxy.git
+cd UnifiedProxy
 cp .env.example .env
 docker compose up -d --build
 docker compose logs m-ui
 ```
 
-اگر `MUI_PASSWORD` و `MUI_PATH` خالی باشند، در نخستین اجرا ساخته می‌شوند و نشانی و اطلاعات ورود یک بار در لاگ نمایش داده می‌شود. هر انتشار همچنین `ghcr.io/romanovcaesar/m-ui:<tag>` و `latest` را منتشر می‌کند؛ اگر ایمیج برای شما در دسترس است، به جای ساخت محلی از `docker compose pull` استفاده کنید. داده‌ها در حجم‌های `m-ui-data` و `m-ui-core` نگه داشته می‌شوند؛ اگر نمی‌خواهید آن‌ها را پاک کنید، `docker compose down -v` را اجرا نکنید.
+از همین مخزن بسازید. انتشارهای تگ‌دار می‌توانند `ghcr.io/hlonglin/unifiedproxy:<tag>` و `latest` را منتشر کنند؛ پس از موجود شدن ایمیج مربوط از `docker compose pull` استفاده کنید. مقادیر خالی `MUI_PASSWORD` / `MUI_PATH` در اولین اجرا تولید و یک بار در لاگ نمایش داده می‌شوند. برای سازگاری، سرویس `m-ui` و حجم‌های `m-ui-data` و `m-ui-core` حفظ شده‌اند؛ هنگام ارتقا آن‌ها را نگه دارید.
 
 ## گواهی‌های TLS
 
@@ -114,7 +131,7 @@ docker compose logs m-ui
 m-ui ssl
 ```
 
-این منو می‌تواند گواهی دامنه و IP صادر کند، وقتی پورت 80 در دسترس نیست با API DNS کلادفلر گواهی دامنه و wildcard بگیرد، و گواهی‌ها را تمدید، ابطال، فهرست و روی پنل اعمال کند. اگر فایل گواهی فقط گواهی نهایی را داشته باشد، m-ui زنجیرهٔ گواهی را خودکار کامل می‌کند، چون کلاینت‌هایی مانند Mihomo Party و FlClash چنین گواهی‌ای را نمی‌پذیرند.
+این منو می‌تواند گواهی دامنه و IP صادر کند، وقتی پورت 80 در دسترس نیست با API DNS کلادفلر گواهی دامنه و wildcard بگیرد، و گواهی‌ها را تمدید، ابطال، فهرست و روی پنل اعمال کند. اگر فایل گواهی فقط گواهی نهایی را داشته باشد، UnifiedProxy زنجیرهٔ گواهی را خودکار کامل می‌کند، چون کلاینت‌هایی مانند Mihomo Party و FlClash چنین گواهی‌ای را نمی‌پذیرند.
 
 ## دستورهای مدیریت
 
@@ -136,50 +153,37 @@ m-ui --lang <code>    menu language, e.g. m-ui --lang fa
 
 ## مستندات
 
-ویکی به زبان‌های انگلیسی و چینی ساده‌شده است:
-
-* [Installation](https://github.com/RomanovCaesar/m-ui/wiki/Installation)، [Panel Configuration](https://github.com/RomanovCaesar/m-ui/wiki/Configuration)
-* [Migrating from 3x-ui](https://github.com/RomanovCaesar/m-ui/wiki/Migrating-from-3x-ui)
-* [Inbounds and Clients](https://github.com/RomanovCaesar/m-ui/wiki/Inbounds)، [Mihomo Settings](https://github.com/RomanovCaesar/m-ui/wiki/Mihomo-Settings)
-* [Subscriptions](https://github.com/RomanovCaesar/m-ui/wiki/Subscriptions)، [Subscription Templates](https://github.com/RomanovCaesar/m-ui/wiki/Subscription-Templates)
-* [Multi-control](https://github.com/RomanovCaesar/m-ui/wiki/Multi-control)، [Cloudflare WARP](https://github.com/RomanovCaesar/m-ui/wiki/Cloudflare-WARP)، [VPNGate](https://github.com/RomanovCaesar/m-ui/wiki/VPNGate)
-* [Maintenance](https://github.com/RomanovCaesar/m-ui/wiki/Maintenance)، [API](https://github.com/RomanovCaesar/m-ui/wiki/API)، [Common Questions](https://github.com/RomanovCaesar/m-ui/wiki/Common-questions-and-problems)
+* [استقرار و مهاجرت](docs/unifiedproxy-migration.md)
+* [مدل و پروتکل](docs/fleet-protocol.md)
+* [امکانات و سازگاری](docs/design/legacy-acceptance.md)
+* [رنگ‌ها و منابع](docs/design/p2-token-map.md)
+* [بررسی P5](docs/design/p5-acceptance.md)
+* [انتشارها](https://github.com/HlONGlin/UnifiedProxy/releases)
 
 ## توسعه
 
-اجرا از کد منبع در ویندوز؛ پنل در `http://127.0.0.1:2053` با حساب `admin` / `admin` باز می‌شود:
+ساخت، آزمون و پیش‌نمایش فقط در کانتینر لینوکس orca-linux در `/workspace` انجام می‌شود. ویندوز فقط برای ویرایش و Git است.
 
-</div>
-
-```powershell
-.\scripts\run.ps1
+```bash
+test "$PWD" = /workspace && test -f /.dockerenv
+go build ./...
+go vet ./...
+go test ./...
 ```
 
-<div dir="rtl">
-
-ساخت فایل‌های اجرایی ویندوز و Linux amd64، یا همهٔ بسته‌های انتشار:
-
-</div>
-
-```powershell
-.\scripts\build.ps1
-.\scripts\build-release.ps1
-```
-
-<div dir="rtl">
-
-با `go test ./...` و `go vet ./...` بررسی کنید. نسخه از `MUI_VERSION` یا تگ فعلی Git با `-X main.version=...` در برنامه قرار می‌گیرد. ساختار کد منبع و روند انتشار در [Development and Releases](https://github.com/RomanovCaesar/m-ui/wiki/Development) و پیاده‌سازی رابط کاربری در [`LIQUID-GLASS.md`](LIQUID-GLASS.md) آمده است.
+`MUI_VERSION` / Git tag → `-X main.version=...`. [Fleet build / deployment](docs/unifiedproxy-migration.md) · [Design tokens](docs/design/p2-token-map.md).
 
 ## سپاسگزاری
 
 * [MetaCubeX/mihomo](https://github.com/MetaCubeX/mihomo): هستهٔ پروکسی و مدل پیکربندی
 * [MHSanaei/3x-ui](https://github.com/MHSanaei/3x-ui): تراکم اطلاعات و روند کار رابط کاربری
 * [Sub-Store](https://github.com/sub-store-org/Sub-Store): رفتار مرجع برای قالب‌های اشتراک کلاینت‌ها
-* [liquid-glass-webgl](https://github.com/martin65536/liquid-glass-webgl): کنترل‌های Liquid Glass (Apache-2.0، نگاه کنید به [`NOTICE`](NOTICE))
-* آیکون‌های [Lucide](https://lucide.dev) و [Material Symbols](https://github.com/google/material-design-icons)، فونت‌های [Geist](https://github.com/vercel/geist-font) و [Roboto](https://github.com/googlefonts/roboto-classic): پوسته‌های shadcn و Material Design 3 (ISC، Apache-2.0 و OFL-1.1، نگاه کنید به [`NOTICE`](NOTICE))
+* m-ui (GPL-3.0), UnifiedProxy (MIT): [NOTICE](NOTICE), [MIT notice](licenses/UnifiedProxy-MIT.txt).
+* [Lucide](https://lucide.dev): ISC; [icon attribution](web/licenses/LICENSE-Lucide.txt).
+* Vercel / Claude (Anthropic) / Sentry / Supabase / Stripe: [palette references](docs/design/p2-token-map.md), via VoltAgent/awesome-design-md (MIT).
 
 ## مجوز
 
-m-ui تحت مجوز [GNU General Public License version 3](LICENSE) منتشر می‌شود. کد تبدیل لینک Mihomo انتساب GPL-3.0 خود را در [`internal/mihomoconvert/NOTICE.md`](internal/mihomoconvert/NOTICE.md) حفظ می‌کند.
+UnifiedProxy تحت مجوز [GNU General Public License version 3](LICENSE) منتشر می‌شود. کد تبدیل لینک Mihomo انتساب GPL-3.0 خود را در [`internal/mihomoconvert/NOTICE.md`](internal/mihomoconvert/NOTICE.md) حفظ می‌کند.
 
 </div>

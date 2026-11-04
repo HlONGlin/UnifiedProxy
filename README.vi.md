@@ -1,26 +1,36 @@
 [English](/README.md) | [简体中文](/README.zh_CN.md) | [繁體中文](/README.zh_TW.md) | [日本語](/README.ja.md) | [Русский](/README.ru.md) | [فارسی](/README.fa.md) | [Tiếng Việt](/README.vi.md) | [Español](/README.es.md) | [Türkçe](/README.tr.md) | [Українська](/README.uk.md) | [Português (Brasil)](/README.pt_BR.md)
 
 <p align="center">
-  <img src="./media/m-ui_logo.png" alt="m-ui logo" width="420">
+  <img src="./web/media/unifiedproxy.svg" alt="UnifiedProxy" width="96">
 </p>
 
-# m-ui
+# UnifiedProxy
 
-[![Release](https://img.shields.io/github/v/release/RomanovCaesar/m-ui.svg)](https://github.com/RomanovCaesar/m-ui/releases)
-[![Build](https://img.shields.io/github/actions/workflow/status/RomanovCaesar/m-ui/release.yml.svg)](https://github.com/RomanovCaesar/m-ui/actions)
-[![Go Version](https://img.shields.io/github/go-mod/go-version/RomanovCaesar/m-ui.svg)](https://github.com/RomanovCaesar/m-ui/blob/main/go.mod)
-[![Downloads](https://img.shields.io/github/downloads/RomanovCaesar/m-ui/total.svg)](https://github.com/RomanovCaesar/m-ui/releases/latest)
-[![License](https://img.shields.io/github/license/RomanovCaesar/m-ui.svg)](https://github.com/RomanovCaesar/m-ui/blob/main/LICENSE)
+[![License: GPL-3.0](https://img.shields.io/badge/License-GPL--3.0-blue.svg)](LICENSE)
 
-Bảng điều khiển quản lý máy chủ dùng [Mihomo](https://github.com/MetaCubeX/mihomo) làm lõi. Cách thao tác theo 3x-ui, giao diện có ba chủ đề (mặc định là shadcn, Material Design 3 và Liquid Glass của Apple), còn mô hình cấu hình là YAML gốc của Mihomo. Bảng điều khiển hỗ trợ 11 ngôn ngữ.
+UnifiedProxy kết hợp bảng điều khiển Mihomo gốc với quản lý đội nút trong các chế độ độc lập, điều khiển và Agent. Quản lý inbound, máy khách, đăng ký, tác vụ ký số, Sidecar, chứng chỉ, sao lưu WebDAV và cập nhật bằng 11 ngôn ngữ. Năm bảng màu độc lập với chế độ sáng/tối; mặc định là T0 đen trắng và sáng.
+
+Bắt đầu với [triển khai và di chuyển](docs/unifiedproxy-migration.md). Bản sao lưu cũ giữ thông tin đăng nhập, lưu lượng và bí danh đăng ký; yêu cầu về tệp chứng chỉ, đăng ký lại nút và ngoại lệ NaïveProxy có trong [báo cáo tương thích](docs/design/legacy-acceptance.md).
 
 > [!IMPORTANT]
 > Chỉ sử dụng dự án này trên máy chủ và mạng mà bạn sở hữu hoặc được phép quản trị. Hãy tuân thủ luật pháp sở tại, điều khoản của nhà cung cấp và chính sách của các dịch vụ bạn truy cập.
 
-Tài liệu đầy đủ có tại [m-ui Wiki](https://github.com/RomanovCaesar/m-ui/wiki) (tiếng Anh). Theo dõi [kênh Telegram](https://t.me/MihomoUI) để nhận tin tức phát triển.
+### Năm bảng màu
+
+`data-theme="light|dark"` × `data-color-theme="t0|t1|t2|t3|t4"`
+
+| Theme | Palette | Reference |
+|---|---|---|
+| T0 | Đen trắng (mặc định) | Vercel |
+| T1 | Giấy ấm và đất nung | Claude / Anthropic |
+| T2 | Tím đêm | Sentry |
+| T3 | Ngọc lục bảo | Supabase |
+| T4 | Chàm | Stripe |
+
+[Tokens / references](docs/design/p2-token-map.md) · [NOTICE](NOTICE)
 
 <p align="center">
-  <img src="./media/screenshots/en/inbounds.png" alt="Inbound và client" width="900">
+  <img src="./media/screenshots/unifiedproxy/inbounds.png" alt="Inbound" width="900">
 </p>
 
 ## Tính năng
@@ -59,11 +69,18 @@ Tài liệu đầy đủ có tại [m-ui Wiki](https://github.com/RomanovCaesar/
 
 ## Ảnh chụp màn hình
 
+Giao diện UnifiedProxy hiện tại với dữ liệu mẫu tiếng Trung. Mỗi bảng màu có chế độ sáng và tối.
+
 <table>
-  <tr><td width="50%"><img src="./media/screenshots/en/dashboard.png" alt="Tổng quan"><br><sub>Tổng quan</sub></td><td width="50%"><img src="./media/screenshots/en/client-edit.png" alt="Client: hạn mức, hết hạn, đặt lại lưu lượng và tự động gia hạn"><br><sub>Client: hạn mức, hết hạn, đặt lại lưu lượng và tự động gia hạn</sub></td></tr>
-  <tr><td width="50%"><img src="./media/screenshots/en/outbounds.png" alt="Outbound và nhóm proxy"><br><sub>Outbound và nhóm proxy</sub></td><td width="50%"><img src="./media/screenshots/en/routing.png" alt="Quy tắc định tuyến"><br><sub>Quy tắc định tuyến</sub></td></tr>
-  <tr><td width="50%"><img src="./media/screenshots/en/xray-import.png" alt="Nhập từ Xray / 3x-ui"><br><sub>Nhập từ Xray / 3x-ui</sub></td><td width="50%"><img src="./media/screenshots/en/theme-shadcn-dark.png" alt="Giao diện shadcn, tối"><br><sub>Giao diện shadcn, tối</sub></td></tr>
-  <tr><td width="50%"><img src="./media/screenshots/en/theme-md3.png" alt="Giao diện Material Design 3"><br><sub>Giao diện Material Design 3</sub></td><td width="50%"><img src="./media/screenshots/en/theme-liquid.png" alt="Giao diện Liquid Glass"><br><sub>Giao diện Liquid Glass</sub></td></tr>
+  <tr><td width="50%"><img src="./media/screenshots/unifiedproxy/inbounds.png" alt="Inbound"><br><sub>Inbound</sub></td><td width="50%"><img src="./media/screenshots/unifiedproxy/client-edit.png" alt="Hạn mức và hết hạn"><br><sub>Hạn mức và hết hạn</sub></td></tr>
+  <tr><td width="50%"><img src="./media/screenshots/unifiedproxy/outbounds.png" alt="Outbound"><br><sub>Outbound</sub></td><td width="50%"><img src="./media/screenshots/unifiedproxy/routing.png" alt="Định tuyến"><br><sub>Định tuyến</sub></td></tr>
+  <tr><td width="50%"><img src="./media/screenshots/unifiedproxy/xray-import.png" alt="Nhập Xray / 3x-ui"><br><sub>Nhập Xray / 3x-ui</sub></td><td width="50%"><img src="./media/screenshots/unifiedproxy/fleet.png" alt="Đội nút"><br><sub>Đội nút</sub></td></tr>
+  <tr><td width="50%"><img src="./media/screenshots/unifiedproxy/login.png" alt="Đăng nhập"><br><sub>Đăng nhập</sub></td><td width="50%"><img src="./media/screenshots/unifiedproxy/subscription-mobile.png" alt="Đăng ký di động"><br><sub>Đăng ký di động</sub></td></tr>
+  <tr><td width="50%"><img src="./media/screenshots/unifiedproxy/t0-light.png" alt="T0 light"><br><sub>T0 light</sub></td><td width="50%"><img src="./media/screenshots/unifiedproxy/t0-dark.png" alt="T0 dark"><br><sub>T0 dark</sub></td></tr>
+  <tr><td width="50%"><img src="./media/screenshots/unifiedproxy/t1-light.png" alt="T1 light"><br><sub>T1 light</sub></td><td width="50%"><img src="./media/screenshots/unifiedproxy/t1-dark.png" alt="T1 dark"><br><sub>T1 dark</sub></td></tr>
+  <tr><td width="50%"><img src="./media/screenshots/unifiedproxy/t2-light.png" alt="T2 light"><br><sub>T2 light</sub></td><td width="50%"><img src="./media/screenshots/unifiedproxy/t2-dark.png" alt="T2 dark"><br><sub>T2 dark</sub></td></tr>
+  <tr><td width="50%"><img src="./media/screenshots/unifiedproxy/t3-light.png" alt="T3 light"><br><sub>T3 light</sub></td><td width="50%"><img src="./media/screenshots/unifiedproxy/t3-dark.png" alt="T3 dark"><br><sub>T3 dark</sub></td></tr>
+  <tr><td width="50%"><img src="./media/screenshots/unifiedproxy/t4-light.png" alt="T4 light"><br><sub>T4 light</sub></td><td width="50%"><img src="./media/screenshots/unifiedproxy/t4-dark.png" alt="T4 dark"><br><sub>T4 dark</sub></td></tr>
 </table>
 
 ## Cài đặt trên Linux
@@ -71,38 +88,38 @@ Tài liệu đầy đủ có tại [m-ui Wiki](https://github.com/RomanovCaesar/
 Chạy với quyền `root` trên Linux dùng systemd hoặc OpenRC:
 
 ```bash
-bash <(curl -Ls https://raw.githubusercontent.com/RomanovCaesar/m-ui/main/install.sh)
+bash <(curl -Ls https://raw.githubusercontent.com/HlONGlin/UnifiedProxy/main/install.sh)
 ```
 
 Trình cài đặt chọn một cổng trống có năm chữ số, tạo đường dẫn bảng điều khiển 16 ký tự, tên người dùng 14 ký tự và mật khẩu 16 ký tự. Địa chỉ truy cập và thông tin đăng nhập chỉ được in một lần khi kết thúc. Bạn cũng có thể tự chỉ định:
 
 ```bash
-bash <(curl -Ls https://raw.githubusercontent.com/RomanovCaesar/m-ui/main/install.sh) \
+bash <(curl -Ls https://raw.githubusercontent.com/HlONGlin/UnifiedProxy/main/install.sh) \
   --port 34567 \
   --path MyPanelA1b2C3d4 \
   --username AdminUserA1234 \
   --password 'ChangeThisA12345'
 ```
 
-m-ui được cài vào `/usr/local/m-ui`, dữ liệu nằm trong `/usr/local/m-ui/data`. Trình cài đặt cũng tải lõi Mihomo cho kiến trúc hiện tại; lõi đã có sẽ được giữ lại trừ khi bạn dùng `--update-mihomo`.
+UnifiedProxy được cài vào `/usr/local/m-ui`, dữ liệu nằm trong `/usr/local/m-ui/data`. Trình cài đặt cũng tải lõi Mihomo cho kiến trúc hiện tại; lõi đã có sẽ được giữ lại trừ khi bạn dùng `--update-mihomo`.
 
-`m-ui update` nâng cấp m-ui và giữ nguyên mọi cài đặt. Trước khi cập nhật, nó chụp nhanh thư mục dữ liệu vào `data/backups/` và giữ 3 bản mới nhất.
+`m-ui update` nâng cấp UnifiedProxy và giữ nguyên mọi cài đặt. Trước khi cập nhật, nó chụp nhanh thư mục dữ liệu vào `data/backups/` và giữ 3 bản mới nhất.
 
 Mỗi bản phát hành có `m-ui-linux-<architecture>.tar.gz` cho `386`, `amd64`, `arm64`, `armv5`, `armv6`, `armv7` và `s390x`, cùng với `m-ui-windows-amd64.zip`.
 
 ## Docker
 
-Image Docker dành cho Linux amd64, chứa m-ui và một lõi Mihomo có phiên bản cố định, đã được kiểm tra. Compose dùng mạng của máy chủ, nên cổng của các inbound thêm trong bảng điều khiển hoạt động ngay mà không cần ánh xạ cổng.
+Image Docker dành cho Linux amd64, chứa UnifiedProxy và một lõi Mihomo có phiên bản cố định, đã được kiểm tra. Compose dùng mạng của máy chủ, nên cổng của các inbound thêm trong bảng điều khiển hoạt động ngay mà không cần ánh xạ cổng.
 
 ```bash
-git clone https://github.com/RomanovCaesar/m-ui.git
-cd m-ui
+git clone https://github.com/HlONGlin/UnifiedProxy.git
+cd UnifiedProxy
 cp .env.example .env
 docker compose up -d --build
 docker compose logs m-ui
 ```
 
-Nếu `MUI_PASSWORD` và `MUI_PATH` để trống, lần khởi động đầu tiên sẽ tự tạo và in một lần địa chỉ cùng thông tin đăng nhập vào nhật ký. Mỗi bản phát hành cũng xuất bản `ghcr.io/romanovcaesar/m-ui:<tag>` và `latest`; nếu bạn dùng được image này, có thể chạy `docker compose pull` thay vì tự build. Dữ liệu nằm trong các volume `m-ui-data` và `m-ui-core`; đừng chạy `docker compose down -v` nếu không muốn xóa chúng.
+Xây dựng từ kho này. Các bản phát hành gắn thẻ có thể xuất bản `ghcr.io/hlonglin/unifiedproxy:<tag>` và `latest`; chỉ dùng `docker compose pull` khi ảnh UnifiedProxy tương ứng đã có. `MUI_PASSWORD` / `MUI_PATH` để trống được tạo ở lần chạy đầu và in một lần vào log. Giữ tên dịch vụ `m-ui` và các volume `m-ui-data`, `m-ui-core` khi nâng cấp để bảo toàn dữ liệu.
 
 ## Chứng chỉ TLS
 
@@ -112,7 +129,7 @@ Lần cài đặt tương tác đầu tiên cho phép chọn chứng chỉ Let's
 m-ui ssl
 ```
 
-Menu có thể cấp chứng chỉ cho tên miền và IP, dùng API DNS của Cloudflare để cấp chứng chỉ tên miền và wildcard khi cổng 80 không dùng được, gia hạn, thu hồi, liệt kê và áp dụng chứng chỉ có sẵn. Nếu tệp chứng chỉ chỉ có chứng chỉ lá, m-ui sẽ tự bổ sung chuỗi chứng chỉ, vì các client như Mihomo Party và FlClash từ chối loại chứng chỉ này.
+Menu có thể cấp chứng chỉ cho tên miền và IP, dùng API DNS của Cloudflare để cấp chứng chỉ tên miền và wildcard khi cổng 80 không dùng được, gia hạn, thu hồi, liệt kê và áp dụng chứng chỉ có sẵn. Nếu tệp chứng chỉ chỉ có chứng chỉ lá, UnifiedProxy sẽ tự bổ sung chuỗi chứng chỉ, vì các client như Mihomo Party và FlClash từ chối loại chứng chỉ này.
 
 ## Lệnh quản lý
 
@@ -130,40 +147,35 @@ Menu hỗ trợ 11 ngôn ngữ giống bảng điều khiển và ghi nhớ lự
 
 ## Tài liệu
 
-Wiki có tiếng Anh và tiếng Trung giản thể:
-
-* [Installation](https://github.com/RomanovCaesar/m-ui/wiki/Installation), [Panel Configuration](https://github.com/RomanovCaesar/m-ui/wiki/Configuration)
-* [Migrating from 3x-ui](https://github.com/RomanovCaesar/m-ui/wiki/Migrating-from-3x-ui)
-* [Inbounds and Clients](https://github.com/RomanovCaesar/m-ui/wiki/Inbounds), [Mihomo Settings](https://github.com/RomanovCaesar/m-ui/wiki/Mihomo-Settings)
-* [Subscriptions](https://github.com/RomanovCaesar/m-ui/wiki/Subscriptions), [Subscription Templates](https://github.com/RomanovCaesar/m-ui/wiki/Subscription-Templates)
-* [Multi-control](https://github.com/RomanovCaesar/m-ui/wiki/Multi-control), [Cloudflare WARP](https://github.com/RomanovCaesar/m-ui/wiki/Cloudflare-WARP), [VPNGate](https://github.com/RomanovCaesar/m-ui/wiki/VPNGate)
-* [Maintenance](https://github.com/RomanovCaesar/m-ui/wiki/Maintenance), [API](https://github.com/RomanovCaesar/m-ui/wiki/API), [Common Questions](https://github.com/RomanovCaesar/m-ui/wiki/Common-questions-and-problems)
+* [Triển khai và di chuyển](docs/unifiedproxy-migration.md)
+* [Mô hình và giao thức](docs/fleet-protocol.md)
+* [Chức năng và tương thích](docs/design/legacy-acceptance.md)
+* [Chủ đề và nguồn tham khảo](docs/design/p2-token-map.md)
+* [Đánh giá P5](docs/design/p5-acceptance.md)
+* [Bản phát hành](https://github.com/HlONGlin/UnifiedProxy/releases)
 
 ## Phát triển
 
-Chạy từ mã nguồn trên Windows; bảng điều khiển mở tại `http://127.0.0.1:2053` với tài khoản `admin` / `admin`:
+Chỉ xây dựng, kiểm thử và xem trước trong container Linux orca-linux tại `/workspace`. Windows chỉ dùng để sửa tệp và Git.
 
-```powershell
-.\scripts\run.ps1
+```bash
+test "$PWD" = /workspace && test -f /.dockerenv
+go build ./...
+go vet ./...
+go test ./...
 ```
 
-Build tệp thực thi cho Windows và Linux amd64, hoặc toàn bộ gói phát hành:
-
-```powershell
-.\scripts\build.ps1
-.\scripts\build-release.ps1
-```
-
-Kiểm tra bằng `go test ./...` và `go vet ./...`. Phiên bản được chèn bằng `-X main.version=...` từ `MUI_VERSION` hoặc tag Git hiện tại. Cấu trúc mã nguồn và quy trình phát hành xem tại [Development and Releases](https://github.com/RomanovCaesar/m-ui/wiki/Development), còn giao diện xem tại [`LIQUID-GLASS.md`](LIQUID-GLASS.md).
+`MUI_VERSION` / Git tag → `-X main.version=...`. [Fleet build / deployment](docs/unifiedproxy-migration.md) · [Design tokens](docs/design/p2-token-map.md).
 
 ## Lời cảm ơn
 
 * [MetaCubeX/mihomo](https://github.com/MetaCubeX/mihomo): lõi proxy và mô hình cấu hình
 * [MHSanaei/3x-ui](https://github.com/MHSanaei/3x-ui): mật độ thông tin và cách thao tác của giao diện
 * [Sub-Store](https://github.com/sub-store-org/Sub-Store): hành vi tham chiếu cho các định dạng đăng ký
-* [liquid-glass-webgl](https://github.com/martin65536/liquid-glass-webgl): các điều khiển Liquid Glass (Apache-2.0, xem [`NOTICE`](NOTICE))
-* Biểu tượng [Lucide](https://lucide.dev) và [Material Symbols](https://github.com/google/material-design-icons), phông chữ [Geist](https://github.com/vercel/geist-font) và [Roboto](https://github.com/googlefonts/roboto-classic): chủ đề shadcn và Material Design 3 (ISC, Apache-2.0 và OFL-1.1, xem [`NOTICE`](NOTICE))
+* m-ui (GPL-3.0), UnifiedProxy (MIT): [NOTICE](NOTICE), [MIT notice](licenses/UnifiedProxy-MIT.txt).
+* [Lucide](https://lucide.dev): ISC; [icon attribution](web/licenses/LICENSE-Lucide.txt).
+* Vercel / Claude (Anthropic) / Sentry / Supabase / Stripe: [palette references](docs/design/p2-token-map.md), via VoltAgent/awesome-design-md (MIT).
 
 ## Giấy phép
 
-m-ui được phát hành theo [GNU General Public License version 3](LICENSE). Mã chuyển đổi liên kết của Mihomo giữ ghi nhận GPL-3.0 trong [`internal/mihomoconvert/NOTICE.md`](internal/mihomoconvert/NOTICE.md).
+UnifiedProxy được phát hành theo [GNU General Public License version 3](LICENSE). Mã chuyển đổi liên kết của Mihomo giữ ghi nhận GPL-3.0 trong [`internal/mihomoconvert/NOTICE.md`](internal/mihomoconvert/NOTICE.md).

@@ -234,7 +234,7 @@ jobs:
             release_options=(
               --verify-tag
               --generate-notes
-              --title "m-ui ${GITHUB_REF_NAME}"
+              --title "UnifiedProxy ${GITHUB_REF_NAME}"
             )
 
             if [[ "$GITHUB_REF_NAME" == *-* ]]; then

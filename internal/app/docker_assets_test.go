@@ -29,6 +29,8 @@ func TestDockerAssetsStayWiredForRelease(t *testing.T) {
 
 	dockerfile := read("Dockerfile")
 	requireText("Dockerfile", dockerfile,
+		"org.opencontainers.image.title=\"UnifiedProxy\"",
+		"org.opencontainers.image.source=\"https://github.com/HlONGlin/UnifiedProxy\"",
 		"GOOS=linux GOARCH=amd64",
 		"mihomo-linux-amd64-compatible-v${MIHOMO_VERSION}.gz",
 		"sha256sum --check --strict",
@@ -57,7 +59,7 @@ func TestDockerAssetsStayWiredForRelease(t *testing.T) {
 		t.Fatalf("docker-compose.yml is invalid YAML: %v", err)
 	}
 	service, ok := compose.Services["m-ui"]
-	if !ok || service.Image != "ghcr.io/romanovcaesar/m-ui:${MUI_IMAGE_TAG:-latest}" || service.Platform != "linux/amd64" || service.NetworkMode != "host" {
+	if !ok || service.Image != "ghcr.io/hlonglin/unifiedproxy:${MUI_IMAGE_TAG:-latest}" || service.Platform != "linux/amd64" || service.NetworkMode != "host" {
 		t.Fatalf("unexpected m-ui Compose service: %#v", service)
 	}
 	for _, volume := range []string{"m-ui-data:/opt/m-ui/data", "m-ui-core:/opt/m-ui/core"} {

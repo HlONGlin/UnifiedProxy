@@ -4,9 +4,10 @@
 WARP/VPNGate、客户端设备和 11 种语言。外观现为五套配色（T0 黑白默认）× 独立明暗，
 旧三主题偏好可迁移。新增舰队、签名任务、期望状态、
 Sidecar、中央证书、WebDAV 和更新流程。合并产物遵循 GPL-3.0；UP 的 MIT 声明
-保留于 NOTICE 和 licenses/。代码快照上传到
-[审阅分支](https://github.com/HlONGlin/UnifiedProxy/tree/codex/unifiedproxy-merge-20261103)，
-尚未发布公开 Release、归档旧远端或切换生产服务。
+保留于 NOTICE 和 licenses/。P6 收尾已将成果快进合并到
+[main](https://github.com/HlONGlin/UnifiedProxy/tree/main)，
+旧 master 原始源码保留于 `archive/legacy-master-20261005` 标签。
+main 合并不等于发布公开 Release 或切换生产服务，执行记录见 [P6 收尾](design/p6-completion.md)。
 
 相关文档：[模型与协议](fleet-protocol.md)、[验收与发布](fleet-acceptance.md)。
 

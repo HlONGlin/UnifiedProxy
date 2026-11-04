@@ -1,33 +1,36 @@
 [English](/README.md) | [简体中文](/README.zh_CN.md) | [繁體中文](/README.zh_TW.md) | [日本語](/README.ja.md) | [Русский](/README.ru.md) | [فارسی](/README.fa.md) | [Tiếng Việt](/README.vi.md) | [Español](/README.es.md) | [Türkçe](/README.tr.md) | [Українська](/README.uk.md) | [Português (Brasil)](/README.pt_BR.md)
 
 <p align="center">
-  <img src="./media/m-ui_logo.png" alt="m-ui logo" width="420">
+  <img src="./web/media/unifiedproxy.svg" alt="UnifiedProxy" width="96">
 </p>
 
-# m-ui
+# UnifiedProxy
 
-本工作区已加入 UnifiedProxy 的舰队管理：同一程序支持独立、控制及 Agent 模式，
-包括签名任务、原生 Inbound/Client 下发、NaiveProxy/ShadowTLS Sidecar、中央证书、
-WebDAV 备份及带健康检查的更新。参阅[部署与迁移指南](docs/unifiedproxy-migration.md)、
-[模型和协议规格](docs/fleet-protocol.md)、[验收记录](docs/fleet-acceptance.md)。
-合并产物遵循 GPL-3.0，保留 UnifiedProxy 的 MIT 声明。原独立模式继续使用原启动命令
-和 data 目录，接入舰队须显式登记；公开发布与真实多机验收状态以验收记录为准。
+[![License: GPL-3.0](https://img.shields.io/badge/License-GPL--3.0-blue.svg)](LICENSE)
 
-[![Release](https://img.shields.io/github/v/release/RomanovCaesar/m-ui.svg)](https://github.com/RomanovCaesar/m-ui/releases)
-[![Build](https://img.shields.io/github/actions/workflow/status/RomanovCaesar/m-ui/release.yml.svg)](https://github.com/RomanovCaesar/m-ui/actions)
-[![Go Version](https://img.shields.io/github/go-mod/go-version/RomanovCaesar/m-ui.svg)](https://github.com/RomanovCaesar/m-ui/blob/main/go.mod)
-[![Downloads](https://img.shields.io/github/downloads/RomanovCaesar/m-ui/total.svg)](https://github.com/RomanovCaesar/m-ui/releases/latest)
-[![License](https://img.shields.io/github/license/RomanovCaesar/m-ui.svg)](https://github.com/RomanovCaesar/m-ui/blob/main/LICENSE)
+UnifiedProxy 将 Mihomo 原生面板与舰队管理整合为同一应用，支持独立、控制端和 Agent 三种模式，保留入站、客户端、订阅、多控、签名任务、Sidecar、中央证书、WebDAV 备份及健康检查更新。界面支持 11 种语言，采用五套配色 × 独立明暗，默认 T0 黑白浅色。
 
-一个以 [Mihomo](https://github.com/MetaCubeX/mihomo) 为内核的服务端管理面板。操作流程参考 3x-ui，界面提供 shadcn（默认）、Material Design 3 和 Apple 液态玻璃（Liquid Glass）三种主题，配置模型使用 Mihomo 原生 YAML。面板支持 11 种语言。
+从[部署与迁移指南](docs/unifiedproxy-migration.md)开始。历史备份可导入原凭据、用量和订阅别名；证书文件、节点重新绑定与 NaïveProxy 豁免等边界见[兼容验收](docs/design/legacy-acceptance.md)。
 
 > [!IMPORTANT]
 > 本项目只应用于您拥有或获授权管理的服务器和网络。请遵守所在地法律、上游服务商条款以及您所访问服务的使用政策。
 
-完整文档请参阅 [m-ui Wiki](https://github.com/RomanovCaesar/m-ui/wiki/Home.zh_CN)。也欢迎关注我们的 [Telegram 频道](https://t.me/MihomoUI) 获取开发动态。
+### 五套配色
+
+`data-theme="light|dark"` × `data-color-theme="t0|t1|t2|t3|t4"`
+
+| Theme | Palette | Reference |
+|---|---|---|
+| T0 | 黑白·墨（默认） | Vercel |
+| T1 | 暖纸陶土 | Claude / Anthropic |
+| T2 | 夜紫荧光 | Sentry |
+| T3 | 翡翠绿 | Supabase |
+| T4 | 靛紫 | Stripe |
+
+[Tokens / references](docs/design/p2-token-map.md) · [NOTICE](NOTICE)
 
 <p align="center">
-  <img src="./media/screenshots/inbounds.png" alt="入站与客户端" width="900">
+  <img src="./media/screenshots/unifiedproxy/inbounds.png" alt="入站与客户端" width="900">
 </p>
 
 ## 功能
@@ -66,11 +69,18 @@ WebDAV 备份及带健康检查的更新。参阅[部署与迁移指南](docs/un
 
 ## 截图
 
+以下为当前 UnifiedProxy 界面的中文演示数据截图；每套配色均支持浅色与深色。
+
 <table>
-  <tr><td width="50%"><img src="./media/screenshots/dashboard.png" alt="仪表盘"><br><sub>仪表盘</sub></td><td width="50%"><img src="./media/screenshots/client-edit.png" alt="客户端：配额、到期、流量重置与自动续期"><br><sub>客户端：配额、到期、流量重置与自动续期</sub></td></tr>
-  <tr><td width="50%"><img src="./media/screenshots/outbounds.png" alt="出站与策略组"><br><sub>出站与策略组</sub></td><td width="50%"><img src="./media/screenshots/routing.png" alt="分流规则"><br><sub>分流规则</sub></td></tr>
-  <tr><td width="50%"><img src="./media/screenshots/xray-import.png" alt="从 Xray / 3x-ui 导入"><br><sub>从 Xray / 3x-ui 导入</sub></td><td width="50%"><img src="./media/screenshots/theme-shadcn-dark.png" alt="shadcn 主题（暗色）"><br><sub>shadcn 主题（暗色）</sub></td></tr>
-  <tr><td width="50%"><img src="./media/screenshots/theme-md3.png" alt="Material Design 3 主题"><br><sub>Material Design 3 主题</sub></td><td width="50%"><img src="./media/screenshots/theme-liquid.png" alt="液态玻璃主题"><br><sub>液态玻璃主题</sub></td></tr>
+  <tr><td width="50%"><img src="./media/screenshots/unifiedproxy/inbounds.png" alt="入站与客户端"><br><sub>入站与客户端</sub></td><td width="50%"><img src="./media/screenshots/unifiedproxy/client-edit.png" alt="客户端配额与到期"><br><sub>客户端配额与到期</sub></td></tr>
+  <tr><td width="50%"><img src="./media/screenshots/unifiedproxy/outbounds.png" alt="出站与策略组"><br><sub>出站与策略组</sub></td><td width="50%"><img src="./media/screenshots/unifiedproxy/routing.png" alt="分流规则"><br><sub>分流规则</sub></td></tr>
+  <tr><td width="50%"><img src="./media/screenshots/unifiedproxy/xray-import.png" alt="Xray / 3x-ui 导入"><br><sub>Xray / 3x-ui 导入</sub></td><td width="50%"><img src="./media/screenshots/unifiedproxy/fleet.png" alt="舰队控制台"><br><sub>舰队控制台</sub></td></tr>
+  <tr><td width="50%"><img src="./media/screenshots/unifiedproxy/login.png" alt="登录"><br><sub>登录</sub></td><td width="50%"><img src="./media/screenshots/unifiedproxy/subscription-mobile.png" alt="手机订阅页"><br><sub>手机订阅页</sub></td></tr>
+  <tr><td width="50%"><img src="./media/screenshots/unifiedproxy/t0-light.png" alt="T0 light"><br><sub>T0 light</sub></td><td width="50%"><img src="./media/screenshots/unifiedproxy/t0-dark.png" alt="T0 dark"><br><sub>T0 dark</sub></td></tr>
+  <tr><td width="50%"><img src="./media/screenshots/unifiedproxy/t1-light.png" alt="T1 light"><br><sub>T1 light</sub></td><td width="50%"><img src="./media/screenshots/unifiedproxy/t1-dark.png" alt="T1 dark"><br><sub>T1 dark</sub></td></tr>
+  <tr><td width="50%"><img src="./media/screenshots/unifiedproxy/t2-light.png" alt="T2 light"><br><sub>T2 light</sub></td><td width="50%"><img src="./media/screenshots/unifiedproxy/t2-dark.png" alt="T2 dark"><br><sub>T2 dark</sub></td></tr>
+  <tr><td width="50%"><img src="./media/screenshots/unifiedproxy/t3-light.png" alt="T3 light"><br><sub>T3 light</sub></td><td width="50%"><img src="./media/screenshots/unifiedproxy/t3-dark.png" alt="T3 dark"><br><sub>T3 dark</sub></td></tr>
+  <tr><td width="50%"><img src="./media/screenshots/unifiedproxy/t4-light.png" alt="T4 light"><br><sub>T4 light</sub></td><td width="50%"><img src="./media/screenshots/unifiedproxy/t4-dark.png" alt="T4 dark"><br><sub>T4 dark</sub></td></tr>
 </table>
 
 ## Linux 安装
@@ -78,38 +88,38 @@ WebDAV 备份及带健康检查的更新。参阅[部署与迁移指南](docs/un
 在使用 systemd 或 OpenRC 的 Linux 上以 `root` 执行：
 
 ```bash
-bash <(curl -Ls https://raw.githubusercontent.com/RomanovCaesar/m-ui/main/install.sh)
+bash <(curl -Ls https://raw.githubusercontent.com/HlONGlin/UnifiedProxy/main/install.sh)
 ```
 
 安装器会选择一个未占用的五位数面板端口，并生成 16 位面板路径、14 位用户名和 16 位密码，安装结束时只打印一次访问地址和凭据。也可以显式指定：
 
 ```bash
-bash <(curl -Ls https://raw.githubusercontent.com/RomanovCaesar/m-ui/main/install.sh) \
+bash <(curl -Ls https://raw.githubusercontent.com/HlONGlin/UnifiedProxy/main/install.sh) \
   --port 34567 \
   --path MyPanelA1b2C3d4 \
   --username AdminUserA1234 \
   --password 'ChangeThisA12345'
 ```
 
-m-ui 安装在 `/usr/local/m-ui`，数据保存在 `/usr/local/m-ui/data`。安装器还会下载适配当前架构的 Mihomo 内核；已有内核默认保留，传入 `--update-mihomo` 才会替换。
+UnifiedProxy 安装在 `/usr/local/m-ui`，数据保存在 `/usr/local/m-ui/data`。安装器还会下载适配当前架构的 Mihomo 内核；已有内核默认保留，传入 `--update-mihomo` 才会替换。
 
-`m-ui update` 升级 m-ui 并保留全部设置。更新前会把数据目录快照到 `data/backups/`，保留最近 3 份。
+`m-ui update` 升级 UnifiedProxy 并保留全部设置。更新前会把数据目录快照到 `data/backups/`，保留最近 3 份。
 
 Release 提供 `386`、`amd64`、`arm64`、`armv5`、`armv6`、`armv7` 和 `s390x` 的 `m-ui-linux-<architecture>.tar.gz`，以及 `m-ui-windows-amd64.zip`。
 
 ## Docker
 
-Docker 镜像面向 Linux amd64，包含 m-ui 和一个固定版本、经过校验的 Mihomo 内核。Compose 使用 host 网络，面板里新增的 Inbound 端口无需额外端口映射即可使用。
+Docker 镜像面向 Linux amd64，包含 UnifiedProxy 和一个固定版本、经过校验的 Mihomo 内核。Compose 使用 host 网络，面板里新增的 Inbound 端口无需额外端口映射即可使用。
 
 ```bash
-git clone https://github.com/RomanovCaesar/m-ui.git
-cd m-ui
+git clone https://github.com/HlONGlin/UnifiedProxy.git
+cd UnifiedProxy
 cp .env.example .env
 docker compose up -d --build
 docker compose logs m-ui
 ```
 
-如果 `MUI_PASSWORD` 和 `MUI_PATH` 为空，首次启动会自动生成，并在日志里打印一次访问地址和凭据。每个版本也会发布 `ghcr.io/romanovcaesar/m-ui:<tag>` 和 `latest`；镜像可用时，可以用 `docker compose pull` 代替本地构建。数据保存在 `m-ui-data` 和 `m-ui-core` 两个卷中；除非确实要删除，否则不要执行 `docker compose down -v`。
+从本仓库构建。版本发布工作流可发布 `ghcr.io/hlonglin/unifiedproxy:<tag>` 与 `latest`；确认对应 UnifiedProxy 镜像已发布后再使用 `docker compose pull`。`MUI_PASSWORD` / `MUI_PATH` 为空时首次生成，并在日志打印一次。服务名与数据卷继续使用 `m-ui`、`m-ui-data` 和 `m-ui-core`，升级时保留这些卷。
 
 ## TLS 证书
 
@@ -119,7 +129,7 @@ docker compose logs m-ui
 m-ui ssl
 ```
 
-菜单可以申请域名和 IP 证书；80 端口不可用时可通过 Cloudflare DNS API 申请域名与通配符证书；还可以续期、吊销、查看证书，以及应用已有证书。证书文件只有叶子证书时，m-ui 会自动补全证书链，因为 Mihomo Party、FlClash 等客户端会拒绝这样的证书。
+菜单可以申请域名和 IP 证书；80 端口不可用时可通过 Cloudflare DNS API 申请域名与通配符证书；还可以续期、吊销、查看证书，以及应用已有证书。证书文件只有叶子证书时，UnifiedProxy 会自动补全证书链，因为 Mihomo Party、FlClash 等客户端会拒绝这样的证书。
 
 ## 管理命令
 
@@ -137,38 +147,35 @@ m-ui --lang <code>    menu language, e.g. m-ui --lang zh-cn
 
 ## 文档
 
-* [安装](https://github.com/RomanovCaesar/m-ui/wiki/Installation.zh_CN)、[面板设置](https://github.com/RomanovCaesar/m-ui/wiki/Configuration.zh_CN)
-* [从 3x-ui 迁移](https://github.com/RomanovCaesar/m-ui/wiki/Migrating-from-3x-ui.zh_CN)
-* [Inbounds 与 Clients](https://github.com/RomanovCaesar/m-ui/wiki/Inbounds.zh_CN)、[Mihomo 设置](https://github.com/RomanovCaesar/m-ui/wiki/Mihomo-Settings.zh_CN)
-* [订阅](https://github.com/RomanovCaesar/m-ui/wiki/Subscriptions.zh_CN)、[订阅模版](https://github.com/RomanovCaesar/m-ui/wiki/Subscription-Templates.zh_CN)
-* [Multi-control](https://github.com/RomanovCaesar/m-ui/wiki/Multi-control.zh_CN)、[Cloudflare WARP](https://github.com/RomanovCaesar/m-ui/wiki/Cloudflare-WARP.zh_CN)、[VPNGate](https://github.com/RomanovCaesar/m-ui/wiki/VPNGate.zh_CN)
-* [维护与管理](https://github.com/RomanovCaesar/m-ui/wiki/Maintenance.zh_CN)、[API](https://github.com/RomanovCaesar/m-ui/wiki/API.zh_CN)、[常见问题](https://github.com/RomanovCaesar/m-ui/wiki/Common-questions-and-problems.zh_CN)
+* [部署与迁移](docs/unifiedproxy-migration.md)
+* [模型与协议](docs/fleet-protocol.md)
+* [功能与兼容验收](docs/design/legacy-acceptance.md)
+* [主题 tokens 与参考对象](docs/design/p2-token-map.md)
+* [P5 视觉及功能审查](docs/design/p5-acceptance.md)
+* [版本发布](https://github.com/HlONGlin/UnifiedProxy/releases)
 
 ## 开发
 
-在 Windows 上从源码运行，面板地址为 `http://127.0.0.1:2053`，账号 `admin` / `admin`：
+构建、测试与预览仅在 orca-linux 的 Linux 容器 `/workspace` 内执行。Windows 仅用于文件编辑和 Git。
 
-```powershell
-.\scripts\run.ps1
+```bash
+test "$PWD" = /workspace && test -f /.dockerenv
+go build ./...
+go vet ./...
+go test ./...
 ```
 
-构建 Windows 和 Linux amd64 二进制，或全部 Release 压缩包：
-
-```powershell
-.\scripts\build.ps1
-.\scripts\build-release.ps1
-```
-
-使用 `go test ./...` 和 `go vet ./...` 校验。版本号取自 `MUI_VERSION` 或当前 Git tag，通过 `-X main.version=...` 注入。源码结构和发布流程见[开发与发布](https://github.com/RomanovCaesar/m-ui/wiki/Development.zh_CN)，界面实现见 [`LIQUID-GLASS.md`](LIQUID-GLASS.md)。
+`MUI_VERSION` / Git tag → `-X main.version=...`. [Fleet build / deployment](docs/unifiedproxy-migration.md) · [Design tokens](docs/design/p2-token-map.md).
 
 ## 致谢
 
 * [MetaCubeX/mihomo](https://github.com/MetaCubeX/mihomo)：代理内核与配置模型
 * [MHSanaei/3x-ui](https://github.com/MHSanaei/3x-ui)：界面信息密度与操作流程
 * [Sub-Store](https://github.com/sub-store-org/Sub-Store)：客户端订阅格式的参考实现
-* [liquid-glass-webgl](https://github.com/martin65536/liquid-glass-webgl)：液态玻璃控件（Apache-2.0，见 [`NOTICE`](NOTICE)）
-* [Lucide](https://lucide.dev) 与 [Material Symbols](https://github.com/google/material-design-icons) 图标、[Geist](https://github.com/vercel/geist-font) 与 [Roboto](https://github.com/googlefonts/roboto-classic) 字体：shadcn 和 Material Design 3 主题（ISC、Apache-2.0、OFL-1.1，见 [`NOTICE`](NOTICE)）
+* m-ui (GPL-3.0), UnifiedProxy (MIT): [NOTICE](NOTICE), [MIT notice](licenses/UnifiedProxy-MIT.txt).
+* [Lucide](https://lucide.dev): ISC; [icon attribution](web/licenses/LICENSE-Lucide.txt).
+* Vercel / Claude (Anthropic) / Sentry / Supabase / Stripe: [palette references](docs/design/p2-token-map.md), via VoltAgent/awesome-design-md (MIT).
 
 ## 许可证
 
-m-ui 使用 [GNU General Public License version 3](LICENSE) 授权。Mihomo 分享链接转换代码的 GPL-3.0 来源说明见 [`internal/mihomoconvert/NOTICE.md`](internal/mihomoconvert/NOTICE.md)。
+UnifiedProxy 使用 [GNU General Public License version 3](LICENSE) 授权。Mihomo 分享链接转换代码的 GPL-3.0 来源说明见 [`internal/mihomoconvert/NOTICE.md`](internal/mihomoconvert/NOTICE.md)。

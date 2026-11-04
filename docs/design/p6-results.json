@@ -1,0 +1,48 @@
+{
+  "date": "2026-11-04",
+  "branch": "main",
+  "environment": "orca-linux-unifiedproxy /workspace, Go 1.27.0 linux/amd64",
+  "build": "passed",
+  "vet": "passed",
+  "go": {
+    "run": 545,
+    "passed": 539,
+    "failed": 0,
+    "skipped": [
+      "TestDesignAcceptanceServer",
+      "TestFleetRealSidecarProcesses",
+      "TestInboundSyncBrowserFixture",
+      "TestMultiControlBrowserFixture",
+      "TestVPNGateAppArmorPolicyParses",
+      "TestWarpBrowserFixture"
+    ]
+  },
+  "browser": [
+    {
+      "scope": "standalone-t0-light",
+      "checks": 27,
+      "screenshots": 47
+    },
+    {
+      "scope": "fleet-t0-light",
+      "checks": 29,
+      "screenshots": 7
+    },
+    {
+      "scope": "operations",
+      "checks": 60,
+      "screenshots": 3
+    }
+  ],
+  "nativeInteractions": 18,
+  "oldestBackupRealMihomoTransport": "passed",
+  "p5EvidenceUnchanged": true,
+  "evidenceSHA256": {
+    "p6-main.log": "fbf5b7119078a10ce4fbe102b1bd42a9f959ad760e15223355b30097bffdb22c",
+    "p6-tests.json": "a4f2813afc7231ace4a491242d1dba422204dee83a945d54aeb43bc13c932f85",
+    "p6-native.log": "f9cbf54e9c205ff1664585973e1f3a94cbd8273cec42b5edb8bf0577b6ea1b3f",
+    "p6/browser-results.json": "f4abddbd94760b33cd9cc9418df088ec717702dde483dfd6eb93e9c6d1abf7c8",
+    "p6/fleet/browser-results.json": "49cb2e7d4b2f71b7e234a756b9cd849134b03799ceab97180a03ba70d7242197",
+    "p6/operations/browser-results.json": "f116c510dfcb5a7fc59ab5a610796a3cd2ee9a8ab35d8e9efc00a0a2cae62e87"
+  }
+}

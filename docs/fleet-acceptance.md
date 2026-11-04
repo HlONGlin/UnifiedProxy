@@ -1,8 +1,8 @@
 # 验收记录与发布门槛
 
-日期：2026-11-03。代码快照已上传到
-[审阅分支](https://github.com/HlONGlin/UnifiedProxy/tree/codex/unifiedproxy-merge-20261103)；
-未发布公开合并 Release、未归档旧远端、未切换生产服务。
+日期：2026-11-03，以下为视觉改造前的验收存档。后续成果由 P6 收尾到
+[main](https://github.com/HlONGlin/UnifiedProxy/tree/main)，详见 [P6 记录](design/p6-completion.md)。
+此记录不表示已发布公开合并 Release、归档旧远端或切换生产服务。
 本地测试不等于公网多机生产验收。
 
 ## 本地已经验证
