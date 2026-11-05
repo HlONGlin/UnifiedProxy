@@ -16,8 +16,8 @@ UnifiedProxy brings native Mihomo configuration, user subscriptions and fleet op
 
 | Scenario | Entry point | Behavior |
 |---|---|---|
-| Manage one server | `unifiedproxy serve` | Operate local Mihomo, with Multi-control networking and subscription aggregation |
-| Manage several servers centrally | `unifiedproxy --control serve` | Edit node drafts, publish policies and schedule signed tasks; the controller does not run a local proxy core |
+| Deploy a fleet host | `unifiedproxy --control serve` | Opens the Fleet workspace after sign-in; create node cards and manage remote Mihomo from one web panel |
+| Run standalone | Standalone mode | Manage local Mihomo with Multi-control networking and subscription aggregation |
 | Enroll a managed node | `unifiedproxy --agent serve` | Join explicitly, apply policies and execute tasks; running proxies continue when the controller is offline |
 
 `control` / `node` are deployment entry points for the same application. Read the [operations and migration guide](docs/unifiedproxy-migration.md) for enrollment, ownership and emergency local control.

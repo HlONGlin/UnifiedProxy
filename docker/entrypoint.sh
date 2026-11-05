@@ -66,4 +66,4 @@ else
 fi
 
 cd /opt/unifiedproxy
-exec "$UNIFIEDPROXY_BIN"
+exec "$UNIFIEDPROXY_BIN" --control

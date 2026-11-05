@@ -6,7 +6,7 @@ Wants=network-online.target
 [Service]
 Type=simple
 WorkingDirectory=/usr/local/unifiedproxy
-ExecStart=/usr/local/unifiedproxy/unifiedproxy
+ExecStart=/usr/local/unifiedproxy/unifiedproxy --control
 Restart=on-failure
 RestartSec=5s
 LimitNOFILE=1048576

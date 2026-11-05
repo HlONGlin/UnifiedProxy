@@ -34,6 +34,18 @@ func TestInstallerTLSVariablesAreInitializedBeforeUse(t *testing.T) {
 	}
 }
 
+func TestStandardPanelServicesStartInFleetControlMode(t *testing.T) {
+	for _, name := range []string{"deploy/unifiedproxy.service", "deploy/unifiedproxy.openrc", "docker/entrypoint.sh"} {
+		data, err := os.ReadFile(name)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if !strings.Contains(string(data), "--control") {
+			t.Errorf("%s must start the host panel in fleet control mode", name)
+		}
+	}
+}
+
 func TestInstallerAndReleaseWorkflowUseUnifiedProxyPackageNames(t *testing.T) {
 	installer, err := os.ReadFile("install.sh")
 	if err != nil {

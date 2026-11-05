@@ -3,6 +3,7 @@
 name="UnifiedProxy"
 description="UnifiedProxy Mihomo Control Panel"
 command="/usr/local/unifiedproxy/unifiedproxy"
+command_args="--control"
 directory="/usr/local/unifiedproxy"
 command_background="yes"
 pidfile="/run/unifiedproxy.pid"

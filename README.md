@@ -16,8 +16,8 @@ UnifiedProxy 把 Mihomo 原生配置、用户订阅和跨节点运维放进同�
 
 | 使用场景 | 入口 | 运行方式 |
 |---|---|---|
-| 管理一台服务器 | `unifiedproxy serve` | 本地面板管理本机 Mihomo；保留多控网络与订阅聚合 |
-| 集中管理多台服务器 | `unifiedproxy --control serve` | 保存节点草稿、发布策略、调度签名任务；控制端不运行本机代理内核 |
+| 部署舰队主机 | `unifiedproxy --control serve` | 登录后进入舰队工作台；创建子节点卡片并从同一网页管理远端 Mihomo |
+| 单机运行 | 独立模式 | 管理本机 Mihomo；保留多控网络与订阅聚合 |
 | 接受控制端管理 | `unifiedproxy --agent serve` | 显式登记后接入，执行配置与任务；已运行代理在控制端离线时继续工作 |
 
 `control` / `node` 是同一应用的部署入口。节点登记、所有权边界和应急接管见[运行与迁移指南](docs/unifiedproxy-migration.md)。
