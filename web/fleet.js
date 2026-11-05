@@ -161,7 +161,7 @@
     if(navigator.clipboard?.writeText){await navigator.clipboard.writeText(value);return;}
     const field=element('textarea',undefined,document.body,{value,readonly:true});field.select();const copied=document.execCommand('copy');field.remove();if(!copied)throw new Error('Clipboard access is unavailable');
   }
-  button.onclick=()=>{if(typeof setView==='function'){labels.fleet='crumb.dashboard';setView('fleet');document.querySelector('#crumb').textContent=t('title');}load().catch(()=>{});};
+  button.addEventListener('click',()=>load().catch(()=>{}));
   function render(){
   button.innerHTML=SF('multi-control','nav-icon')+'<span>'+t('title')+'</span>';section.replaceChildren();element('h2',t('title'),section);
     const toolbar=element('div',undefined,section,{className:'fleet-toolbar'});action('refresh',toolbar,load);
@@ -197,7 +197,7 @@
         action('publish',controls,async()=>{output(await request('/nodes/'+node.id+'/publish',{}));});
         action('revoke',controls,async()=>{if(await upConfirm(t('confirm'),{danger:true})){await request('/nodes/'+node.id+'/revoke',{});await load();}});
         const manage=element('button',zh?'进入统一管理':'Manage from this panel',controls,{type:'button',className:'outline-btn'});
-        manage.onclick=async()=>{if(!await selectTarget(node.id))return;if(typeof setView==='function'){setView('dashboard');document.querySelector('#crumb').textContent=zh?'仪表盘':'Dashboard';}};
+        manage.onclick=async()=>{if(!await selectTarget(node.id))return;document.querySelector('#nav [data-view="dashboard"]')?.click();};
       }
       const batch=element('div',undefined,section,{className:'fleet-block'});element('h3',t('batch'),batch);
       const kind=element('select',undefined,batch);for(const k of ['collect-status','test-egress','kernel-switch','geo-update','cert-renew','agent-upgrade','defaults','quota','inbound'])element('option',t(k),kind,{value:k});
@@ -238,10 +238,10 @@
   let polling=false;setInterval(async()=>{if(polling||role!=='control'||!section.classList.contains('active'))return;polling=true;try{fleet=await request('');for(const node of fleet.nodes||[]){for(const el of section.querySelectorAll('[data-fleet-status]'))if(el.dataset.fleetStatus===node.id){el.textContent=nodeStatus(node);el.title=node.status?.error||'';}for(const el of section.querySelectorAll('[data-fleet-traffic]'))if(el.dataset.fleetTraffic===node.id)el.textContent=nodeTraffic(node);for(const el of section.querySelectorAll('[data-node-state]'))if(el.dataset.nodeState===node.id){el.textContent=nodeConnectionState(node);el.dataset.online=String(Boolean(node.online&&!node.revoked));}}const tasks=section.querySelector('#fleet-tasks');if(tasks)tasks.textContent=taskSummary(fleet.tasks);}catch(error){output(error.message,true);}finally{polling=false;}},15000);
   button.textContent=t('title');window.addEventListener('up-langchange',()=>{button.textContent=t('title');if(fleet)render();if(section.classList.contains('active'))document.querySelector('#crumb').textContent=t('title');});
   window.UPFleet={locales,words,get selectedNode(){return selected;}};
-  if(role==='control'&&typeof setView==='function'){
-    labels.fleet='crumb.dashboard';
-    setView('fleet');
+  if(role==='control'){
+    button.click();
     document.querySelector('#crumb').textContent=t('title');
+  } else {
+    load().catch(()=>{});
   }
-  load().catch(()=>{});
 }());
