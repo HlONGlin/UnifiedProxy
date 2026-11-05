@@ -694,7 +694,7 @@ var clientAuthorizeTemplate = template.Must(template.New("authorize").Parse(`<!d
 <html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>UnifiedProxy</title>
 <style>
-body{font-family:systeUnifiedProxy,-apple-system,"Segoe UI",sans-serif;background:#0f1220;color:#e8eaf2;display:flex;min-height:100vh;align-items:center;justify-content:center;margin:0}
+body{font-family:system-ui,-apple-system,"Segoe UI",sans-serif;background:#0f1220;color:#e8eaf2;display:flex;min-height:100vh;align-items:center;justify-content:center;margin:0}
 .card{width:min(380px,92vw);background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:18px;padding:28px;box-shadow:0 20px 60px rgba(0,0,0,.35)}
 h1{font-size:18px;margin:0 0 6px}p{color:#aab0c4;font-size:14px;line-height:1.5;margin:0 0 18px}
 input{width:100%;box-sizing:border-box;margin:0 0 12px;padding:11px 12px;border-radius:10px;border:1px solid rgba(255,255,255,.18);background:rgba(0,0,0,.25);color:inherit;font-size:14px}

@@ -6,7 +6,7 @@
     <rect x="1" y="1" width="46" height="46" rx="10" stroke="#515151" stroke-width="0.75"/>
     <path d="M12 15v12a8 8 0 0 0 16 0V15M28 15h4a6 6 0 0 1 0 12h-4"/>
   </g>
-  <g font-family="systeUnifiedProxy, -apple-system, 'Segoe UI', sans-serif">
+  <g font-family="system-ui, -apple-system, 'Segoe UI', sans-serif">
     <text x="170" y="110" fill="#ffffff" font-size="52" font-weight="650" letter-spacing="-2">UnifiedProxy</text>
     <text x="173" y="150" fill="#b8b8b8" font-size="15" letter-spacing="2">STANDALONE / CONTROL / AGENT</text>
     <path d="M45 204H685" fill="none" stroke="#343434"/>
