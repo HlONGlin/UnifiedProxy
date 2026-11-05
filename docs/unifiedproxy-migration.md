@@ -1,4 +1,4 @@
-# UnifiedProxy × UnifiedProxy：运行与迁移指南
+# UnifiedProxy：运行与历史数据迁移指南
 
 合并以 UnifiedProxy 为主体，保留 Mihomo 原生配置、Inbound/Client、订阅模板、3x-ui、
 WARP/VPNGate、客户端设备和 11 种语言。外观现为五套配色（T0 黑白默认）× 独立明暗，
@@ -56,10 +56,10 @@ Agent 的控制 URL 只填源站，不附加管理员面板路径。HTTP 仅允�
 ```
 
 把令牌粘贴到标准输入并结束输入；接入后重启节点。生成命令不把令牌写入命令行
-历史。接入后点击卡片的“进入统一管理”，或在主机网页顶部节点选择器选择子服务器。原有入站/Client/Mihomo
+历史。接入后点击卡片的“管理节点”，或在主机网页顶部节点选择器选择子服务器。原有入站/Client/Mihomo
 出站与路由/3x-ui 编辑界面随选择切换到该节点；节点草稿保存在控制端，
 无需为子服务器单独打开网页。保存即发布。发布失败明确返回错误，草稿仍保留。
-选择“本机默认配置”可回到主机自身配置。节点先用真实 Mihomo 验证，
+选择“主机全局默认配置”可编辑主机默认设置；该默认配置不会在主机运行代理内核。节点先用真实 Mihomo 验证，
 再热重载、健康检查、提交 applied；失败和中断恢复 .previous。
 
 ## 所有权与应急
@@ -85,7 +85,7 @@ Sidecar、成功回执后吊销登记，不递归删除用户磁盘目录。
 
 ## merit.json 导入
 
-舰队页上传原 merit.json：Node → 稳定 ID 的舰队登记；Mieru/AnyTLS → 原生
+在舰队的“备份与迁移 → 导入历史数据”选择原 merit.json，并点击“导入并转换”：Node → 稳定 ID 的舰队登记；Mieru/AnyTLS → 原生
 listener + Client，保留用户名/密码；Naive/ShadowTLS → Sidecar。重复导入同一
 legacy Node ID 不覆盖后续编辑。旧管理员、API Key、历史任务不成为新系统配置。
 

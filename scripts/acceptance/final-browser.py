@@ -86,10 +86,13 @@ def main():
      if args.login_only:
       login_context=browser.new_context(viewport={'width':1440,'height':1000});login=login_context.new_page();login.on('pageerror',lambda e:errors.append(str(e)));login.goto(url+'/login',wait_until='networkidle');check('F01 unauthenticated login form '+palette+'-'+mode,login.locator('#login-button').is_visible());login.evaluate('([p,m])=>{UPTheme.setColor(p);UPTheme.setMode(m)}',[palette,mode]);shot(login,folder,'login');login.set_viewport_size({'width':390,'height':844});shot(login,folder,'mobile-login');login_context.close();continue
      if args.fleet:
-      page.locator('[data-view=fleet]').click();page.locator('.fleet-grid tbody tr').first.wait_for();page.evaluate("document.querySelector('.app').scrollTop=0");shot(page,folder,'fleet');page.set_viewport_size({'width':390,'height':844});shot(page,folder,'mobile-fleet');check('F28 fleet mobile fits viewport',page.evaluate('document.documentElement.scrollWidth<=innerWidth+1'));page.set_viewport_size({'width':1440,'height':1000})
-      for i,name in [(2,'fleet-model'),(3,'fleet-certificates'),(4,'fleet-update'),(5,'fleet-backup')]:
-       block=page.locator('#view-fleet>.fleet-block').nth(i);block.evaluate("e=>{if(e.tagName==='DETAILS')e.open=true;e.querySelectorAll('details').forEach(d=>d.open=true)}");block.scroll_into_view_if_needed();shot(page,folder,name)
-      page.locator('#fleet-tasks').scroll_into_view_if_needed();shot(page,folder,'fleet-tasks');continue
+      page.locator('[data-view=fleet]').click();page.locator('.fleet-node-card').first.wait_for();page.evaluate("document.querySelector('.app').scrollTop=0");shot(page,folder,'fleet');page.set_viewport_size({'width':390,'height':844});shot(page,folder,'mobile-fleet');check('F28 fleet mobile fits viewport',page.evaluate('document.documentElement.scrollWidth<=innerWidth+1'));page.set_viewport_size({'width':1440,'height':1000})
+      for tab,name in [('advanced','fleet-model'),('maintenance','fleet-certificates'),('backup','fleet-backup'),('tasks','fleet-tasks')]:
+       page.locator('[data-fleet-tab='+tab+']').click()
+       if tab=='advanced':
+        node=next(n for n in api(ctx,url,'/api/fleet')['nodes'] if not n['revoked']);page.get_by_label('要编辑的服务器',exact=True).select_option(node['id']);page.locator('#fleet-content textarea').first.wait_for(state='attached')
+       page.locator('#fleet-content details').evaluate_all("items=>items.forEach(d=>d.open=true)");shot(page,folder,name)
+      continue
      for view in ['dashboard','inbounds','subtemplates','mihomo','settings','connections','logs']:
       page.evaluate('(v)=>setView(v)',view);page.wait_for_timeout(100);shot(page,folder,view)
       if view=='settings':

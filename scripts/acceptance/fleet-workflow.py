@@ -1,0 +1,200 @@
+"""Real control UI workflows in orca-linux /workspace. Only heartbeat display is mocked."""
+import argparse, importlib.util, json, socket, subprocess, tempfile, time, urllib.request
+from pathlib import Path
+from playwright.sync_api import sync_playwright, expect
+
+assert Path.cwd()==Path('/workspace') and Path('/.dockerenv').exists()
+parser=argparse.ArgumentParser()
+parser.add_argument('--binary', required=True)
+parser.add_argument('--browser')
+parser.add_argument('--output', default='dist/fleet-browser')
+args=parser.parse_args()
+binary=str(Path(args.binary).resolve())
+output=Path(args.output).resolve(); output.mkdir(parents=True, exist_ok=True)
+spec=importlib.util.spec_from_file_location('design_measure','scripts/acceptance/final-browser.py')
+measure=importlib.util.module_from_spec(spec); spec.loader.exec_module(measure)
+checks=[]; errors=[]; contrasts=[]
+
+def check(name, condition):
+    assert condition, name
+    checks.append(name)
+    print('PASS '+name,flush=True)
+
+def api(ctx, base, path, method='GET', data=None):
+    r=ctx.request.fetch(base+path,method=method,data=data)
+    assert r.ok,(path,r.status,r.text())
+    v=r.json(); return v.get('data',v)
+
+with socket.socket() as listener:
+    listener.bind(('127.0.0.1',0)); port=listener.getsockname()[1]
+origin=f'http://127.0.0.1:{port}'; base=origin+'/fleet-test'
+with tempfile.TemporaryDirectory(prefix='up-fleet-browser-') as data:
+    subprocess.run([binary,'configure','--data-dir',data,'--username','fixture','--password-stdin',
+        '--listen-ip','127.0.0.1','--port',str(port),'--path','fleet-test'],input='fixture-password',text=True,check=True,stdout=subprocess.DEVNULL)
+    with (output/'server.log').open('w') as log:
+        process=subprocess.Popen([binary,'serve','--data-dir',data],stdout=log,stderr=log)
+        try:
+            for _ in range(100):
+                try: urllib.request.urlopen(base+'/login',timeout=1).close(); break
+                except Exception:
+                    if process.poll() is not None: raise RuntimeError((output/'server.log').read_text())
+                    time.sleep(.1)
+            with sync_playwright() as pw:
+                options={'headless':True,'args':['--no-sandbox']}
+                if args.browser: options['executable_path']=args.browser
+                browser=pw.chromium.launch(**options)
+                ctx=browser.new_context(viewport={'width':1440,'height':1050},permissions=['clipboard-read','clipboard-write'])
+                page=ctx.new_page(); page.on('pageerror',lambda e:errors.append(str(e)))
+                page.goto(base+'/login',wait_until='networkidle')
+                page.locator('#username').fill('fixture'); page.locator('#password').fill('fixture-password')
+                page.locator('#login-button').click(); page.wait_for_url(base+'/')
+                page.evaluate("upSetLang('zh-CN')")
+                root=page.locator('#view-fleet'); expect(root).to_be_visible()
+                expect(root.get_by_text('接入你的第一台子服务器',exact=True)).to_be_visible()
+                check('Login opens fleet with three-step empty state',root.locator('.fleet-steps li').count()==3)
+                check('No JSON editors on default page',root.locator('textarea').count()==0)
+                page.screenshot(path=str(output/'empty.png'),full_page=True)
+                root.get_by_role('button',name='＋ 添加子服务器',exact=True).click()
+                dialog=page.locator('dialog[open]')
+                expect(dialog.get_by_label('服务器名称',exact=False)).to_be_focused()
+                dialog.get_by_label('服务器名称',exact=False).fill('香港 01')
+                dialog.get_by_label('子服务器公网地址',exact=False).fill('203.0.113.10')
+                dialog.get_by_label('子服务器公网地址',exact=False).press('Enter')
+                expect(dialog.locator('[data-enrollment-node]')).to_be_visible()
+                command=dialog.locator('code').first.inner_text()
+                check('Enrollment uses installed node and stdin token','/usr/local/unifiedproxy-node/node agent join' in command and '--token-stdin' in command and '--token ' not in command)
+                dialog.get_by_label('主机公网地址',exact=False).fill('https://control.example')
+                dialog.get_by_role('button',name='复制接入命令',exact=True).click()
+                expect(dialog.locator('.fleet-dialog-feedback')).to_have_text('接入命令已复制')
+                dialog.get_by_role('button',name='复制令牌',exact=True).click()
+                check('Clipboard works in modal',page.evaluate('navigator.clipboard.readText()')==dialog.get_by_label('一次性接入令牌',exact=True).input_value())
+                page.screenshot(path=str(output/'enrollment.png'),full_page=True)
+                dialog.get_by_role('button',name='完成，返回服务器列表',exact=True).click()
+                node=api(ctx,base,'/api/fleet')['nodes'][0]; node_id=node['id']
+                card=root.locator(f'[data-node-card="{node_id}"]')
+                expect(card.locator('[data-node-state]')).to_have_text('待接入')
+                check('Enter creates persistent card',node['name']=='香港 01' and node['address']=='203.0.113.10')
+                card.get_by_text('更多操作',exact=True).click()
+                card.get_by_role('button',name='编辑名称与地址',exact=True).click()
+                dialog.get_by_label('名称',exact=False).first.fill('东京中转')
+                check('Metadata never autosaves',api(ctx,base,'/api/fleet/nodes/'+node_id)['name']=='香港 01')
+                page.keyboard.press('Escape'); expect(dialog).to_have_count(0)
+                card.get_by_role('button',name='编辑名称与地址',exact=True).click()
+                dialog.get_by_label('名称',exact=False).first.fill('香港入口')
+                dialog.get_by_role('button',name='保存信息',exact=True).click()
+                expect(card.locator('h3')).to_have_text('香港入口')
+                check('Explicit metadata save persists',api(ctx,base,'/api/fleet/nodes/'+node_id)['name']=='香港入口')
+                model=api(ctx,base,'/api/fleet/nodes/'+node_id)['draft']
+                model['settings']['subscriptionPath']='/subchildfixture'
+                model['inbounds']=[{'id':'fixture-mieru','name':'测试入站','type':'mieru','listen':'0.0.0.0','port':31234,'enabled':True,'mieru':{'transport':'TCP'},'clients':[{'id':'alice','name':'Alice','username':'alice','password':'fixture-password','enabled':True,'total':1073741824}]}]
+                api(ctx,base,'/api/fleet/nodes/'+node_id+'/model','POST',model)
+                other=api(ctx,base,'/api/fleet/nodes','POST',{'name':'东京 02','address':'tokyo.example'})
+                page.reload(wait_until='networkidle'); page.evaluate("upSetLang('zh-CN')")
+                expect(root.locator('.fleet-node-card')).to_have_count(2)
+                root.get_by_label('搜索服务器',exact=True).fill('tokyo')
+                expect(root.locator('.fleet-node-card')).to_have_count(1)
+                check('Search matches address',root.locator('.fleet-node-card').get_attribute('data-node-card')==other['id'])
+                root.get_by_label('搜索服务器',exact=True).fill('no-such-node')
+                expect(root.get_by_text('没有匹配的服务器',exact=True)).to_be_visible()
+                root.get_by_label('搜索服务器',exact=True).fill('')
+                root.locator('[data-fleet-tab=tasks]').click()
+                expect(root.get_by_role('button',name='对选中节点执行',exact=True)).to_be_disabled()
+                root.locator('[data-fleet-tab=nodes]').click(); card.locator('.fleet-selected').check()
+                expect(root.locator('#fleet-selection')).to_be_visible(); root.locator('#fleet-selection button').first.click()
+                root.get_by_label('要执行的操作',exact=True).select_option('collect-status')
+                root.get_by_role('button',name='对选中节点执行',exact=True).click()
+                expect(root.locator('#fleet-feedback')).to_contain_text('暂不支持此操作')
+                check('Capability gate explains unenrolled node',True)
+                root.get_by_label('要执行的操作',exact=True).select_option('quota')
+                root.get_by_label('用户名',exact=True).fill('alice'); root.get_by_label('总流量',exact=False).fill('2')
+                root.get_by_role('button',name='对选中节点执行',exact=True).click()
+                expect(page.locator('.up-dialog')).to_contain_text('1 台服务器')
+                page.locator('.up-dialog .danger-btn').click()
+                expect(root.locator('#fleet-feedback')).to_contain_text('任务已提交')
+                saved=api(ctx,base,'/api/fleet/nodes/'+node_id)['draft']['inbounds'][0]['clients'][0]
+                check('Batch quota keeps credentials',saved['total']==2147483648 and saved['password']=='fixture-password')
+                heartbeat=api(ctx,base,'/api/fleet')
+                for n in heartbeat['nodes']:
+                    if n['id']==node_id:
+                        n.update(online=True,lastSeen='2026-11-05T12:00:00Z')
+                        n['status']={'running':True,'revision':n['desiredRevision'],'traffic':{'fixture-mieru':{'up':1024,'down':2048}}}
+                page.route('**/api/fleet',lambda route:route.fulfill(json=heartbeat) if route.request.method=='GET' else route.continue_())
+                root.locator('[data-fleet-tab=nodes]').click(); root.get_by_role('button',name='刷新',exact=True).click()
+                expect(card.locator('[data-node-state]')).to_have_text('在线')
+                card.get_by_role('button',name='管理节点',exact=True).click()
+                expect(page.locator('#view-inbounds')).to_be_visible()
+                check('Manage node scopes native editor',page.evaluate('UPFleet.selectedNode')==node_id)
+                expect(page.locator('#view-inbounds')).to_contain_text('测试入站')
+                page.locator('#nav [data-view=fleet]').click(); expect(page.locator('#crumb')).to_have_text('舰队管理')
+                card.get_by_text('更多操作',exact=True).click()
+                card.get_by_role('button',name='出口与路由',exact=True).click()
+                expect(page.locator('[data-mihomo-tab=outbounds]')).to_have_class('mihomo-tab active')
+                check('Outbounds shortcut opens child outbound editor',page.evaluate('UPFleet.selectedNode')==node_id)
+                page.locator('#nav [data-view=fleet]').click()
+                root.locator('[data-fleet-tab=subscriptions]').click()
+                root.get_by_role('button',name='读取用户订阅',exact=True).click()
+                expect(root.get_by_label('订阅地址',exact=True)).to_be_visible()
+                host=api(ctx,base,'/api/config'); sub=root.get_by_label('订阅地址',exact=True).input_value()
+                check('Aggregated subscription uses host path despite selected node',sub.startswith(origin+host['subscriptionPath'].rstrip('/')+'/'))
+                response=ctx.request.get(sub,headers={'Accept':'text/html'})
+                check('Public aggregated subscription page works',response.ok and '<html' in response.text())
+                clash=ctx.request.get(sub+'/clash')
+                check('Public aggregated subscription exports child inbound',clash.ok and '203.0.113.10' in clash.text() and 'mieru' in clash.text())
+                root.locator('[data-fleet-tab=backup]').click()
+                with page.expect_download() as download: root.get_by_role('link',name='下载完整舰队备份',exact=True).click()
+                backup=output/'fixture-backup.json'; download.value.save_as(str(backup))
+                check('Download preserves fleet identity',bool(json.loads(backup.read_text()).get('fleet')))
+                check('All eleven translation dictionaries remain',not page.evaluate('Object.entries(UPFleet.words).filter(([k,v])=>v.length!==11||v.some(x=>!x)).map(([k])=>k)'))
+                for locale in page.evaluate('UPFleet.locales'):
+                    page.evaluate('(v)=>upSetLang(v)',locale)
+                    for tab in ('nodes','tasks','subscriptions','backup','maintenance','advanced'):
+                        root.locator(f'[data-fleet-tab={tab}]').click(); expect(root.locator('#fleet-content')).not_to_be_empty()
+                    check('Six tabs render in '+locale,not errors)
+                page.evaluate("upSetLang('zh-CN')"); root.locator('[data-fleet-tab=tasks]').click()
+                root.get_by_label('要执行的操作',exact=True).select_option('kernel-switch')
+                root.get_by_label('Mihomo 版本',exact=True).fill('draft-do-not-erase')
+                page.wait_for_timeout(16000); expect(root.get_by_label('Mihomo 版本',exact=True)).to_have_value('draft-do-not-erase')
+                check('Heartbeat preserves form draft',True)
+                root.locator('[data-fleet-tab=advanced]').click(); root.get_by_label('要编辑的服务器',exact=True).select_option(node_id)
+                expect(root.locator('textarea')).to_have_count(3)
+                check('Model and both sidecar editors retained',True)
+                page.locator('#fleet-target-select').select_option('')
+                expect(page.locator('.fleet-target-status')).to_have_text('')
+                root.locator('[data-fleet-tab=nodes]').click()
+                root.locator('.fleet-dismiss').click()
+                root.get_by_role('button',name='清除选择',exact=True).click()
+                page.set_viewport_size({'width':1440,'height':1300})
+                for palette in ('t0','t1','t2','t3','t4'):
+                    for mode in ('light','dark'):
+                        name=palette+'-'+mode
+                        page.evaluate('([p,m])=>{UPTheme.setColor(p);UPTheme.setMode(m)}',[palette,mode])
+                        for tab in ('nodes','tasks','subscriptions','backup','maintenance','advanced'):
+                            root.locator(f'[data-fleet-tab={tab}]').click()
+                            page.screenshot(path=str(output/(name+'-'+tab+'.png')),full_page=True,animations='disabled')
+                            contrasts.append({'theme':name,'tab':tab,'failures':[r for r in page.evaluate(measure.MEASURE) if r['ratio']<r['required']]})
+                        root.locator('[data-fleet-tab=nodes]').click(); page.set_viewport_size({'width':390,'height':844}); page.evaluate('setDrawerOpen(false)')
+                        check('Mobile page fits '+name,page.evaluate('document.documentElement.scrollWidth<=innerWidth+1'))
+                        page.screenshot(path=str(output/(name+'-mobile.png')),full_page=True,animations='disabled')
+                        root.locator('.fleet-node-card').first.screenshot(path=str(output/(name+'-card.png')),animations='disabled')
+                        root.get_by_role('button',name='＋ 添加子服务器',exact=True).click()
+                        check('Mobile dialog fits '+name,dialog.evaluate('e=>e.getBoundingClientRect().right<=innerWidth && e.scrollWidth<=e.clientWidth+1'))
+                        page.screenshot(path=str(output/(name+'-dialog.png')),full_page=True,animations='disabled')
+                        page.keyboard.press('Escape'); page.set_viewport_size({'width':1440,'height':1300})
+                page.unroute('**/api/fleet')
+                root.get_by_role('button',name='刷新',exact=True).click()
+                other_card=root.locator(f'[data-node-card="{other["id"]}"]')
+                other_card.get_by_text('更多操作',exact=True).click()
+                other_card.get_by_role('button',name='吊销接入权限',exact=True).click()
+                page.locator('.up-dialog .outline-btn').click()
+                check('Cancel revoke keeps node active',not api(ctx,base,'/api/fleet/nodes/'+other['id'])['revoked'])
+                other_card.get_by_role('button',name='吊销接入权限',exact=True).click()
+                page.locator('.up-dialog .danger-btn').click()
+                expect(other_card.locator('[data-node-state]')).to_have_text('已吊销')
+                check('Confirmed revoke persists',api(ctx,base,'/api/fleet/nodes/'+other['id'])['revoked'])
+                check('No browser errors',not errors)
+                (output/'results.json').write_text(json.dumps({'checks':checks,'errors':errors,'contrast':contrasts},ensure_ascii=False,indent=2))
+                check('Measured text meets contrast',not [r for r in contrasts if r['failures']])
+                browser.close()
+        finally:
+            process.terminate(); process.wait(timeout=15)
+print(f'Passed {len(checks)} checks; evidence: {output}')
