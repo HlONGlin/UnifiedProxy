@@ -367,7 +367,7 @@ func (a *App) handleRemotePanel(w http.ResponseWriter, r *http.Request, id strin
 		"/api/core/logs": editor.handleCoreLogs, "/api/import/xray": editor.handleXrayImport,
 		"/api/tools/uuid": editor.handleNewUUID, "/api/tools/inbound-port": editor.handleAvailableInboundPort,
 		"/api/tools/subscription-path": editor.handleNewSubscriptionPath,
-		"/api/tools/reality-keypair": editor.handleRealityKeyPair, "/api/tools/vless-encryption": editor.handleVLESSEncryption,
+		"/api/tools/reality-keypair":   editor.handleRealityKeyPair, "/api/tools/vless-encryption": editor.handleVLESSEncryption,
 		"/api/tools/ech-keypair": editor.handleECHKeyPair,
 	}
 	if strings.HasPrefix(r.URL.Path, "/api/mihomo/warp") {
@@ -447,7 +447,7 @@ func (a *App) handleFleet(w http.ResponseWriter, r *http.Request) {
 		nodes := f.store.Nodes()
 		views := []map[string]any{}
 		for _, n := range nodes {
-			views = append(views, map[string]any{"id": n.ID, "name": n.Name, "address": n.Address, "revoked": n.Revoked, "online": !n.Revoked && !n.LastSeen.IsZero() && time.Since(n.LastSeen) < 90*time.Second, "lastSeen": n.LastSeen, "status": n.Status, "needsUpgrade": n.NeedsUpgrade, "desiredRevision": func() uint64 {
+			views = append(views, map[string]any{"id": n.ID, "name": n.Name, "address": n.EffectiveAddress(), "configuredAddress": n.Address, "seenIP": n.SeenIP, "addressSource": n.AddressSource(), "revoked": n.Revoked, "online": n.Online(time.Now()), "lastSeen": n.LastSeen, "status": n.Status, "needsUpgrade": n.NeedsUpgrade, "desiredRevision": func() uint64 {
 				if n.Desired != nil {
 					return n.Desired.Revision
 				}

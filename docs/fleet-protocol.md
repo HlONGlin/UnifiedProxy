@@ -39,6 +39,25 @@ POST /fleet/v1/enroll：token/publicKey/name，返回 nodeId/publicKey/protocol�
 poll：status（能力/OS/架构/版本/revision/digest/运行/流量），返回 tasks。
 report：状态；result：taskId/status/error/data。重绑/吊销后原公钥不能继续操作。
 
+### 公网地址与独立心跳
+
+v1 新增可选状态字段 `publicIP` 和签名端点 `POST /fleet/v1/heartbeat`，请求为
+`{"publicIP":"公网 IP，可省略"}`，响应为签名的 `{"ok":true}`。旧节点继续使用
+poll/report，不要求新增字段。主机与节点均更新后启用完整新行为。
+
+节点每 15 秒独立发送心跳，HTTP 请求最多 10 秒，不获取运行时锁、不携带配置或流量快照，
+防止长任务阻断在线状态或旧快照覆盖新数据。离开、break-glass 或进程上下文取消后停止。
+节点后台探测地址，每个服务请求最多 3 秒、响应最多 128 字节，每 5 分钟重探；
+只接受有效公网 IPv4/IPv6，失败保留最近有效值。主机只在验签、身份及重放校验通过后
+更新 `seenIP` 与 `lastSeen`；空或无效上报可回退到 socket 公网来源地址，不信任代理头。
+
+`Node.address` 保留人工地址，`Node.seenIP` 持久保存观测地址；有效地址优先取人工值，
+否则取观测值。订阅与分享采用有效地址，未识别时跳过节点。节点列表 API 的 `address`
+为有效地址，`configuredAddress` 为人工值，`seenIP` 为自动值，`addressSource` 为
+`manual/auto/pending`。单节点详情中的 `address` 仍为人工值。
+绑定新身份时清空旧心跳与观测地址；仅登记不判在线，90 秒未收到有效心跳或状态上报判离线。
+保留 v1.6.3 的交互思路，心跳时序与鉴权使用现有签名协议。
+
 ## 任务及应用
 
 pending → leased → success/failed/unsupported，另有 expired/cancelled/superseded。

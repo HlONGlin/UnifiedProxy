@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"io"
+	"net"
 	"net/http"
 	"path/filepath"
 	"strings"
@@ -66,12 +67,23 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	switch strings.TrimPrefix(r.URL.Path, "/fleet/v1/") {
+	case "heartbeat":
+		var heartbeat fleet.Heartbeat
+		if err = json.Unmarshal(e.Payload, &heartbeat); err == nil {
+			err = s.Store.Heartbeat(n.ID, observedPublicIP(heartbeat.PublicIP, r.RemoteAddr), n.PublicKey)
+		}
+		if err != nil {
+			jsonResponse(w, 400, map[string]string{"error": err.Error()})
+			return
+		}
+		s.reply(w, e, map[string]bool{"ok": true})
 	case "poll":
 		var p fleet.Poll
 		if json.Unmarshal(e.Payload, &p) != nil || p.Wait != 0 {
 			jsonResponse(w, 400, map[string]string{"error": "invalid poll"})
 			return
 		}
+		p.Status.PublicIP = observedPublicIP(p.Status.PublicIP, r.RemoteAddr)
 		if err = s.Store.UpdateStatus(n.ID, p.Status, n.PublicKey); err != nil {
 			jsonResponse(w, 400, map[string]string{"error": err.Error()})
 			return
@@ -85,6 +97,7 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	case "report":
 		var status fleet.Status
 		if err = json.Unmarshal(e.Payload, &status); err == nil {
+			status.PublicIP = observedPublicIP(status.PublicIP, r.RemoteAddr)
 			err = s.Store.UpdateStatus(n.ID, status, n.PublicKey)
 		}
 		if err != nil {
@@ -105,6 +118,18 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	default:
 		jsonResponse(w, 404, map[string]string{"error": "unknown fleet endpoint"})
 	}
+}
+
+func observedPublicIP(reported, remote string) string {
+	if ip := fleet.PublicIP(reported); ip != "" {
+		return ip
+	}
+	// Proxy headers are untrusted. Private reverse-proxy peers remain unresolved.
+	host, _, err := net.SplitHostPort(remote)
+	if err != nil {
+		return ""
+	}
+	return fleet.PublicIP(host)
 }
 func (s *Server) reply(w http.ResponseWriter, request fleet.Envelope, value any) {
 	e, err := fleet.Sign(s.Store.Identity, "control", "response:"+request.Nonce, value)

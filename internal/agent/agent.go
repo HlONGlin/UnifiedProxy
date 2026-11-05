@@ -31,11 +31,13 @@ type Journal struct {
 	Receipts map[string]*Receipt `json:"receipts"`
 }
 type Agent struct {
-	Dir     string
-	Runtime Runtime
-	Client  *Client
-	mu      sync.Mutex
-	journal Journal
+	Dir       string
+	Runtime   Runtime
+	Client    *Client
+	mu        sync.Mutex
+	journal   Journal
+	addressMu sync.RWMutex
+	publicIP  string
 }
 
 func New(dir string, runtime Runtime) (*Agent, error) {
@@ -211,6 +213,16 @@ func (a *Agent) flush(ctx context.Context) error {
 	return nil
 }
 func (a *Agent) Run(ctx context.Context) {
+	a.run(ctx, fleet.HeartbeatInterval, discoverPublicIP)
+}
+
+func (a *Agent) run(ctx context.Context, interval time.Duration, discover func(context.Context) string) {
+	ctx, cancel := context.WithCancel(ctx)
+	var background sync.WaitGroup
+	background.Add(2)
+	go func() { defer background.Done(); a.discoverAddresses(ctx, discover) }()
+	go func() { defer background.Done(); a.heartbeatLoop(ctx, interval) }()
+	defer func() { cancel(); background.Wait() }()
 	backoff := time.Second
 	for ctx.Err() == nil {
 		// Leave/break-glass is observed without stopping the local runtime.
@@ -225,13 +237,13 @@ func (a *Agent) Run(ctx context.Context) {
 		}
 		if err = a.flush(ctx); err == nil {
 			var response fleet.PollResponse
-			err = a.Client.request(ctx, "/fleet/v1/poll", cfg.NodeID, fleet.Poll{Status: a.Runtime.Snapshot()}, &response)
+			err = a.Client.request(ctx, "/fleet/v1/poll", cfg.NodeID, fleet.Poll{Status: a.snapshot()}, &response)
 			if err == nil {
 				if len(response.Tasks) == 0 {
 					select {
 					case <-ctx.Done():
 						return
-					case <-time.After(15 * time.Second):
+					case <-time.After(fleet.HeartbeatInterval):
 					}
 				}
 				for _, t := range response.Tasks {
@@ -276,7 +288,7 @@ func (a *Agent) Run(ctx context.Context) {
 
 func (a *Agent) Report(ctx context.Context) error {
 	var out map[string]bool
-	err := a.Client.request(ctx, "/fleet/v1/report", a.Client.Config.NodeID, a.Runtime.Snapshot(), &out)
+	err := a.Client.request(ctx, "/fleet/v1/report", a.Client.Config.NodeID, a.snapshot(), &out)
 	if err != nil {
 		return fmt.Errorf("report: %w", err)
 	}

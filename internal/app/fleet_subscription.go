@@ -94,7 +94,8 @@ func (a *App) fleetSubscriptionSnapshot(path string) (subscriptionSnapshot, subs
 	}
 	snapshot := subscriptionSnapshot{Settings: settings, Username: username, Token: token}
 	for _, node := range a.fleet.store.Nodes() {
-		if node.Revoked || node.Desired == nil || node.Address == "" {
+		address := node.EffectiveAddress()
+		if node.Revoked || node.Desired == nil || address == "" {
 			continue
 		}
 		var state State
@@ -118,12 +119,12 @@ func (a *App) fleetSubscriptionSnapshot(path string) (subscriptionSnapshot, subs
 				if usage, ok := node.Status.Traffic[in.ID]; ok {
 					in.Traffic = TrafficStats{LegacyCombined: usage.LegacyCombined, AllTimeLegacyCombined: usage.AllTimeLegacyCombined, Up: usage.Up, Down: usage.Down, AllTimeUp: usage.AllTimeUp, AllTimeDown: usage.AllTimeDown}
 				}
-				snapshot.Clients = append(snapshot.Clients, subscriptionClient{Inbound: in, Client: client, Server: node.Address})
+				snapshot.Clients = append(snapshot.Clients, subscriptionClient{Inbound: in, Client: client, Server: address})
 			}
 		}
 		for _, s := range node.Desired.Sidecars {
 			if s.Enabled && s.Username == username {
-				snapshot.FleetSidecars = append(snapshot.FleetSidecars, fleetSubscriptionSidecar{NodeName: node.Name, Server: node.Address, Config: s})
+				snapshot.FleetSidecars = append(snapshot.FleetSidecars, fleetSubscriptionSidecar{NodeName: node.Name, Server: address, Config: s})
 			}
 		}
 	}

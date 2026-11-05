@@ -50,7 +50,7 @@ window.UPFleetWorkspace = function ({request, load, selectTarget, hostSettings, 
   }
   function footer(body) {return el('div',undefined,body,{className:'fleet-dialog-actions'});}
   function validateServer(form,name,address) {
-    for(const input of [name,address]){input.setCustomValidity(input.value.trim()?'':tr('请填写有效内容，不能只有空格。','Enter a value containing more than spaces.'));input.oninput=()=>input.setCustomValidity('');}
+    name.setCustomValidity(name.value.trim()?'':tr('请填写有效名称，不能只有空格。','Enter a name containing more than spaces.'));name.oninput=()=>name.setCustomValidity('');
     return form.reportValidity();
   }
   function go(tab) {ui.tab=tab;render(fleet);}
@@ -69,7 +69,7 @@ window.UPFleetWorkspace = function ({request, load, selectTarget, hostSettings, 
   }
   async function manage(node,view='inbounds') {if(await selectTarget(node.id)){closeDialog();document.querySelector(`#nav [data-view="${view}"]`)?.click();if(view==='mihomo')document.querySelector('[data-mihomo-tab="outbounds"]')?.click();}}
   function steps(parent) {const list=el('ol',undefined,parent,{className:'fleet-steps'});for(const [title,hint] of [
-    [tr('创建服务器卡片','Create a server card'),tr('为子服务器填写名称与公网地址','Give your server a name and public address')],
+    [tr('创建服务器卡片','Create a server card'),tr('填写名称，公网地址可留空自动识别','Enter a name; leave the public address blank for automatic detection')],
     [tr('在子服务器执行接入命令','Connect the child server'),tr('复制命令与一次性令牌，等待上线','Copy the command and token, then wait for it to appear online')],
     [tr('在这里管理代理配置','Manage proxy settings here'),tr('入站、用户、出口和路由统一操作','Configure inbounds, users, outbounds and routing from this panel')]
   ]){const item=el('li',undefined,list);el('strong',title,item);el('span',hint,item);}return list;}
@@ -102,7 +102,7 @@ window.UPFleetWorkspace = function ({request, load, selectTarget, hostSettings, 
     const body=modal(tr('添加子服务器','Add child server'),tr('先创建卡片，再把接入命令复制到子服务器。这里只登记服务器，不会直接连接 SSH。','Create a card, then run its enrollment command on the child server. This registers a server without connecting over SSH.'));
     const form=el('form',undefined,body,{id:'fleet-add-form'});
     const name=field(form,tr('服务器名称','Server name'),'','text',tr('例如：香港 01、东京中转','For example: Hong Kong 01 or Tokyo relay'));name.required=true;name.maxLength=120;name.autofocus=true;
-    const address=field(form,tr('子服务器公网地址','Child server public address'),'','text',tr('填写子服务器的 IP 或域名，用于生成分享节点；不是主机面板地址。','Child server IP or domain for shared nodes, not this host panel URL.'));address.required=true;address.placeholder='203.0.113.10';
+    const address=field(form,tr('子服务器公网地址','Child server public address'),'','text',tr('选填。留空后由子服务器自动识别并通过心跳上报；填写 IP 或域名则优先使用，用于生成分享节点。','Optional. Leave blank to detect and report automatically; an IP or domain entered here overrides detection for shared nodes.'));address.placeholder=tr('留空自动识别','Leave blank to detect automatically');
     const actions=footer(form);button(tr('取消','Cancel'),actions,closeDialog);
     const submit=el('button',tr('创建并获取接入命令','Create and get enrollment command'),actions,{type:'submit',className:'primary-btn'});
     form.onsubmit=async e=>{e.preventDefault();if(!validateServer(form,name,address))return;submit.disabled=true;try{const node=await request('/nodes',{name:name.value.trim(),address:address.value.trim()});closeDialog();ui.tab='nodes';ui.query='';ui.filter='all';await load();await enroll(node);}catch(error){output(error.message,true);}finally{submit.disabled=false;}};
@@ -111,7 +111,7 @@ window.UPFleetWorkspace = function ({request, load, selectTarget, hostSettings, 
   function editServer(node) {
     const body=modal(tr('编辑服务器信息','Edit server details'),node.name),form=el('form',undefined,body);
     const name=field(form,t('name'),node.name);name.required=true;
-    const address=field(form,tr('子服务器公网地址','Child server public address'),node.address);address.required=true;
+    const address=field(form,tr('子服务器公网地址','Child server public address'),node.configuredAddress??node.address,'text',tr('手动地址优先；清空并保存即可恢复自动识别。','A manual address takes priority. Clear and save to restore automatic detection.'));address.placeholder=node.seenIP||tr('留空自动识别','Leave blank to detect automatically');
     const actions=footer(form);button(tr('取消','Cancel'),actions,closeDialog);
     const save=el('button',tr('保存信息','Save details'),actions,{type:'submit',className:'primary-btn'});
     form.onsubmit=async e=>{e.preventDefault();if(!validateServer(form,name,address))return;save.disabled=true;try{await request('/nodes/'+node.id,{name:name.value.trim(),address:address.value.trim()},'PUT');closeDialog();await load();output(tr('服务器信息已保存','Server details saved'));}catch(e){output(e.message,true);}finally{save.disabled=false;}};
@@ -138,6 +138,7 @@ window.UPFleetWorkspace = function ({request, load, selectTarget, hostSettings, 
     }
     if(!fleet.nodes.length){const box=block(content,tr('接入你的第一台子服务器','Connect your first child server'),tr('按下面三步完成接入，然后就能在这个网页生成节点、设置出口和路由。','Follow these three steps to create proxy nodes and configure outbounds and routing here.'));steps(box);button(tr('添加第一台子服务器','Add your first child server'),box,addServer,true);}
     else{const help=details(content,tr('如何接入和管理子服务器？','How do I connect and manage servers?'));steps(help);}
+    el('p',tr('节点每 15 秒独立发送心跳；90 秒未收到上报显示离线。更新等长任务不会暂停心跳。','Nodes send an independent heartbeat every 15 seconds; no report for 90 seconds means offline. Long maintenance tasks do not pause heartbeats.'),content,{className:'fleet-hint'});
     const tools=el('div',undefined,content,{className:'fleet-list-tools'});
     const search=field(tools,tr('搜索服务器','Search servers'),ui.query,'search');search.placeholder=tr('名称、地址或节点 ID','Name, address or node ID');search.id='fleet-search';search.oninput=()=>{ui.query=search.value;renderCards();};
     const filter=pick(tools,tr('连接状态','Connection status'),[['all',tr('全部状态','All states')],['online',t('online')],['pending',tr('待接入','Awaiting connection')],['offline',t('offline')],['revoked',tr('已吊销','Revoked')]],ui.filter);filter.id='fleet-filter';filter.onchange=()=>{ui.filter=filter.value;renderCards();};
@@ -158,7 +159,8 @@ window.UPFleetWorkspace = function ({request, load, selectTarget, hostSettings, 
     const head=el('div',undefined,card,{className:'fleet-node-head'}),name=el('div',undefined,head);
     el('h3',node.name||node.id,name,{className:'fleet-node-title'});const badge=el('span',stateText(node),name,{className:'fleet-node-state'});badge.dataset.state=state(node);badge.dataset.nodeState=node.id;
     const label=el('label',undefined,head,{className:'fleet-check'}),check=el('input',undefined,label,{type:'checkbox',className:'fleet-selected',checked:ui.selected.has(node.id),value:node.id,disabled:!!node.revoked,'aria-label':tr('选择 ','Select ')+node.name});check.onchange=()=>{check.checked?ui.selected.add(node.id):ui.selected.delete(node.id);renderCards();root.querySelector(`[data-node-card="${node.id}"] .fleet-selected`)?.focus();};
-    el('p',node.address||'—',card,{className:'fleet-node-address'});
+    el('p',node.address||tr('等待节点心跳自动识别公网地址','Waiting for a heartbeat to detect the public address'),card,{className:'fleet-node-address'});
+    el('p',node.addressSource==='manual'?tr('手动指定地址','Manual address'):node.addressSource==='auto'?tr('自动识别地址','Automatically detected address'):tr('公网地址可留空，接入后自动识别','Public address is optional and detected after connection'),card,{className:'fleet-hint'});
     const facts=el('dl',undefined,card,{className:'fleet-node-facts'});
     const row=(label,value,key)=>{el('dt',label,facts);const out=el('dd',value,facts);if(key)out.dataset[key]=node.id;};
     row(tr('代理内核','Proxy core'),state(node)==='pending'?tr('等待接入','Awaiting connection'):t(node.status?.running?'running':'stopped'),'fleetCore');
@@ -166,7 +168,7 @@ window.UPFleetWorkspace = function ({request, load, selectTarget, hostSettings, 
     const usage=traffic(node);row(tr('累计流量','Total traffic'),bytes(usage.up+usage.down+usage.legacy),'fleetTraffic');
     row(tr('上传 / 下载','Upload / download'),`${bytes(usage.up)} / ${bytes(usage.down)}`,'fleetDirections');
     row(tr('节点版本','Node version'),node.status?.version||'—','fleetVersion');
-    row(tr('最近连接','Last seen'),formatTime(node.lastSeen),'fleetSeen');
+    row(tr('最近心跳','Last heartbeat'),formatTime(node.lastSeen),'fleetSeen');
     if(node.needsUpgrade)el('p',tr('节点版本较旧，部分操作需要先升级。','An older node version may need an upgrade for some actions.'),card,{className:'fleet-warning'});
     const actions=el('div',undefined,card,{className:'fleet-card-actions'});
     const main=button(state(node)==='pending'?tr('获取接入命令','Get enrollment command'):tr('管理节点','Manage node'),actions,()=>{const current=fleet.nodes.find(n=>n.id===node.id);if(current&&!current.revoked)return state(current)==='pending'?enroll(current):manage(current);},true);main.disabled=!!node.revoked;
@@ -270,7 +272,7 @@ window.UPFleetWorkspace = function ({request, load, selectTarget, hostSettings, 
     const previous=fleet;fleet=data;
     for(const key of ['all','online','pending','offline']){const count=root.querySelector('#fleet-count-'+key);if(count)count.textContent=String(key==='all'?data.nodes.length:data.nodes.filter(n=>state(n)===key).length);}
     // Polling must not replace forms, lose focus, collapse menus or erase drafts.
-    const shape=nodes=>JSON.stringify(nodes.map(n=>[n.id,n.name,n.address,n.revoked,n.needsUpgrade]));
+    const shape=nodes=>JSON.stringify(nodes.map(n=>[n.id,n.name,n.address,n.configuredAddress,n.seenIP,n.addressSource,n.revoked,n.needsUpgrade]));
     if(previous&&shape(filtered())!==shape(filtered(previous)))renderCards();
     for(const node of data.nodes||[]) {
       const card=Array.from(root.querySelectorAll('[data-node-card]')).find(c=>c.dataset.nodeCard===node.id);if(!card)continue;

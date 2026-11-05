@@ -13,6 +13,15 @@ import (
 const ProtocolVersion = 1
 const MaxMessage = 16 << 20
 
+const HeartbeatInterval = 15 * time.Second
+const HeartbeatTimeout = 90 * time.Second
+
+// Heartbeat deliberately carries no runtime snapshot: maintenance may hold the
+// runtime lock for minutes, and an old snapshot must not overwrite newer data.
+type Heartbeat struct {
+	PublicIP string `json:"publicIP,omitempty"`
+}
+
 var ErrUpgradePending = errors.New("verified upgrade is awaiting restart and health verification")
 
 var TaskKinds = []string{"apply-state", "collect-status", "test-egress", "kernel-switch", "geo-update", "cert-renew", "agent-upgrade", "purge", "core-control", "traffic-reset", "vpngate-install", "vpngate-reconnect"}
@@ -95,6 +104,7 @@ type Result struct {
 }
 
 type Status struct {
+	PublicIP     string           `json:"publicIP,omitempty"`
 	Version      string           `json:"version"`
 	Protocol     int              `json:"protocol"`
 	Capabilities []string         `json:"capabilities"`

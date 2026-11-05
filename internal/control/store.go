@@ -21,6 +21,7 @@ type Node struct {
 	ID           string              `json:"id"`
 	Name         string              `json:"name"`
 	Address      string              `json:"address"`
+	SeenIP       string              `json:"seenIP,omitempty"`
 	PublicKey    string              `json:"publicKey,omitempty"`
 	CreatedAt    time.Time           `json:"createdAt"`
 	LastSeen     time.Time           `json:"lastSeen"`
@@ -29,6 +30,28 @@ type Node struct {
 	Status       fleet.Status        `json:"status"`
 	Desired      *fleet.DesiredState `json:"desired,omitempty"`
 }
+
+func (n *Node) EffectiveAddress() string {
+	if n.Address != "" {
+		return n.Address
+	}
+	return n.SeenIP
+}
+
+func (n *Node) Online(now time.Time) bool {
+	return !n.Revoked && !n.LastSeen.IsZero() && now.Sub(n.LastSeen) < fleet.HeartbeatTimeout
+}
+
+func (n *Node) AddressSource() string {
+	if n.Address != "" {
+		return "manual"
+	}
+	if n.SeenIP != "" {
+		return "auto"
+	}
+	return "pending"
+}
+
 type Token struct {
 	Hash      string    `json:"hash"`
 	NodeID    string    `json:"nodeId,omitempty"`
@@ -187,6 +210,8 @@ func (s *Store) Enroll(e fleet.Enrollment) (*Node, error) {
 		}
 		if n.PublicKey != e.PublicKey {
 			n.Status = fleet.Status{}
+			n.LastSeen = time.Time{}
+			n.SeenIP = ""
 			for _, task := range d.Tasks {
 				if task.NodeID == id && (task.Status == "pending" || task.Status == "leased") {
 					task.Status = "cancelled"
@@ -195,7 +220,6 @@ func (s *Store) Enroll(e fleet.Enrollment) (*Node, error) {
 		}
 		n.PublicKey = e.PublicKey
 		n.Revoked = false
-		n.LastSeen = time.Now().UTC()
 		if n.Name == "" {
 			n.Name = e.Name
 		}
@@ -430,9 +454,28 @@ func (s *Store) UpdateStatus(id string, status fleet.Status, key ...string) erro
 			return errors.New("oversized status")
 		}
 		n.Status = status
+		n.Status.PublicIP = fleet.PublicIP(status.PublicIP)
+		if n.Status.PublicIP != "" {
+			n.SeenIP = n.Status.PublicIP
+		}
 		n.NeedsUpgrade = false
 		n.LastSeen = time.Now().UTC()
 		return reconcileDesired(d, id, false)
+	})
+}
+
+// Heartbeat updates presence only, so a slow task cannot erase fresh runtime data.
+func (s *Store) Heartbeat(id, publicIP, key string) error {
+	return s.change(func(d *diskState) error {
+		n := d.Nodes[id]
+		if err := checkIdentity(n, []string{key}); err != nil {
+			return err
+		}
+		if ip := fleet.PublicIP(publicIP); ip != "" {
+			n.SeenIP = ip
+		}
+		n.LastSeen = time.Now().UTC()
+		return nil
 	})
 }
 
