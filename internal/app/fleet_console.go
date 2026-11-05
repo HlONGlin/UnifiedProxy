@@ -17,6 +17,7 @@ import (
 	"github.com/hlonglin/unifiedproxy/internal/agent"
 	"github.com/hlonglin/unifiedproxy/internal/control"
 	"github.com/hlonglin/unifiedproxy/internal/fleet"
+	installers "github.com/hlonglin/unifiedproxy/scripts"
 )
 
 type fleetConsole struct {
@@ -29,6 +30,24 @@ type fleetConsole struct {
 
 func (a *App) withFleetTransport(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path == "/fleet/v1/install.sh" {
+			if a.fleet == nil {
+				http.NotFound(w, r)
+				return
+			}
+			if r.Method != "GET" && r.Method != "HEAD" {
+				w.Header().Set("Allow", "GET, HEAD")
+				http.Error(w, "GET required", http.StatusMethodNotAllowed)
+				return
+			}
+			w.Header().Set("Content-Type", "text/x-shellscript; charset=utf-8")
+			w.Header().Set("Cache-Control", "no-store")
+			w.Header().Set("X-Content-Type-Options", "nosniff")
+			if r.Method == "GET" {
+				_, _ = io.WriteString(w, installers.NodeInstaller)
+			}
+			return
+		}
 		if r.URL.Path == "/fleet/v1/health" && r.Method == "GET" {
 			host, _, _ := net.SplitHostPort(r.RemoteAddr)
 			ip := net.ParseIP(host)
@@ -469,7 +488,7 @@ func (a *App) handleFleet(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		token, err := f.store.IssueToken(p.Name, p.NodeID)
-		respond(map[string]any{"token": token, "expiresIn": 900, "controlKey": f.store.Identity.Public()}, err)
+		respond(map[string]any{"token": token, "expiresIn": 900, "controlKey": f.store.Identity.Public(), "installerVersion": appVersion}, err)
 	case "tokens/revoke":
 		if r.Method != "POST" {
 			writeJSON(w, 405, apiResponse{})

@@ -70,7 +70,7 @@ window.UPFleetWorkspace = function ({request, load, selectTarget, hostSettings, 
   async function manage(node,view='inbounds') {if(await selectTarget(node.id)){closeDialog();document.querySelector(`#nav [data-view="${view}"]`)?.click();if(view==='mihomo')document.querySelector('[data-mihomo-tab="outbounds"]')?.click();}}
   function steps(parent) {const list=el('ol',undefined,parent,{className:'fleet-steps'});for(const [title,hint] of [
     [tr('创建服务器卡片','Create a server card'),tr('填写名称，公网地址可留空自动识别','Enter a name; leave the public address blank for automatic detection')],
-    [tr('在子服务器执行接入命令','Connect the child server'),tr('复制命令与一次性令牌，等待上线','Copy the command and token, then wait for it to appear online')],
+    [tr('在子服务器执行接入命令','Connect the child server'),tr('复制一条命令，自动安装、接入并启动','Copy one command to install, connect and start automatically')],
     [tr('在这里管理代理配置','Manage proxy settings here'),tr('入站、用户、出口和路由统一操作','Configure inbounds, users, outbounds and routing from this panel')]
   ]){const item=el('li',undefined,list);el('strong',title,item);el('span',hint,item);}return list;}
   async function enroll(node) {
@@ -82,19 +82,26 @@ window.UPFleetWorkspace = function ({request, load, selectTarget, hostSettings, 
     const body=modal(tr(`接入子服务器 · ${node.name}`,`Connect server · ${node.name}`),tr('这张卡片已创建。接下来在子服务器终端完成接入，主机页面会自动更新在线状态。','The card is ready. Complete enrollment in the child server terminal; this page updates automatically.'));
     body.dataset.enrollmentNode=node.id;
     const quote=value=>"'"+String(value).replaceAll("'","'\"'\"'")+"'";
-    el('p',tr('适用于已安装 node 的子服务器；接入使用 HTTPS。','Requires node to be installed on the child server; enrollment uses HTTPS.'),body,{className:'fleet-callout'});
-    const origin=field(body,tr('主机公网地址','Host public URL'),location.origin,'url',tr('子服务器必须能够访问这个地址。HTTPS 反向代理需同时转发 /fleet/v1/。','Must be reachable from the child server. An HTTPS reverse proxy must also forward /fleet/v1/.'));origin.required=true;
+    el('p',tr('在 Linux 子服务器以 root 执行。命令已包含一次性 token，会自动安装节点与缺失的 Mihomo、完成接入并启动服务。','Run as root on the Linux child server. The command includes its one-time token and installs the node and missing Mihomo core, enrolls and starts the service.'),body,{className:'fleet-callout'});
+    const origin=field(body,tr('主机公网地址','Host public URL'),location.origin,'url',tr('填写子服务器可访问的 HTTPS 源站地址，不附加面板路径。反向代理需转发 /fleet/v1/。','Use the reachable HTTPS origin without the panel path. Reverse proxies must forward /fleet/v1/.'));origin.required=true;
     if(location.protocol!=='https:')el('p',tr('当前主机使用 HTTP：请填写已配置证书的 HTTPS 地址后再执行接入。','This panel uses HTTP: enter the configured HTTPS address before enrollment.'),body,{className:'fleet-warning'});
-    el('h3',tr('1. 在子服务器终端运行','1. Run on the child server'),body);
+    el('h3',tr('复制整条命令，粘贴回车即可','Copy the complete command, paste and press Enter'),body);
     const command=el('code','',body,{className:'fleet-command'});
-    const setCommand=()=>{command.textContent='/usr/local/unifiedproxy-node/node agent join --data-dir /usr/local/unifiedproxy-node/data --control '+quote(origin.value.trim())+' --control-key '+quote(info.controlKey)+' --token-stdin';};origin.oninput=setCommand;setCommand();
-    button(tr('复制接入命令','Copy enrollment command'),body,async()=>{const url=new URL(origin.value);if(url.protocol!=='https:')throw new Error(tr('接入地址需要使用 HTTPS，请先配置主机证书或 HTTPS 反向代理。','Enrollment requires HTTPS. Configure a certificate or HTTPS reverse proxy first.'));await copyText(command.textContent);output(tr('接入命令已复制','Enrollment command copied'));});
-    el('h3',tr('2. 粘贴一次性令牌，按 Ctrl+D 结束输入','2. Paste the one-time token, then press Ctrl+D'),body);
-    const token=field(body,tr('一次性接入令牌','One-time enrollment token'),info.token,'password');token.readOnly=true;
-    const tokenActions=el('div',undefined,body,{className:'fleet-toolbar'});button(tr('复制令牌','Copy token'),tokenActions,async()=>{await copyText(info.token);output(tr('令牌已复制；粘贴后按 Ctrl+D','Token copied; press Ctrl+D after pasting'));});button(tr('显示 / 隐藏','Show / hide'),tokenActions,()=>{token.type=token.type==='password'?'text':'password';});
+    const version=/^v\d+\.\d+\.\d+([+-][\dA-Za-z.-]+)?$/.test(info.installerVersion||'')?info.installerVersion:'latest';
+    const manual=details(body,tr('已安装节点 / Docker：手动接入','Existing node / Docker: manual enrollment'));
+    el('p',tr('自动脚本适用于 systemd。Docker 或自定义路径可使用下面的已含 token 命令，按实际路径调整；Docker 接入后重启节点容器。','The automatic installer requires systemd. For Docker or custom paths, adapt the token-inclusive command below and restart the node container after enrollment.'),manual,{className:'fleet-hint'});
+    const manualCommand=el('code','',manual,{className:'fleet-command'});
+    const setCommand=()=>{const url=origin.value.trim().replace(/\/+$/,'');const args=' --control '+quote(url)+' --control-key '+quote(info.controlKey)+' --token-stdin';
+      command.textContent='( set -euo pipefail; up_install_script="$(mktemp)"; trap \'rm -f "$up_install_script"\' EXIT; curl -fsSL --proto \'=https\' --proto-redir \'=https\' --connect-timeout 10 --max-time 60 '+quote(url+'/fleet/v1/install.sh')+' -o "$up_install_script"; printf \'%s\' '+quote(info.token)+' | bash "$up_install_script"'+args+' --node-id '+quote(node.id)+' --version '+quote(version)+' )';
+      manualCommand.textContent='printf \'%s\' '+quote(info.token)+' | /usr/local/unifiedproxy-node/node agent join --data-dir /usr/local/unifiedproxy-node/data'+args;
+    };origin.oninput=setCommand;setCommand();
+    const validateOrigin=()=>{const url=new URL(origin.value);if(url.protocol!=='https:'||url.username||url.password||url.search||url.hash||!['','/'].includes(url.pathname))throw new Error(tr('请填写 HTTPS 源站地址，不附加面板路径、账号或参数。','Enter the HTTPS origin without a panel path, credentials or query.'));if(Date.now()>info.until)throw new Error(tr('令牌已过期，请重新生成接入命令。','The token expired. Generate a new enrollment command.'));};
+    const copy=button(tr('复制一键接入命令','Copy one-command setup'),body,async()=>{validateOrigin();await copyText(command.textContent);output(tr('一键接入命令已复制，到子服务器粘贴回车即可。','Setup command copied. Paste it in the child server terminal and press Enter.'));},true);
+    body.insertBefore(copy,manual.parentElement);
+    const manualCopy=button(tr('复制手动接入命令','Copy manual enrollment'),manual,async()=>{validateOrigin();await copyText(manualCommand.textContent);output(tr('手动接入命令已复制','Manual enrollment command copied'));});
+    el('p',tr('命令含 15 分钟内有效的一次性 token，仅限当前卡片使用，请勿分享。无需单独粘贴令牌，也无需手动重启服务。','The command contains a one-time token valid for 15 minutes for this card. Keep it private. No separate token paste or manual service restart is needed.'),body,{className:'fleet-hint'});
     const expiry=el('p',tr(`有效期至 ${new Date(info.until).toLocaleTimeString()}，仅限此节点使用。`,`Expires at ${new Date(info.until).toLocaleTimeString()}; valid for this node only.`),body,{className:'fleet-hint'});
-    const timer=setInterval(()=>{if(!dialog?.open||!dialog.contains(expiry)){clearInterval(timer);return;}if(Date.now()>info.until){expiry.textContent=tr('令牌已过期，请关闭窗口后重新生成。','Token expired. Close this window and generate another.');tokenActions.querySelectorAll('button').forEach(b=>b.disabled=true);clearInterval(timer);}},1000);
-    el('h3',tr('3. 重启子服务器节点服务','3. Restart the child node service'),body);el('code','systemctl restart unifiedproxy-node',body,{className:'fleet-command'});
+    const timer=setInterval(()=>{if(!dialog?.open||!dialog.contains(expiry)){clearInterval(timer);return;}if(Date.now()>info.until){expiry.textContent=tr('令牌已过期，请关闭窗口后重新生成。','Token expired. Close this window and generate another.');copy.disabled=true;manualCopy.disabled=true;clearInterval(timer);}},1000);
     el('p',tr('接入后通常在 15 秒内更新。子服务器只运行代理服务，日常配置都在此主机完成。','Status usually updates within 15 seconds. Manage day-to-day settings from this host.'),body,{className:'fleet-hint'});
     button(tr('完成，返回服务器列表','Done, return to servers'),footer(body),()=>{closeDialog();go('nodes');},true);
   }

@@ -9,7 +9,12 @@ for dependency in systemctl sha256sum install tar xz; do
   command -v "$dependency" >/dev/null || { echo "Missing $dependency; install systemd, coreutils, tar and xz-utils first." >&2; exit 1; }
 done
 printf '%s  %s\n' "$checksum" "$binary" | sha256sum --check --strict
-install_dir="/usr/local/unifiedproxy-${role}"
+install_dir="${UNIFIEDPROXY_FLEET_INSTALL_DIR:-/usr/local/unifiedproxy-${role}}"
+unit_dir="${UNIFIEDPROXY_SYSTEMD_UNIT_DIR:-/etc/systemd/system}"
+for path in "$install_dir" "$unit_dir"; do
+  [[ "$path" =~ ^/[A-Za-z0-9._/-]+$ && "$path" != / && "$path" != *'/../'* && "$path" != */.. ]] || { echo 'Invalid absolute installation path' >&2; exit 1; }
+done
+mkdir -p "$unit_dir"
 mkdir -p "$install_dir/data"
 chmod 700 "$install_dir/data"
 if [[ -f "$install_dir/$role" ]]; then cp -p "$install_dir/$role" "$install_dir/$role.previous"; fi
@@ -17,7 +22,7 @@ install -m 755 "$binary" "$install_dir/$role.next"
 "$install_dir/$role.next" version >/dev/null
 mv "$install_dir/$role.next" "$install_dir/$role"
 install -m 755 "$install_dir/$role" "$install_dir/$role.recovery"
-cat > "/etc/systemd/system/unifiedproxy-${role}.service" <<EOF
+cat > "$unit_dir/unifiedproxy-${role}.service" <<EOF
 [Unit]
 Description=UnifiedProxy ${role}
 After=network-online.target
@@ -34,7 +39,7 @@ KillMode=control-group
 [Install]
 WantedBy=multi-user.target
 EOF
-cat > "/etc/systemd/system/unifiedproxy-$role-recovery.service" <<EOF
+cat > "$unit_dir/unifiedproxy-$role-recovery.service" <<EOF
 [Unit]
 Description=Recover interrupted UnifiedProxy $role upgrades
 [Service]
@@ -42,7 +47,7 @@ Type=oneshot
 ExecStart=$install_dir/$role.recovery upgrade-recover --data-dir $install_dir/data
 UMask=0077
 EOF
-cat > "/etc/systemd/system/unifiedproxy-$role-recovery.timer" <<EOF
+cat > "$unit_dir/unifiedproxy-$role-recovery.timer" <<EOF
 [Unit]
 Description=Check interrupted UnifiedProxy $role upgrades
 [Timer]

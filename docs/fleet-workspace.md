@@ -8,12 +8,16 @@
 2. 填写容易辨认的名称，例如“香港入口”；**子服务器公网地址可留空**，接入后自动识别。需要指定域名或特定 IP 时再填写，用于生成客户端连接地址。
 3. 点击“创建并获取接入命令”。卡片立即出现，状态为“待接入”。
 4. 在弹窗确认**主机公网地址**，填写子服务器能够访问的 HTTPS 源站地址。这里不附加管理员面板路径；反向代理需转发 `/fleet/v1/`。
-5. 复制接入命令到子服务器终端执行，再复制一次性令牌粘贴进去，按 Ctrl+D 结束输入，然后重启节点服务。
+5. 点击“复制一键接入命令”，在 Linux 子服务器以 **root** 粘贴整条命令并回车。命令已经包含脚本链接、主机信息和一次性 token，自动下载并校验节点程序，安装缺失的 Mihomo，绑定当前卡片并启动服务；无需再粘贴 token 或手动重启。
 6. 回到主机等待状态刷新，通常不超过 15 秒。在线后点击“管理节点”，即可打开对应节点的入站与用户界面。
 
-接入弹窗中的命令适用于使用 `scripts/install-fleet.sh node` 安装的 Linux 节点，默认程序位于 `/usr/local/unifiedproxy-node/node`、数据位于 `/usr/local/unifiedproxy-node/data`。**创建卡片不会代替你安装程序、配置 Mihomo 或登录 SSH。** 自定义安装目录或使用 Docker 时，请按实际路径执行同样的 `agent join` 参数，再重启相应节点进程。安装和手动接入示例见[运行与迁移指南](unifiedproxy-migration.md#接入)。
+一键接入参考 UnifiedProxy v1.6.3 的“卡片生成命令、子主机执行后自动上线”流程，使用现有一次性令牌和签名身份。适用于运行 systemd 的 Linux；执行命令需要 Bash、curl 和 root。Debian/Ubuntu 或 RHEL 系可自动补齐缺少的工具。程序默认位于 `/usr/local/unifiedproxy-node/node`、数据位于 `/usr/local/unifiedproxy-node/data`；新安装的节点管理端口只监听回环地址，日常操作都在主机网页完成。
 
-令牌有效期 15 分钟，仅用一次；命令通过标准输入接收令牌，不将其放入命令行。过期或接入失败时，打开卡片的“获取接入命令”；需要重绑身份时，在“更多操作”选择“重新生成接入信息”。
+脚本由当前主机的 `/fleet/v1/install.sh` 提供，不在下载 URL 中包含 token。正式主机优先安装与自身一致的节点版本；开发版本使用最新正式版。节点程序按发布校验和校验；缺少 Mihomo 时安装固定的 v1.19.33 并核对上游 SHA256。保留现有可用内核；已有配置在安装前备份，账号、入站和路径保留。同一卡片重复执行只重启现有服务；已绑定到其他卡片或主机时停止，需先明确退出或重绑，避免覆盖原有身份。紧急接管期间不会自动恢复托管。
+
+创建卡片后仍需自己打开子服务器终端执行命令，网页不会登录 SSH。Docker 或自定义目录请展开“已安装节点 / Docker：手动接入”，使用已包含 token 的手动命令，按实际路径调整，并重启节点容器或进程。安装和手动接入示例见[运行与迁移指南](unifiedproxy-migration.md#接入)。
+
+令牌有效期 15 分钟，仅用一次，命令通过标准输入交给节点程序，token 不出现在下载 URL、节点进程参数或 systemd 服务文件中。**复制的整条命令本身包含 token，可能保留在 shell 历史中，请勿公开分享。** 过期时复制按钮停用，关闭弹窗后重新获取；接入失败可在卡片“获取接入命令”重试，需要新 token 时选择“重新生成接入信息”。
 
 ## 看懂卡片与操作范围
 
@@ -69,8 +73,16 @@
 ```sh
 go build -o dist/control ./cmd/control
 python3 scripts/acceptance/browser-smoke.py --binary dist/control
+
+# 使用真实 control/node 进程，下载资源和 systemctl 使用明确的本地适配器
+go build -ldflags '-X main.version=v1.6.13' -o dist/bootstrap/control ./cmd/control
+go build -ldflags '-X main.version=v1.6.13' -o dist/bootstrap/node ./cmd/node
+go build -o dist/design-audit/fixture-core ./internal/app/testdata/fleetcore
+python3 scripts/acceptance/node-bootstrap.py
 go test ./...
 go vet ./...
 ```
+
+真实 systemd 的全新安装检查见 `scripts/acceptance/node-bootstrap-systemd.py`，只能在全新、可丢弃的 orca-linux systemd 容器 `/workspace` 中执行。该检查使用真实 systemd、TLS 主机、节点和固定版本 Mihomo；发布前的节点下载包由本地构建产物提供。不要在用户正在使用的服务器运行此验收脚本。
 
 浏览器验收启动独立临时主机，使用真实登录、节点登记、令牌签发、模型发布、配额和备份接口；在线心跳与自动识别的界面显示使用明确的模拟数据，不代表已连接真实公网子服务器。另有 Go 集成测试验证真实签名心跳、长任务不中断上报、来源地址回退、身份校验及自动地址订阅。浏览器覆盖十一种现有语言的页面加载、五套配色的十种明暗组合、390px 手机布局、表单草稿保留、地址留空与手动覆盖、订阅范围和文字对比度。截图与结果写入 `dist/fleet-browser/`。

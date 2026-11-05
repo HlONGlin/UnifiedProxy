@@ -39,6 +39,13 @@ POST /fleet/v1/enroll：token/publicKey/name，返回 nodeId/publicKey/protocol�
 poll：status（能力/OS/架构/版本/revision/digest/运行/流量），返回 tasks。
 report：状态；result：taskId/status/error/data。重绑/吊销后原公钥不能继续操作。
 
+`GET/HEAD /fleet/v1/install.sh` 提供随主机二进制嵌入的公开、无凭据安装脚本，
+不消费 token，不回显请求参数，不需要管理员 cookie；其他方法返回 405，节点不暴露此入口。
+前端将脚本链接、控制源站、公钥、节点 ID、主机正式版本与 token 组合为一条 Bash 命令。
+先完整下载脚本再执行，下载失败即停止；token 通过标准输入交给脚本与 `agent join`，
+不使用 URL token 或常驻服务参数。脚本自动安装、校验发布包、配置缺失内核、接入并启动
+systemd。复制的命令含 token，可能保存在终端历史中；15 分钟到期或单次接入后不能再用于新绑定。
+
 ### 公网地址与独立心跳
 
 v1 新增可选状态字段 `publicIP` 和签名端点 `POST /fleet/v1/heartbeat`，请求为
@@ -83,7 +90,7 @@ vpngate-reconnect。升级 pending-restart 只是本地状态，健康确认才�
 | --- | --- |
 | GET / | publicKey/fingerprint/nodes/tasks |
 | POST /nodes；GET/PUT /nodes/{id} | 新建/查看/修改 name,address |
-| POST /tokens；/tokens/revoke | name、可选 nodeId；或 token |
+| POST /tokens；/tokens/revoke | name、可选 nodeId；返回 token/expiresIn/controlKey/installerVersion；或撤销 token |
 | POST /nodes/{id}/revoke、publish | 吊销/发布草稿 |
 | POST /nodes/{id}/model | 原生 State |
 | POST /nodes/{id}/sidecars | 完整 Sidecar 数组 |
