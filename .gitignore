@@ -4,8 +4,8 @@ data-node/
 core/
 dist/
 *.log
-m-ui.exe
-m-ui.exe~
+unifiedproxy.exe
+unifiedproxy.exe~
 mihomo.exe
 .gocache/
 .gomodcache/

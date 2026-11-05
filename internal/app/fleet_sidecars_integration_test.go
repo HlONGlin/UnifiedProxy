@@ -8,7 +8,7 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
-	"github.com/RomanovCaesar/m-ui/internal/agent"
+	"github.com/hlonglin/unifiedproxy/internal/agent"
 	"io"
 	"net"
 	"net/http"
@@ -23,8 +23,8 @@ import (
 // Opt in because this downloads pinned upstream releases and starts real
 // processes. All listeners and forwarded targets remain on local loopback.
 func TestFleetRealSidecarProcesses(t *testing.T) {
-	if runtime.GOOS != "linux" || os.Getenv("MUI_FLEET_INTEGRATION") != "1" {
-		t.Skip("set MUI_FLEET_INTEGRATION=1 on Linux for upstream sidecar integration")
+	if runtime.GOOS != "linux" || os.Getenv("UNIFIEDPROXY_FLEET_INTEGRATION") != "1" {
+		t.Skip("set UNIFIEDPROXY_FLEET_INTEGRATION=1 on Linux for upstream sidecar integration")
 	}
 	freePort := func() int {
 		l, err := net.Listen("tcp", "127.0.0.1:0")

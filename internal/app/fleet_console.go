@@ -14,9 +14,9 @@ import (
 	"sync"
 	"time"
 
-	"github.com/RomanovCaesar/m-ui/internal/agent"
-	"github.com/RomanovCaesar/m-ui/internal/control"
-	"github.com/RomanovCaesar/m-ui/internal/fleet"
+	"github.com/hlonglin/unifiedproxy/internal/agent"
+	"github.com/hlonglin/unifiedproxy/internal/control"
+	"github.com/hlonglin/unifiedproxy/internal/fleet"
 )
 
 type fleetConsole struct {
@@ -69,7 +69,7 @@ func (a *App) withFleetTransport(next http.Handler) http.Handler {
 			a.fleet.server.ServeHTTP(w, r)
 			return
 		}
-		if (a.fleet != nil || a.nodeRuntime != nil) && strings.HasPrefix(r.URL.Path, "/_m-ui/peer/") {
+		if (a.fleet != nil || a.nodeRuntime != nil) && strings.HasPrefix(r.URL.Path, "/_UnifiedProxy/peer/") {
 			http.Error(w, "P2P is disabled in fleet mode", http.StatusGone)
 			return
 		}

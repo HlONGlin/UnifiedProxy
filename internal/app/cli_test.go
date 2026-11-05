@@ -127,7 +127,7 @@ func TestConfigureCLIStoresTLSCertificatePaths(t *testing.T) {
 	}
 }
 
-// The management script runs `m-ui configure` while the panel is running. The
+// The management script runs `unifiedproxy configure` while the panel is running. The
 // panel saves every few seconds and when it stops, and used to write its old
 // settings back over the new ones.
 func TestRunningPanelKeepsSettingsWrittenByConfigure(t *testing.T) {

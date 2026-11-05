@@ -256,7 +256,7 @@ func TestTemplateSubscriptionsForEveryClient(t *testing.T) {
 		}
 	}
 	surfboard := body(subscriptionFormatSurfboard)
-	if !strings.Contains(surfboard, "# m-ui: skipped AND,") || strings.Contains(surfboard, "dns-failed") {
+	if !strings.Contains(surfboard, "# UnifiedProxy: skipped AND,") || strings.Contains(surfboard, "dns-failed") {
 		t.Fatalf("surfboard must skip logical rules:\n%s", surfboard)
 	}
 	loon := body(subscriptionFormatLoon)
@@ -266,7 +266,7 @@ func TestTemplateSubscriptionsForEveryClient(t *testing.T) {
 		}
 	}
 	qx := body(subscriptionFormatQX)
-	for _, want := range []string{"[policy]", "static=节点选择, 自动选择, direct, ", "url-latency-benchmark=自动选择, ", "[server_local]", "host-suffix, ipleak.net, 节点选择", "geoip, cn, direct", "ip-cidr, 223.5.5.5/32, direct", "final, 节点选择", "# m-ui: skipped GEOSITE,google"} {
+	for _, want := range []string{"[policy]", "static=节点选择, 自动选择, direct, ", "url-latency-benchmark=自动选择, ", "[server_local]", "host-suffix, ipleak.net, 节点选择", "geoip, cn, direct", "ip-cidr, 223.5.5.5/32, direct", "final, 节点选择", "# UnifiedProxy: skipped GEOSITE,google"} {
 		if !strings.Contains(qx, want) {
 			t.Fatalf("quantumult x profile misses %q:\n%s", want, qx)
 		}
@@ -292,7 +292,7 @@ func TestTemplateSubscriptionsForEveryClient(t *testing.T) {
 		t.Fatalf("surge mac profile must keep external nodes:\n%s", surgemac)
 	}
 
-	if dir := os.Getenv("M_UI_DUMP_TEMPLATES"); dir != "" {
+	if dir := os.Getenv("UNIFIEDPROXY_DUMP_TEMPLATES"); dir != "" {
 		for name, data := range map[string]string{"mihomo.yaml": string(mihomo), "sing-box.json": singboxText, "surge.conf": surge, "surfboard.conf": surfboard, "loon.conf": loon, "qx.conf": qx, "stash.yaml": stash, "egern.yaml": egern} {
 			_ = os.WriteFile(filepath.Join(dir, name), []byte(data), 0o644)
 		}

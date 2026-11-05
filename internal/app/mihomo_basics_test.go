@@ -71,7 +71,7 @@ func TestMihomoBasicsCompilationPreservesSources(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	want := []string{"GEOIP,LAN,REJECT", "IP-CIDR,10.0.0.0/8,REJECT", "DOMAIN,blocked.example.com,REJECT", "GEOSITE,category-ads-all,REJECT", "DOMAIN-SUFFIX,example.net,MUI-IPV4", "MATCH,MUI-DIRECT"}
+	want := []string{"GEOIP,LAN,REJECT", "IP-CIDR,10.0.0.0/8,REJECT", "DOMAIN,blocked.example.com,REJECT", "GEOSITE,category-ads-all,REJECT", "DOMAIN-SUFFIX,example.net,UP-IPV4", "MATCH,UP-DIRECT"}
 	if !reflect.DeepEqual(rules, want) {
 		t.Fatalf("compiled rule order: %#v", rules)
 	}
@@ -168,7 +168,7 @@ func TestMihomoBasicsDelayUsesConfiguredURL(t *testing.T) {
 	m := &CoreManager{state: State{Settings: Settings{APIAddress: strings.TrimPrefix(core.URL, "http://"), APISecret: "test-secret"}, MihomoBasics: &b}, cmd: &exec.Cmd{}}
 	a := &App{manager: m, session: "session"}
 	req := httptest.NewRequest(http.MethodPost, "/api/mihomo/outbound/delay", strings.NewReader(`{"name":"DIRECT"}`))
-	req.AddCookie(&http.Cookie{Name: "mui_session", Value: "session"})
+	req.AddCookie(&http.Cookie{Name: "up_session", Value: "session"})
 	w := httptest.NewRecorder()
 	a.routes().ServeHTTP(w, req)
 	if w.Code != 200 || !strings.Contains(w.Body.String(), `"delay":21`) {
@@ -189,7 +189,7 @@ func TestMihomoBasicsDelayRejectsRejectOutbounds(t *testing.T) {
 	a := &App{manager: m, session: "session"}
 	for _, name := range []string{"reject-custom", "reject-drop-custom"} {
 		request := httptest.NewRequest(http.MethodPost, "/api/mihomo/outbound/delay", strings.NewReader(`{"name":"`+name+`"}`))
-		request.AddCookie(&http.Cookie{Name: "mui_session", Value: "session"})
+		request.AddCookie(&http.Cookie{Name: "up_session", Value: "session"})
 		response := httptest.NewRecorder()
 		a.routes().ServeHTTP(response, request)
 		if response.Code != http.StatusBadRequest || !strings.Contains(response.Body.String(), "Outbound 不存在或不支持测试") {
@@ -207,9 +207,9 @@ func TestMihomoBasicsDelayRejectsRejectOutbounds(t *testing.T) {
 }
 
 func TestMihomoBasicsNativeCoreConfig(t *testing.T) {
-	core := os.Getenv("MUI_TEST_CORE")
+	core := os.Getenv("UNIFIEDPROXY_TEST_CORE")
 	if core == "" {
-		t.Skip("MUI_TEST_CORE not set")
+		t.Skip("UNIFIEDPROXY_TEST_CORE not set")
 	}
 	state := defaultState()
 	state.Inbounds = nil

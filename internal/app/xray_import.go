@@ -107,7 +107,7 @@ func isXUIInternalInbound(in xrayImportInbound) bool {
 }
 
 // reserveSubscriptionToken keeps a 3x-ui subId as the user's subscription token
-// when it has m-ui's token format and no other user holds it, so existing
+// when it has UnifiedProxy's token format and no other user holds it, so existing
 // subscription links keep working once the subscription path matches.
 func (m *CoreManager) reserveSubscriptionToken(username, token string) bool {
 	if !validSubscriptionToken(token) {
@@ -135,7 +135,7 @@ func (m *CoreManager) reserveSubscriptionToken(username, token string) bool {
 func (m *CoreManager) importXray(input xrayImportSource, language string) (xrayImportResult, error) {
 	result := xrayImportResult{Source: input.Kind}
 	log := &xrayImportLog{language: language}
-	log.lines = append(log.lines, xt("m-ui import from %s — %s", input.Kind, time.Now().Format("2006-01-02 15:04:05")).render(language))
+	log.lines = append(log.lines, xt("UnifiedProxy import from %s — %s", input.Kind, time.Now().Format("2006-01-02 15:04:05")).render(language))
 	for _, note := range input.Notes {
 		log.info("%s", note)
 	}
@@ -207,7 +207,7 @@ func (m *CoreManager) importXray(input xrayImportSource, language string) (xrayI
 		listener["name"] = name
 
 		// Users. A 3x-ui subId groups one person's clients across inbounds, and so
-		// does an m-ui username: use it when the database provides one.
+		// does an UnifiedProxy username: use it when the database provides one.
 		byUsername := map[string]xrayImportClient{}
 		usedUsernames := map[string]bool{}
 		flowAllowed := xrayFlowAllowed(source)
@@ -328,14 +328,14 @@ func (m *CoreManager) importXray(input xrayImportSource, language string) (xrayI
 			client.Notes = from.Comment
 			if from.LimitIP > 0 && !limitIPNoted {
 				limitIPNoted = true
-				log.warn("per-client IP limits (limitIp) are not supported by m-ui and were dropped")
+				log.warn("per-client IP limits (limitIp) are not supported by UnifiedProxy and were dropped")
 			}
 			if xrayImportSchedule(client, from) {
 				log.info("%s: %s keeps its traffic reset / renewal schedule", name, from.Email)
 			}
 			if source.FromDB && client.Username == from.SubID {
 				if m.reserveSubscriptionToken(client.Username, from.SubID) {
-					log.info("%s: %s keeps its subscription id %s as m-ui subscription token", name, from.Email, from.SubID)
+					log.info("%s: %s keeps its subscription id %s as UnifiedProxy subscription token", name, from.Email, from.SubID)
 				}
 			}
 		}
@@ -402,7 +402,7 @@ func (m *CoreManager) importXray(input xrayImportSource, language string) (xrayI
 	if len(input.Outbounds) > 0 {
 		first := input.Outbounds[0]
 		if protocol := strings.ToLower(outboundStringValue(first["protocol"])); protocol != "freedom" && protocol != "direct" {
-			log.warn("Xray sent traffic no rule matched to its first outbound %q; m-ui keeps its own final MATCH rule — change its target in Mihomo Settings → Routing if needed", outboundStringValue(first["tag"]))
+			log.warn("Xray sent traffic no rule matched to its first outbound %q; UnifiedProxy keeps its own final MATCH rule — change its target in Mihomo Settings → Routing if needed", outboundStringValue(first["tag"]))
 		}
 	}
 	accepted := append([]MihomoOutbound(nil), existingOutbounds...)

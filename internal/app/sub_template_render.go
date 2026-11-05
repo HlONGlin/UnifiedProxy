@@ -684,7 +684,7 @@ func ipCIDRType(cidr string) string {
 func iniRuleLines(rule subTemplateRule, dialect iniDialect, remote *[]string) []string {
 	policy, ok := iniPolicyName(rule.Target, dialect)
 	if !ok {
-		return []string{"# m-ui: skipped " + rule.String()}
+		return []string{"# UnifiedProxy: skipped " + rule.String()}
 	}
 	join := func(match string) string {
 		if dialect == dialectQX {
@@ -714,7 +714,7 @@ func iniRuleLines(rule subTemplateRule, dialect iniDialect, remote *[]string) []
 	case rule.Type == "GEOSITE":
 		name := strings.ToLower(rule.Value)
 		if dialect == dialectQX || strings.Contains(name, "@") {
-			return []string{"# m-ui: skipped " + rule.String()}
+			return []string{"# UnifiedProxy: skipped " + rule.String()}
 		}
 		url := metaRulesClassicalGeosite + name + ".list"
 		if dialect == dialectLoon {
@@ -728,11 +728,11 @@ func iniRuleLines(rule subTemplateRule, dialect iniDialect, remote *[]string) []
 				return []string{match + "," + policy}
 			}
 		}
-		return []string{"# m-ui: skipped " + rule.String()}
+		return []string{"# UnifiedProxy: skipped " + rule.String()}
 	}
 	match, ok := iniRuleMatch(rule, dialect)
 	if !ok {
-		return []string{"# m-ui: skipped " + rule.String()}
+		return []string{"# UnifiedProxy: skipped " + rule.String()}
 	}
 	return []string{join(match)}
 }

@@ -4,7 +4,7 @@ $env:GO111MODULE = 'on'
 $env:GOCACHE = Join-Path $projectRoot '.gocache'
 $env:GOMODCACHE = Join-Path $projectRoot '.gomodcache'
 
-$version = $env:MUI_VERSION
+$version = $env:UNIFIEDPROXY_VERSION
 if ([string]::IsNullOrWhiteSpace($version)) {
     $version = (& git -C $projectRoot tag --points-at HEAD | Select-Object -First 1)
     if ([string]::IsNullOrWhiteSpace($version)) {
@@ -44,7 +44,7 @@ try {
         if ($LASTEXITCODE -ne 0) { throw "package failed: $asset" }
         Write-Host "Built $archive"
     }
-    Write-Host "Embedded m-ui version: $version"
+    Write-Host "Embedded unifiedproxy version: $version"
 }
 finally {
     Pop-Location

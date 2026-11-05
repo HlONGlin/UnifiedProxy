@@ -18,7 +18,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/RomanovCaesar/m-ui/internal/fleet"
+	"github.com/hlonglin/unifiedproxy/internal/fleet"
 )
 
 type fleetCertificateBinding struct {
@@ -88,7 +88,7 @@ func (f *fleetConsole) acquireCertificate(ctx context.Context, c fleetCertificat
 	if c.DNS != "" && c.DNS != "dns_cf" {
 		return c, errors.New("supported DNS challenge is dns_cf")
 	}
-	acme := os.Getenv("MUI_ACME_PATH")
+	acme := os.Getenv("UNIFIEDPROXY_ACME_PATH")
 	if acme == "" {
 		acme = "/root/.acme.sh/acme.sh"
 	}

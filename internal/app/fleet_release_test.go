@@ -25,7 +25,7 @@ func TestFleetReleaseDefaultsToUnifiedProxyAndChecksAssetOrigin(t *testing.T) {
 		{"", "elsewhere/untrusted", true},
 	} {
 		t.Run(test.repo+test.assetRepo, func(t *testing.T) {
-			t.Setenv("MUI_RELEASE_REPO", test.repo)
+			t.Setenv("UNIFIEDPROXY_RELEASE_REPO", test.repo)
 			repo := test.repo
 			if repo == "" {
 				repo = "HlONGlin/UnifiedProxy"

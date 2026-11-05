@@ -1,22 +1,22 @@
-/* UnifiedProxy controls; m-ui behavior (GPL-3.0). References: Vercel,
+/* UnifiedProxy controls; UnifiedProxy behavior (GPL-3.0). References: Vercel,
  * Claude/Anthropic, Sentry, Supabase, Stripe via awesome-design-md. */
 .swift-picker,.swift-combobox{position:relative;display:block;width:100%;min-width:0}
-.swift-picker .mui-native-select{position:absolute;top:0;left:0;width:1px;height:1px;margin:0;padding:0;border:0;opacity:0;pointer-events:none;appearance:none}
+.swift-picker .up-native-select{position:absolute;top:0;left:0;width:1px;height:1px;margin:0;padding:0;border:0;opacity:0;pointer-events:none;appearance:none}
 .swift-picker[hidden],.swift-picker-menu[hidden]{display:none}
 .swift-picker-selection{position:relative;display:flex;align-items:center;min-height:var(--control-height);padding:var(--spacing-xs) var(--spacing-xl) var(--spacing-xs) var(--spacing-sm);border:1px solid var(--hairline-strong);border-radius:var(--rounded-md);background:var(--surface-1);color:var(--ink);cursor:pointer;user-select:none}
 .swift-picker-selection:hover{background:var(--surface-2)}
 .swift-picker-selection:active{background:var(--surface-3)}
 .swift-picker:focus-visible .swift-picker-selection,.swift-combobox:focus-within .swift-picker-selection{outline:2px solid color-mix(in srgb,var(--primary-focus) 50%,transparent);outline-offset:2px}
 .swift-picker-disabled{opacity:.5;cursor:not-allowed}
-.mui-select-value{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.mui-select-arrow{position:absolute;right:var(--spacing-xs);width:16px;height:16px;color:var(--ink-muted);pointer-events:none}
+.up-select-value{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.up-select-arrow{position:absolute;right:var(--spacing-xs);width:16px;height:16px;color:var(--ink-muted);pointer-events:none}
 .swift-picker-menu{position:fixed;z-index:10050;margin:0;padding:var(--spacing-xxs);list-style:none;max-height:280px;overflow:auto;background:var(--surface-2);color:var(--ink);border:1px solid var(--hairline-strong);border-radius:var(--rounded-md)}
-.swift-picker-menu li,.mui-combobox-item{min-height:var(--row-height);padding:var(--spacing-xs) var(--spacing-sm);border-radius:var(--rounded-sm);cursor:pointer;font-size:var(--p-body-sm)}
-.swift-picker-menu li.mui-selected{background:var(--primary-soft);color:var(--primary-deep)}
-.swift-picker-menu li:hover,.swift-picker-menu li.mui-active,.mui-combobox-item:hover,.mui-combobox-item.mui-active{background:var(--surface-3);color:var(--ink)}
+.swift-picker-menu li,.up-combobox-item{min-height:var(--row-height);padding:var(--spacing-xs) var(--spacing-sm);border-radius:var(--rounded-sm);cursor:pointer;font-size:var(--p-body-sm)}
+.swift-picker-menu li.up-selected{background:var(--primary-soft);color:var(--primary-deep)}
+.swift-picker-menu li:hover,.swift-picker-menu li.up-active,.up-combobox-item:hover,.up-combobox-item.up-active{background:var(--surface-3);color:var(--ink)}
 .swift-picker-menu li[aria-disabled=true]{opacity:.5;cursor:not-allowed}
 .swift-combobox-input{flex:1;width:100%!important;min-width:0!important;padding:0!important;border:0!important;background:transparent!important;color:inherit!important;box-shadow:none!important;font:inherit!important}
-.swift-combobox .mui-select-arrow{cursor:pointer;pointer-events:auto}
-.mui-combobox-item{display:flex;align-items:center;gap:var(--spacing-xs)}
-.mui-combobox-sub{margin-inline-start:auto;color:var(--ink-muted);font-size:var(--p-caption)}
+.swift-combobox .up-select-arrow{cursor:pointer;pointer-events:auto}
+.up-combobox-item{display:flex;align-items:center;gap:var(--spacing-xs)}
+.up-combobox-sub{margin-inline-start:auto;color:var(--ink-muted);font-size:var(--p-caption)}
 .dynamic-island-toast{position:fixed;bottom:var(--spacing-lg);left:50%;transform:translateX(-50%);z-index:20000;display:flex;align-items:center;gap:var(--spacing-xs);max-width:min(600px,90vw);padding:var(--spacing-sm) var(--spacing-md);color:var(--inverse-ink);background:var(--inverse-canvas);border:1px solid var(--hairline-strong);border-radius:var(--rounded-md)}

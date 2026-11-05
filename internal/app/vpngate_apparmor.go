@@ -69,8 +69,8 @@ func vpnGateAppArmorRules(runRoot string) (string, string, error) {
 		return "", "", fmt.Errorf("refusing to grant AppArmor access to the filesystem root")
 	}
 	id := fmt.Sprintf("%x", sha256.Sum256([]byte(runRoot)))
-	begin := "# BEGIN m-ui VPNGate DHCP " + id
-	end := "# END m-ui VPNGate DHCP " + id
+	begin := "# BEGIN UnifiedProxy VPNGate DHCP " + id
+	end := "# END UnifiedProxy VPNGate DHCP " + id
 	prefix := runRoot + "/[0-9]/"
 	// Uxr matches the distribution's dhclient-script transition: only the
 	// panel-owned hook runs outside dhclient's profile, with a scrubbed loader
@@ -96,14 +96,14 @@ func vpnGateAppArmorMerge(existing []byte, begin, rules string) ([]byte, error) 
 	}
 	if start < 0 || finish < start || strings.Count(text, begin) != 1 || strings.Count(text, end) != 1 ||
 		(start > 0 && text[start-1] != '\n') || (finish > 0 && text[finish-1] != '\n') {
-		return nil, fmt.Errorf("incomplete or duplicate m-ui VPNGate AppArmor block; refusing to overwrite local rules")
+		return nil, fmt.Errorf("incomplete or duplicate UnifiedProxy VPNGate AppArmor block; refusing to overwrite local rules")
 	}
 	finish += len(end)
 	if finish < len(text) && text[finish] == '\r' {
 		finish++
 	}
 	if finish < len(text) && text[finish] != '\n' {
-		return nil, fmt.Errorf("invalid m-ui VPNGate AppArmor block boundary")
+		return nil, fmt.Errorf("invalid UnifiedProxy VPNGate AppArmor block boundary")
 	}
 	if finish < len(text) {
 		finish++
@@ -174,7 +174,7 @@ func (a *vpnGateAppArmor) ensure(ctx context.Context, runRoot, profilesPath, pol
 	if changed {
 		if existed {
 			// A hidden backup is not loaded as policy or included by the profile.
-			backup := filepath.Join(filepath.Dir(local), "."+filepath.Base(local)+".m-ui-vpngate.bak")
+			backup := filepath.Join(filepath.Dir(local), "."+filepath.Base(local)+".UnifiedProxy-vpngate.bak")
 			if err := vpnGateAppArmorWrite(backup, original, mode); err != nil {
 				return fmt.Errorf("back up AppArmor local rules: %w", err)
 			}
@@ -216,7 +216,7 @@ func (a *vpnGateAppArmor) ensure(ctx context.Context, runRoot, profilesPath, pol
 }
 
 func vpnGateAppArmorWrite(filename string, content []byte, mode os.FileMode) error {
-	file, err := os.CreateTemp(filepath.Dir(filename), ".m-ui-apparmor-*")
+	file, err := os.CreateTemp(filepath.Dir(filename), ".UnifiedProxy-apparmor-*")
 	if err != nil {
 		return err
 	}

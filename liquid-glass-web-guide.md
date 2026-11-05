@@ -1,6 +1,6 @@
 # 在网页应用里实现 Apple Liquid Glass 视觉：开发经验
 
-> 这份文档写给要为自己的项目实现 iOS 26 / macOS 26 液态玻璃（Liquid Glass）效果的开发者和 AI 编程助手。经验来自给 m-ui（一个 Go + 原生 JS 的代理管理面板）做完整改版的过程：先做出了一版被用户评价为"四不像"的效果，然后按参考项目逐项重做。文中的参数都经过实测，坑都真实踩过。
+> 这份文档写给要为自己的项目实现 iOS 26 / macOS 26 液态玻璃（Liquid Glass）效果的开发者和 AI 编程助手。经验来自给 UnifiedProxy（一个 Go + 原生 JS 的代理管理面板）做完整改版的过程：先做出了一版被用户评价为"四不像"的效果，然后按参考项目逐项重做。文中的参数都经过实测，坑都真实踩过。
 >
 > 读者需要具备的前提：能改前端代码，能用无头浏览器截图，能和用户来回确认。
 
@@ -241,4 +241,4 @@ for (let e = el.parentElement; e && e !== document.documentElement; e = e.parent
 
 文中的组件参数、弹簧常数和着色器思路来自 [martin65536/liquid-glass-webgl](https://github.com/martin65536/liquid-glass-webgl)（Apache-2.0），它又移植自 [Kyant0/AndroidLiquidGlass](https://github.com/Kyant0/AndroidLiquidGlass)。感谢两位作者的开源工作。
 
-m-ui 里对应的实现在 `web/liquid-*.js` / `web/liquid-*.css`，架构说明见 [`LIQUID-GLASS.md`](LIQUID-GLASS.md)，第三方署名见 [`NOTICE`](NOTICE)。欢迎在自己的项目里参考这份经验；如果你移植了参考项目的代码，记得同样保留 Apache-2.0 的署名。
+UnifiedProxy 里对应的实现在 `web/liquid-*.js` / `web/liquid-*.css`，架构说明见 [`LIQUID-GLASS.md`](LIQUID-GLASS.md)，第三方署名见 [`NOTICE`](NOTICE)。欢迎在自己的项目里参考这份经验；如果你移植了参考项目的代码，记得同样保留 Apache-2.0 的署名。

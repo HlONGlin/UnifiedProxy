@@ -482,14 +482,14 @@ func TestVPNGateEnglishAPIStatusTranslation(t *testing.T) {
 		Install: VPNGateInstallState{Reason: "VPNGate 只支持 Linux 服务器"},
 		Statuses: []VPNGateStatus{
 			{LastError: "IPinfo 查询额度已用尽"},
-			{LastError: "DHCP 已结束，但网卡 vpn_vpn0 仍没有 IPv4 地址：m-ui VPNGate DHCP hook: missing slot routing parameters for vpn_vpn0"},
+			{LastError: "DHCP 已结束，但网卡 vpn_vpn0 仍没有 IPv4 地址：UnifiedProxy VPNGate DHCP hook: missing slot routing parameters for vpn_vpn0"},
 			{LastError: "VPNGate AppArmor 配置失败：apparmor_parser: permission denied"},
 		},
 	})
 	if view.Install.Reason != "VPNGate is supported only on Linux servers" || view.Statuses[0].LastError != "The IPinfo query quota is exhausted" {
 		t.Fatalf("VPNGate status was not translated: %#v", view)
 	}
-	if got := view.Statuses[1].LastError; got != "DHCP finished but interface vpn_vpn0 still has no IPv4 address: m-ui VPNGate DHCP hook: missing slot routing parameters for vpn_vpn0" {
+	if got := view.Statuses[1].LastError; got != "DHCP finished but interface vpn_vpn0 still has no IPv4 address: UnifiedProxy VPNGate DHCP hook: missing slot routing parameters for vpn_vpn0" {
 		t.Fatalf("DHCP hook diagnostic was not translated: %q", got)
 	}
 	if got := view.Statuses[2].LastError; got != "VPNGate AppArmor configuration failed: apparmor_parser: permission denied" {

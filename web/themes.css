@@ -1,13 +1,13 @@
 /* UnifiedProxy: 5 palettes, default T0 black & white + light.
  * Color references via VoltAgent/awesome-design-md (MIT):
  * T0=Vercel; T1=Claude/Anthropic; T2=Sentry; T3=Supabase; T4=Stripe.
- * Adapted over the m-ui application (GPL-3.0); see NOTICE and docs/design.
+ * Adapted over the UnifiedProxy application (GPL-3.0); see NOTICE and docs/design.
  * reference-* preserves supplied colors. Interaction/text derivatives are
  * documented in docs/design/p2-token-map.md; data colors do not follow palettes.
  */
 :root {
   color-scheme: light;
-  --font-sans: Inter, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", system-ui, sans-serif;
+  --font-sans: Inter, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", systeUnifiedProxy, sans-serif;
   --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Consolas, monospace;
   --p-display: 30px; --p-headline: 20px; --p-card-title: 15px;
   --p-body: 14px; --p-body-sm: 13px; --p-caption: 12px; --p-micro: 11px;

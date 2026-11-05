@@ -18,7 +18,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/RomanovCaesar/m-ui/internal/fleet"
+	"github.com/hlonglin/unifiedproxy/internal/fleet"
 )
 
 func testFleetEgress(ctx context.Context, proxyURL, target string) (json.RawMessage, error) {

@@ -10,15 +10,15 @@ UnifiedProxy 把 Mihomo 原生配置、用户订阅和跨节点运维放进同�
 
 [简体中文](/README.md) · [English](/README.en.md) · [Languages](#languages)
 
-[开始部署](#deploy) · [历史备份迁移](#migration) · [工作台预览](#workspace) · [功能验收](docs/design/p5-acceptance.md) · [版本发布](https://github.com/HlONGlin/UnifiedProxy/releases)
+[开始部署](#deploy) · [历史备份迁移](#migration) · [工作台预览](#workspace) · [功能验收](docs/design/p5-acceptance.md) · [版本发布](https://github.com/HlONGlin/unifiedproxy/releases)
 
 ## 选择部署方式
 
 | 使用场景 | 入口 | 运行方式 |
 |---|---|---|
-| 管理一台服务器 | `m-ui serve` | 本地面板管理本机 Mihomo；保留多控网络与订阅聚合 |
-| 集中管理多台服务器 | `m-ui --control serve` | 保存节点草稿、发布策略、调度签名任务；控制端不运行本机代理内核 |
-| 接受控制端管理 | `m-ui --agent serve` | 显式登记后接入，执行配置与任务；已运行代理在控制端离线时继续工作 |
+| 管理一台服务器 | `unifiedproxy serve` | 本地面板管理本机 Mihomo；保留多控网络与订阅聚合 |
+| 集中管理多台服务器 | `unifiedproxy --control serve` | 保存节点草稿、发布策略、调度签名任务；控制端不运行本机代理内核 |
+| 接受控制端管理 | `unifiedproxy --agent serve` | 显式登记后接入，执行配置与任务；已运行代理在控制端离线时继续工作 |
 
 `control` / `node` 是同一应用的部署入口。节点登记、所有权边界和应急接管见[运行与迁移指南](docs/unifiedproxy-migration.md)。
 
@@ -29,16 +29,16 @@ UnifiedProxy 把 Mihomo 原生配置、用户订阅和跨节点运维放进同�
 在使用 systemd 或 OpenRC 的 Linux 服务器上，以 `root` 执行：
 
 ```bash
-bash <(curl -Ls https://raw.githubusercontent.com/HlONGlin/UnifiedProxy/main/install.sh)
+bash <(curl -Ls https://raw.githubusercontent.com/HlONGlin/unifiedproxy/main/install.sh)
 ```
 
-安装结束时会显示一次访问地址和随机凭据：未占用的五位数端口、16 位面板路径、14 位用户名和 16 位密码。程序位于 `/usr/local/m-ui`，数据位于 `/usr/local/m-ui/data`；命令与路径沿用兼容名称，便于原有部署升级。
+安装结束时会显示一次访问地址和随机凭据：未占用的五位数端口、16 位面板路径、14 位用户名和 16 位密码。程序位于 `/usr/local/unifiedproxy`，数据位于 `/usr/local/unifiedproxy/data`；管理命令和系统服务统一使用 `unifiedproxy` 名称。
 
 <details>
 <summary>手动指定端口、路径和凭据</summary>
 
 ```bash
-bash <(curl -Ls https://raw.githubusercontent.com/HlONGlin/UnifiedProxy/main/install.sh) \
+bash <(curl -Ls https://raw.githubusercontent.com/HlONGlin/unifiedproxy/main/install.sh) \
   --port 34567 \
   --path MyPanelA1b2C3d4 \
   --username AdminUserA1234 \
@@ -51,20 +51,20 @@ bash <(curl -Ls https://raw.githubusercontent.com/HlONGlin/UnifiedProxy/main/ins
 <summary>使用 Docker Compose</summary>
 
 ```bash
-git clone https://github.com/HlONGlin/UnifiedProxy.git
-cd UnifiedProxy
+git clone https://github.com/HlONGlin/unifiedproxy.git
+cd unifiedproxy
 cp .env.example .env
 docker compose up -d --build
-docker compose logs m-ui
+docker compose logs unifiedproxy
 ```
 
-镜像面向 Linux amd64，内置固定版本并经过校验的 Mihomo。Compose 采用主机网络，新增入站端口无需额外映射。未填写的 `MUI_PASSWORD` / `MUI_PATH` 在首次启动时生成，并在日志中显示一次。
+镜像面向 Linux amd64，内置固定版本并经过校验的 Mihomo。Compose 采用主机网络，新增入站端口无需额外映射。未填写的 `UNIFIEDPROXY_PASSWORD` / `UNIFIEDPROXY_PATH` 在首次启动时生成，并在日志中显示一次。
 
-默认从本仓库构建；发布工作流可提供 `ghcr.io/hlonglin/unifiedproxy:<tag>` 和 `latest`，对应镜像发布后可使用 `docker compose pull`。升级时保留服务名 `m-ui` 及数据卷 `m-ui-data`、`m-ui-core`。
+默认从本仓库构建；发布工作流可提供 `ghcr.io/hlonglin/unifiedproxy:<tag>` 和 `latest`，对应镜像发布后可使用 `docker compose pull`。升级时保留服务名 `unifiedproxy` 及数据卷 `unifiedproxy-data`、`unifiedproxy-core`。
 
 </details>
 
-已有部署运行 `m-ui update`，更新前自动在 `data/backups/` 创建数据快照，保留最近 3 份。安装器保留已有 Mihomo 内核；显式传入 `--update-mihomo` 才替换。UnifiedProxy 发布包提供 `unifiedproxy-linux-<architecture>.tar.gz`（`386`、`amd64`、`arm64`、`armv5`、`armv6`、`armv7`、`s390x`）及 `unifiedproxy-windows-amd64.zip`；系统服务和管理命令继续使用 `m-ui` 兼容名称。
+已有部署运行 `unifiedproxy update`，更新前自动在 `data/backups/` 创建数据快照，保留最近 3 份。安装器保留已有 Mihomo 内核；显式传入 `--update-mihomo` 才替换。UnifiedProxy 发布包提供 `unifiedproxy-linux-<architecture>.tar.gz`（`386`、`amd64`、`arm64`、`armv5`、`armv6`、`armv7`、`s390x`）及 `unifiedproxy-windows-amd64.zip`。
 
 <a id="workspace"></a>
 
@@ -199,19 +199,19 @@ docker compose logs m-ui
 
 | 操作 | 命令 |
 |---|---|
-| 打开菜单 / 切换中文 | `m-ui` / `m-ui --lang zh-cn` |
-| 启动、停止、重启 | `m-ui start` / `m-ui stop` / `m-ui restart` |
-| 查看状态与日志 / 清理日志 | `m-ui status` / `m-ui logs` / `m-ui clear-logs` |
-| 设置面板 / 调整端口 | `m-ui settings` / `m-ui configure` / `m-ui set-port` |
-| 重置凭据 / 面板路径 | `m-ui reset-credentials` / `m-ui reset-path` |
-| 更新程序 / 管理菜单 | `m-ui update` / `m-ui update-menu` |
-| 开启 / 关闭开机启动 | `m-ui enable` / `m-ui disable` |
-| 卸载 | `m-ui uninstall` |
+| 打开菜单 / 切换中文 | `unifiedproxy` / `unifiedproxy --lang zh-cn` |
+| 启动、停止、重启 | `unifiedproxy start` / `unifiedproxy stop` / `unifiedproxy restart` |
+| 查看状态与日志 / 清理日志 | `unifiedproxy status` / `unifiedproxy logs` / `unifiedproxy clear-logs` |
+| 设置面板 / 调整端口 | `unifiedproxy settings` / `unifiedproxy configure` / `unifiedproxy set-port` |
+| 重置凭据 / 面板路径 | `unifiedproxy reset-credentials` / `unifiedproxy reset-path` |
+| 更新程序 / 管理菜单 | `unifiedproxy update` / `unifiedproxy update-menu` |
+| 开启 / 关闭开机启动 | `unifiedproxy enable` / `unifiedproxy disable` |
+| 卸载 | `unifiedproxy uninstall` |
 
 菜单记住所选语言，安装脚本为英文。证书入口：
 
 ```bash
-m-ui ssl
+unifiedproxy ssl
 ```
 
 首次交互安装可选择 Let's Encrypt 域名证书、短期 IPv4 证书、已有证书与私钥，或跳过 TLS。菜单提供申请、续期、吊销、查看和应用操作；80 端口不可用时，可通过 Cloudflare DNS API 申请域名及通配符证书。仅含叶子证书的文件会自动补全证书链，以适配 Mihomo Party、FlClash 等客户端。
@@ -237,13 +237,13 @@ go vet ./...
 go test ./...
 ```
 
-`MUI_VERSION` 或 Git 标签指定版本，通过 `-X main.version=...` 注入构建；舰队构建与部署步骤见[指南](docs/unifiedproxy-migration.md)。
+`UNIFIEDPROXY_VERSION` 或 Git 标签指定版本，通过 `-X main.version=...` 注入构建；舰队构建与部署步骤见[指南](docs/unifiedproxy-migration.md)。
 
 ## 项目来源与许可
 
 | 来源 | 在 UnifiedProxy 中的用途与声明 |
 |---|---|
-| m-ui | Mihomo 面板基础、入站/客户端和订阅等能力；保留 GPL-3.0 归属 |
+| UnifiedProxy | Mihomo 面板基础、入站/客户端和订阅等能力；保留 GPL-3.0 归属 |
 | 原 UnifiedProxy（MieruPilot / merit） | 舰队生命周期、任务队列、旧备份迁移及 Sidecar 相关能力；保留 [MIT 声明](licenses/UnifiedProxy-MIT.txt) |
 | [MetaCubeX/mihomo](https://github.com/MetaCubeX/mihomo) | 代理内核与原生配置模型 |
 | [MHSanaei/3x-ui](https://github.com/MHSanaei/3x-ui) · [Sub-Store](https://github.com/sub-store-org/Sub-Store) | 管理流程和客户端订阅格式的参考 |

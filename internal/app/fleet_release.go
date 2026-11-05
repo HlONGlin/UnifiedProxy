@@ -33,12 +33,12 @@ func checkFleetRelease(ctx context.Context, role, platform string) (fleetRelease
 	if platform == "linux-arm" {
 		platform = "linux-armv5"
 	}
-	repo := os.Getenv("MUI_RELEASE_REPO")
+	repo := os.Getenv("UNIFIEDPROXY_RELEASE_REPO")
 	if repo == "" {
 		repo = "HlONGlin/UnifiedProxy"
 	}
 	if !fleetRepoPattern.MatchString(repo) {
-		return fleetRelease{}, errors.New("invalid MUI_RELEASE_REPO")
+		return fleetRelease{}, errors.New("invalid UNIFIEDPROXY_RELEASE_REPO")
 	}
 	if role != "node" && role != "control" {
 		return fleetRelease{}, errors.New("invalid release role")
@@ -98,7 +98,7 @@ func checkFleetRelease(ctx context.Context, role, platform string) (fleetRelease
 		}
 	}
 	if result.URL == "" || sumURL == "" {
-		return result, errors.New("release has no fleet binary and checksum for this platform; configure MUI_RELEASE_REPO to the merged repository")
+		return result, errors.New("release has no fleet binary and checksum for this platform; configure UNIFIEDPROXY_RELEASE_REPO to the merged repository")
 	}
 	prefix := "https://github.com/" + repo + "/releases/download/"
 	if !strings.HasPrefix(result.URL, prefix) || !strings.HasPrefix(sumURL, prefix) {

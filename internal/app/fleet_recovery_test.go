@@ -10,7 +10,7 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/RomanovCaesar/m-ui/internal/fleet"
+	"github.com/hlonglin/unifiedproxy/internal/fleet"
 )
 
 func TestFleetBackupPreservesUnpublishedDrafts(t *testing.T) {

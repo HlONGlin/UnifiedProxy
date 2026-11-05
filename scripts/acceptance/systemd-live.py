@@ -2,7 +2,7 @@
 
 Exercises the real installer, HTTPS update API, transient upgrade worker,
 health-gated rollback and persistent interruption recovery. Never use an
-existing installation: this deliberately installs /usr/local/m-ui-control.
+existing installation: this deliberately installs /usr/local/unifiedproxy-control.
 """
 import argparse
 import datetime
@@ -49,12 +49,12 @@ def main():
     parser.add_argument("--candidate", required=True, type=Path)
     parser.add_argument("--output", type=Path, default=Path("dist/fleet-systemd"))
     args = parser.parse_args()
-    install = Path("/usr/local/m-ui-control")
+    install = Path("/usr/local/unifiedproxy-control")
     if install.exists():
         raise SystemExit("requires a fresh disposable host: existing installation found")
     args.output.mkdir(parents=True, exist_ok=True)
     data = install / "data"
-    with tempfile.TemporaryDirectory(prefix="mui-systemd-") as temp:
+    with tempfile.TemporaryDirectory(prefix="up-systemd-") as temp:
         root = Path(temp)
         certificate, key = root / "cert.pem", root / "key.pem"
         subprocess.run(["openssl", "req", "-x509", "-newkey", "rsa:2048", "-nodes",
@@ -94,7 +94,7 @@ def main():
                 "--port", "2053", "--domain", "localhost", "--cert", str(certificate),
                 "--key", str(key), input="fixture-password", text=True)
         command("systemctl", "set-environment", "SSL_CERT_FILE=" + str(certificate))
-        command("systemctl", "start", "m-ui-control.service")
+        command("systemctl", "start", "unifiedproxy-control.service")
         panel = "https://127.0.0.1:2053"
         result_path = data / "pending-upgrade.json"
 
@@ -134,22 +134,22 @@ def main():
             record["phase"] = "verifying"
             record["startedAt"] = (datetime.datetime.now(datetime.timezone.utc)
                                    - datetime.timedelta(minutes=11)).isoformat()
-            record["workerUnit"] = "m-ui-upgrade-0123456789abcdef.service"
+            record["workerUnit"] = "unifiedproxy-upgrade-0123456789abcdef.service"
             result_path.write_text(json.dumps(record))
-            command("systemctl", "stop", "m-ui-control.service")
+            command("systemctl", "stop", "unifiedproxy-control.service")
             (install / "control").write_bytes(assets["bad"])
             (install / "control").chmod(0o755)
-            command("systemctl", "start", "m-ui-control-recovery.service")
+            command("systemctl", "start", "unifiedproxy-control-recovery.service")
             wait_result(result_path, "rolled-back", 30)
             login()
             health(expected)
             report["InterruptedWorkerRecovery"] = "passed"
-            command("systemctl", "is-active", "m-ui-control-recovery.timer")
+            command("systemctl", "is-active", "unifiedproxy-control-recovery.timer")
             report["PersistentRecoveryTimer"] = "passed"
             print("Real systemd upgrade, TLS health rollback and interrupted-worker recovery passed.")
         finally:
             (args.output / "results.json").write_text(json.dumps(report, indent=2))
-            command("systemctl", "stop", "m-ui-control.service", "m-ui-control-recovery.timer")
+            command("systemctl", "stop", "unifiedproxy-control.service", "unifiedproxy-control-recovery.timer")
             server.shutdown()
 
 

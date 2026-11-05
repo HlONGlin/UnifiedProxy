@@ -1,12 +1,12 @@
 [Unit]
-Description=m-ui Mihomo Control Panel
+Description=UnifiedProxy Mihomo Control Panel
 After=network-online.target
 Wants=network-online.target
 
 [Service]
 Type=simple
-WorkingDirectory=/usr/local/m-ui
-ExecStart=/usr/local/m-ui/m-ui
+WorkingDirectory=/usr/local/unifiedproxy
+ExecStart=/usr/local/unifiedproxy/unifiedproxy
 Restart=on-failure
 RestartSec=5s
 LimitNOFILE=1048576

@@ -169,7 +169,7 @@ p5/{t0-light..t4-dark}/, p5/fleet/{t0-light..t4-dark}/
 可复跑入口：`check-stage.sh p5-final`、`final-browser.py`、`final-browser.py --fleet`、
 `final-browser.py --operations-only`、`final-browser.py --login-only`、`native-controls.py`、
 `summarize-final.py`。
-真实 parser 环境变量 `MUI_TEST_CORE=/workspace/scripts/acceptance/mihomo-with-geodata.py`、
-`UP_TEST_REAL_CORE=/workspace/dist/design-audit/mihomo`。
+真实 parser 环境变量 `UNIFIEDPROXY_TEST_CORE=/workspace/scripts/acceptance/mihomo-with-geodata.py`、
+`UNIFIEDPROXY_TEST_REAL_CORE=/workspace/dist/design-audit/mihomo`。
 
 P6 待处理清单与 master 两个独有提交完整文件列表见 [合并前清单](p6-preflight.md)。

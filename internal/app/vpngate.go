@@ -85,7 +85,7 @@ func vpnGateInterfaceName(slot int) string { return fmt.Sprintf("vpn_vpn%d", slo
 func vpnGateRouteTable(slot int) int  { return vpnGateTableBase + slot }
 func vpnGateRoutingMark(slot int) int { return vpnGateTableBase + slot }
 
-func vpnGateAccountName(slot int) string { return fmt.Sprintf("mui-vpngate-%d", slot) }
+func vpnGateAccountName(slot int) string { return fmt.Sprintf("up-vpngate-%d", slot) }
 
 // vpnGateMissingRouteTable recognises iproute2's answer for a table the kernel does not
 // have. A table only exists while it holds a route, so after a reboot or after Cleanup

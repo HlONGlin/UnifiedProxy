@@ -36,15 +36,15 @@
   function nodeName(id){if(state?.self?.id===id)return state.self.name;const peer=state?.peers?.find(item=>item.id===id);return peer?peer.name:id.slice(0,8);}
   function millis(value){return value?new Date(value).toLocaleString():'—';}
   function renderDevices(){
-    $('#mc-device-list').innerHTML=devices.length?`<div class="mc-table-wrap"><table class="mc-peer-table"><thead><tr><th>${muiT('mc.colDevice')}</th><th>${muiT('mc.colIssuer')}</th><th>${muiT('mc.colStatus')}</th><th>${muiT('mc.colLastSeen')}</th><th>${muiT('mc.colActions')}</th></tr></thead><tbody>${devices.map(device=>`<tr><td>${esc(device.name)}<small>${esc(device.id)}</small></td><td>${esc(nodeName(device.issuer))}</td><td><span class="mc-status ${device.revoked?'':'online'}">${device.revoked?muiT('mc.revoked'):muiT('mc.deviceActive')}</span></td><td>${esc(millis(device.lastSeen))}</td><td>${device.revoked?'':`<button type="button" class="danger-btn" data-mc-revoke="${esc(device.id)}">${muiT('mc.revoke')}</button>`}</td></tr>`).join('')}</tbody></table></div>`:`<div class="mc-empty">${muiT('mc.emptyDevices')}</div>`;
+    $('#mc-device-list').innerHTML=devices.length?`<div class="mc-table-wrap"><table class="mc-peer-table"><thead><tr><th>${upT('mc.colDevice')}</th><th>${upT('mc.colIssuer')}</th><th>${upT('mc.colStatus')}</th><th>${upT('mc.colLastSeen')}</th><th>${upT('mc.colActions')}</th></tr></thead><tbody>${devices.map(device=>`<tr><td>${esc(device.name)}<small>${esc(device.id)}</small></td><td>${esc(nodeName(device.issuer))}</td><td><span class="mc-status ${device.revoked?'':'online'}">${device.revoked?upT('mc.revoked'):upT('mc.deviceActive')}</span></td><td>${esc(millis(device.lastSeen))}</td><td>${device.revoked?'':`<button type="button" class="danger-btn" data-mc-revoke="${esc(device.id)}">${upT('mc.revoke')}</button>`}</td></tr>`).join('')}</tbody></table></div>`:`<div class="mc-empty">${upT('mc.emptyDevices')}</div>`;
     for(const button of $$('[data-mc-revoke]',devicesModal))button.onclick=()=>revokeDevice(button.dataset.mcRevoke);
   }
   async function loadDevices(){devices=await api('/api/client-mesh/devices');renderDevices();}
-  async function revokeDevice(id){if(!await muiConfirm(muiT('mc.confirmRevoke'),{danger:true}))return;run(devicesModal,async()=>{devices=await api('/api/client-mesh/devices/revoke',{method:'POST',body:JSON.stringify({id})});renderDevices();});}
+  async function revokeDevice(id){if(!await upConfirm(upT('mc.confirmRevoke'),{danger:true}))return;run(devicesModal,async()=>{devices=await api('/api/client-mesh/devices/revoke',{method:'POST',body:JSON.stringify({id})});renderDevices();});}
   async function downloadClientFile(){
     const response=await fetch('api/client-mesh/file',{credentials:'same-origin'});
     if(!response.ok){let message=response.statusText;try{message=(await response.json()).message||message;}catch{}throw new Error(message);}
-    const url=URL.createObjectURL(await response.blob());const link=document.createElement('a');link.href=url;link.download='m-ui-network.muinet';document.body.appendChild(link);link.click();link.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);
+    const url=URL.createObjectURL(await response.blob());const link=document.createElement('a');link.href=url;link.download='UnifiedProxy-network.upnet';document.body.appendChild(link);link.click();link.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);
   }
   function modalError(modal,message){const box=$('.mc-modal-error',modal);box.textContent=message;box.hidden=!message;}
   function error(message){$('#mc-error').textContent=message;$('#mc-error').hidden=!message;}
@@ -53,14 +53,14 @@
     if(!state)return;
     if(!localDirty){$('#mc-name').value=state.self.name;$('#mc-endpoint').value=state.self.endpoint||suggestEndpoint();}
     $('#mc-id').textContent=state.self.id;
-    $('#mc-summary').textContent=muiT('mc.summary',{peers:state.peers.length,max:state.maxPeers,online:state.peers.filter(peer=>peer.online).length,token:muiT(state.tokenEnabled?'mc.tokenOn':'mc.tokenOff')});
-    $('#mc-token-generate').textContent=muiT(state.tokenEnabled?'mc.regenerateToken':'mc.generateToken');$('#mc-token-disable').disabled=busy||!state.tokenEnabled;
-    $('#mc-local-status').textContent=muiT(localDirty?'mc.localUnsaved':'mc.localHint');
+    $('#mc-summary').textContent=upT('mc.summary',{peers:state.peers.length,max:state.maxPeers,online:state.peers.filter(peer=>peer.online).length,token:upT(state.tokenEnabled?'mc.tokenOn':'mc.tokenOff')});
+    $('#mc-token-generate').textContent=upT(state.tokenEnabled?'mc.regenerateToken':'mc.generateToken');$('#mc-token-disable').disabled=busy||!state.tokenEnabled;
+    $('#mc-local-status').textContent=upT(localDirty?'mc.localUnsaved':'mc.localHint');
     const list=$('#mc-peer-list');
-    list.innerHTML=state.peers.length?`<div class="mc-table-wrap"><table class="mc-peer-table"><thead><tr><th>${muiT('mc.colNode')}</th><th>${muiT('mc.colAddress')}</th><th>${muiT('mc.colStatus')}</th><th>${muiT('mc.colLastSeen')}</th><th>${muiT('mc.colActions')}</th></tr></thead><tbody>${state.peers.map(peer=>`<tr><td>${esc(peer.name)}<small>${esc(peer.id)}</small></td><td>${esc(peer.endpoint||muiT('mc.noEndpoint'))}<small class="mc-peer-error" title="${esc(peer.error||'')}">${esc(peer.error||'')}</small></td><td><span class="mc-status ${peer.online?'online':''}">${peer.online?muiT('mc.online'):peer.lastSeen?.startsWith('0001-')?muiT('mc.connectingOffline'):muiT('mc.offline')}</span></td><td>${esc(date(peer.lastSeen))}</td><td><button type="button" class="outline-btn" data-mc-disconnect="${esc(peer.id)}">${muiT('mc.disconnect')}</button></td></tr>`).join('')}</tbody></table></div>`:`<div class="mc-empty">${muiT('mc.emptyPeers')}</div>`;
+    list.innerHTML=state.peers.length?`<div class="mc-table-wrap"><table class="mc-peer-table"><thead><tr><th>${upT('mc.colNode')}</th><th>${upT('mc.colAddress')}</th><th>${upT('mc.colStatus')}</th><th>${upT('mc.colLastSeen')}</th><th>${upT('mc.colActions')}</th></tr></thead><tbody>${state.peers.map(peer=>`<tr><td>${esc(peer.name)}<small>${esc(peer.id)}</small></td><td>${esc(peer.endpoint||upT('mc.noEndpoint'))}<small class="mc-peer-error" title="${esc(peer.error||'')}">${esc(peer.error||'')}</small></td><td><span class="mc-status ${peer.online?'online':''}">${peer.online?upT('mc.online'):peer.lastSeen?.startsWith('0001-')?upT('mc.connectingOffline'):upT('mc.offline')}</span></td><td>${esc(date(peer.lastSeen))}</td><td><button type="button" class="outline-btn" data-mc-disconnect="${esc(peer.id)}">${upT('mc.disconnect')}</button></td></tr>`).join('')}</tbody></table></div>`:`<div class="mc-empty">${upT('mc.emptyPeers')}</div>`;
     $$('[data-mc-disconnect]',list).forEach(button=>button.onclick=()=>disconnect(button.dataset.mcDisconnect));
     $('#mc-blocked-section').hidden=!state.blocked.length;
-    $('#mc-blocked-list').innerHTML=state.blocked.map(id=>`<div class="mc-blocked-row"><code>${esc(id)}</code><button class="outline-btn" type="button" data-mc-unblock="${esc(id)}">${muiT('mc.allowRediscover')}</button></div>`).join('');
+    $('#mc-blocked-list').innerHTML=state.blocked.map(id=>`<div class="mc-blocked-row"><code>${esc(id)}</code><button class="outline-btn" type="button" data-mc-unblock="${esc(id)}">${upT('mc.allowRediscover')}</button></div>`).join('');
     $$('[data-mc-unblock]').forEach(button=>button.onclick=()=>run(connectionsModal,async()=>{state=await api('/api/multi-control/unblock',{method:'POST',body:JSON.stringify({id:button.dataset.mcUnblock})});render();}));
   }
   function suggestEndpoint(){
@@ -73,36 +73,36 @@
   async function load(){if(loading||busy)return;loading=true;const version=epoch;try{const result=await api('/api/multi-control');if(version===epoch){state=result;render();error('');}}catch(e){if(version===epoch)error(e.message);}finally{loading=false;}}
   async function saveLocal(){state=await api('/api/multi-control/settings',{method:'PUT',body:JSON.stringify({name:$('#mc-name').value.trim(),endpoint:$('#mc-endpoint').value.trim()})});localDirty=false;render();}
   tab.onclick=()=>{$$('[data-settings-tab]').forEach(item=>item.classList.toggle('active',item===tab));$$('.settings-pane').forEach(item=>item.classList.toggle('active',item===pane));if(typeof syncInkBars==='function')syncInkBars();load();};
-  for(const field of [$('#mc-name'),$('#mc-endpoint')])field.oninput=()=>{localDirty=true;$('#mc-local-status').textContent=muiT('mc.localUnsaved');};
+  for(const field of [$('#mc-name'),$('#mc-endpoint')])field.oninput=()=>{localDirty=true;$('#mc-local-status').textContent=upT('mc.localUnsaved');};
   $('#mc-local-form').onsubmit=event=>{event.preventDefault();run(null,saveLocal);};
   $('#mc-token-open').onclick=()=>{if(!state)return;openModal('mc-token-modal');run(tokenModal,async()=>{const data=await api('/api/multi-control/token');$('#mc-token').value=data.token;});};
   $('#mc-token-save').onclick=()=>run(tokenModal,async()=>{
     const token=$('#mc-token').value.trim().toLowerCase();
-    if(!token)throw new Error(muiT('mc.tokenRequired'));
+    if(!token)throw new Error(upT('mc.tokenRequired'));
     if(!/^[a-z0-9]{16,32}$/.test(token)||!/[a-z]/.test(token)||!/[0-9]/.test(token)){
-      throw new Error(muiT('mc.tokenFormat'));
+      throw new Error(upT('mc.tokenFormat'));
     }
     await saveLocal();
     const data=await api('/api/multi-control/token',{method:'POST',body:JSON.stringify({token})});
-    $('#mc-token').value=data.token;state.tokenEnabled=true;render();toast(muiT('mc.tokenSaved'));
+    $('#mc-token').value=data.token;state.tokenEnabled=true;render();toast(upT('mc.tokenSaved'));
   });
   $('#mc-token').onkeydown=event=>{if(event.key==='Enter'){event.preventDefault();$('#mc-token-save').click();}};
   $('#mc-token').oninput=()=>{modalError(tokenModal,'');};
   $('#mc-token-generate').onclick=()=>run(tokenModal,async()=>{await saveLocal();const data=await api('/api/multi-control/token',{method:'POST'});$('#mc-token').value=data.token;state.tokenEnabled=true;render();});
   $('#mc-token-disable').onclick=()=>run(tokenModal,async()=>{state=await api('/api/multi-control/token',{method:'DELETE'});$('#mc-token').value='';render();});
-  $('#mc-token-copy').onclick=()=>copyShareText($('#mc-token').value,muiT('mc.tokenCopied'));
+  $('#mc-token-copy').onclick=()=>copyShareText($('#mc-token').value,upT('mc.tokenCopied'));
   $('#mc-connections-open').onclick=()=>{openModal('mc-connections-modal');load();};
   $('#mc-devices-open').onclick=()=>{openModal('mc-devices-modal');run(devicesModal,loadDevices);};
   $('#mc-client-file').onclick=()=>run(null,downloadClientFile);
   $('#mc-add-toggle').onclick=()=>{$('#mc-connect-form').hidden=!$('#mc-connect-form').hidden;};
   $('#mc-refresh').onclick=()=>run(connectionsModal,async()=>{await api('/api/multi-control/sync',{method:'POST'});state=await api('/api/multi-control');render();});
   $('#mc-connect-form').onsubmit=event=>{event.preventDefault();const form=event.currentTarget;run(connectionsModal,async()=>{await saveLocal();const data=Object.fromEntries(new FormData(form));data.port=Number(data.port);state=await api('/api/multi-control/connect',{method:'POST',body:JSON.stringify(data)});form.elements.token.value='';form.hidden=true;render();});};
-  async function disconnect(id){if(!await muiConfirm(muiT('mc.confirmDisconnect'),{danger:true}))return;run(connectionsModal,async()=>{state=await api('/api/multi-control/disconnect',{method:'POST',body:JSON.stringify({id})});render();});}
+  async function disconnect(id){if(!await upConfirm(upT('mc.confirmDisconnect'),{danger:true}))return;run(connectionsModal,async()=>{state=await api('/api/multi-control/disconnect',{method:'POST',body:JSON.stringify({id})});render();});}
   for(const modal of [tokenModal,connectionsModal,devicesModal]){
     $('[data-mc-close]',modal).onclick=()=>{if(!busy)closeModal(modal);};modal.onclick=event=>{if(event.target===modal&&!busy)closeModal(modal);};
   }
   document.addEventListener('keydown',event=>{if(event.key==='Escape'&&!busy){closeModal(tokenModal);closeModal(connectionsModal);closeModal(devicesModal);}});
-  window.addEventListener('mui-langchange',()=>{if(state)render();renderDevices();});
+  window.addEventListener('up-langchange',()=>{if(state)render();renderDevices();});
   timer=setInterval(()=>{if(app.currentView==='settings'&&(pane.classList.contains('active')||connectionsModal.classList.contains('open')))load();},5000);
   window.addEventListener('pagehide',()=>clearInterval(timer));
 })();

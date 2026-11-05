@@ -4,14 +4,14 @@ umask 077
 
 REPO="HlONGlin/UnifiedProxy"
 MIHOMO_REPO="MetaCubeX/mihomo"
-INSTALL_DIR="/usr/local/m-ui"
+INSTALL_DIR="/usr/local/unifiedproxy"
 DATA_DIR="${INSTALL_DIR}/data"
 BACKUP_DIR="${DATA_DIR}/backups"
-BIN_PATH="${INSTALL_DIR}/m-ui"
+BIN_PATH="${INSTALL_DIR}/unifiedproxy"
 CORE_PATH="${INSTALL_DIR}/mihomo"
-SYSTEMD_UNIT="/etc/systemd/system/m-ui.service"
-OPENRC_UNIT="/etc/init.d/m-ui"
-MANAGER_PATH="/usr/local/bin/m-ui"
+SYSTEMD_UNIT="/etc/systemd/system/unifiedproxy.service"
+OPENRC_UNIT="/etc/init.d/unifiedproxy"
+MANAGER_PATH="/usr/local/bin/unifiedproxy"
 RAW_BASE="https://raw.githubusercontent.com/${REPO}/main"
 
 red='\033[0;31m'; green='\033[0;32m'; yellow='\033[0;33m'; blue='\033[0;34m'; plain='\033[0m'
@@ -56,9 +56,9 @@ Options:
   -h, --help              Show this help
 
 Environment overrides:
-  MUI_BINARY_PATH         Use a local m-ui binary instead of downloading
-  MUI_INSTALL_DIR         Installation directory (default /usr/local/m-ui)
-  MUI_GITHUB_PROXY        Optional URL prefix, e.g. https://ghproxy.example/
+  UNIFIEDPROXY_BINARY_PATH         Use a local UnifiedProxy binary instead of downloading
+  UNIFIEDPROXY_INSTALL_DIR         Installation directory (default /usr/local/unifiedproxy)
+  UNIFIEDPROXY_GITHUB_PROXY        Optional URL prefix, e.g. https://ghproxy.example/
 EOF
 }
 
@@ -100,10 +100,10 @@ while [[ $# -gt 0 ]]; do
     esac
 done
 
-if [[ -n "${MUI_INSTALL_DIR:-}" ]]; then
-    INSTALL_DIR="${MUI_INSTALL_DIR%/}"
-    [[ "$INSTALL_DIR" =~ ^/[A-Za-z0-9._/-]+$ ]] || die "MUI_INSTALL_DIR must be an absolute path without spaces"
-    DATA_DIR="${INSTALL_DIR}/data"; BIN_PATH="${INSTALL_DIR}/m-ui"; CORE_PATH="${INSTALL_DIR}/mihomo"
+if [[ -n "${UNIFIEDPROXY_INSTALL_DIR:-}" ]]; then
+    INSTALL_DIR="${UNIFIEDPROXY_INSTALL_DIR%/}"
+    [[ "$INSTALL_DIR" =~ ^/[A-Za-z0-9._/-]+$ ]] || die "UNIFIEDPROXY_INSTALL_DIR must be an absolute path without spaces"
+    DATA_DIR="${INSTALL_DIR}/data"; BIN_PATH="${INSTALL_DIR}/unifiedproxy"; CORE_PATH="${INSTALL_DIR}/mihomo"
     BACKUP_DIR="${DATA_DIR}/backups"
 fi
 
@@ -225,14 +225,14 @@ certificate_http_port() {
 }
 
 stop_panel_service() {
-    if command -v systemctl >/dev/null 2>&1; then systemctl stop m-ui >/dev/null 2>&1 || true
-    elif command -v rc-service >/dev/null 2>&1; then rc-service m-ui stop >/dev/null 2>&1 || true
+    if command -v systemctl >/dev/null 2>&1; then systemctl stop unifiedproxy >/dev/null 2>&1 || true
+    elif command -v rc-service >/dev/null 2>&1; then rc-service unifiedproxy stop >/dev/null 2>&1 || true
     fi
 }
 
 restart_panel_service() {
-    if command -v systemctl >/dev/null 2>&1; then systemctl restart m-ui >/dev/null 2>&1
-    elif command -v rc-service >/dev/null 2>&1; then rc-service m-ui restart >/dev/null 2>&1
+    if command -v systemctl >/dev/null 2>&1; then systemctl restart unifiedproxy >/dev/null 2>&1
+    elif command -v rc-service >/dev/null 2>&1; then rc-service unifiedproxy restart >/dev/null 2>&1
     else return 1
     fi
 }
@@ -287,7 +287,7 @@ issue_domain_certificate() {
         return 1
     fi
     cert="${cert_dir}/fullchain.pem"; key="${cert_dir}/privkey.pem"
-    /root/.acme.sh/acme.sh --installcert -d "$domain" --key-file "$key" --fullchain-file "$cert" --reloadcmd "systemctl restart m-ui 2>/dev/null || rc-service m-ui restart 2>/dev/null || true" || true
+    /root/.acme.sh/acme.sh --installcert -d "$domain" --key-file "$key" --fullchain-file "$cert" --reloadcmd "systemctl restart unifiedproxy 2>/dev/null || rc-service unifiedproxy restart 2>/dev/null || true" || true
     [[ -s "$cert" && -s "$key" ]] || { restart_panel_service >/dev/null 2>&1 || true; warn "acme.sh did not create certificate files"; return 1; }
     ensure_full_chain "$domain" "$cert" || true
     /root/.acme.sh/acme.sh --upgrade --auto-upgrade >/dev/null 2>&1 || warn "certificate works, but acme.sh auto-upgrade could not be enabled"
@@ -315,7 +315,7 @@ issue_ip_certificate() {
         return 1
     fi
     cert="${cert_dir}/fullchain.pem"; key="${cert_dir}/privkey.pem"
-    /root/.acme.sh/acme.sh --installcert -d "$address" --key-file "$key" --fullchain-file "$cert" --reloadcmd "systemctl restart m-ui 2>/dev/null || rc-service m-ui restart 2>/dev/null || true" || true
+    /root/.acme.sh/acme.sh --installcert -d "$address" --key-file "$key" --fullchain-file "$cert" --reloadcmd "systemctl restart unifiedproxy 2>/dev/null || rc-service unifiedproxy restart 2>/dev/null || true" || true
     [[ -s "$cert" && -s "$key" ]] || { restart_panel_service >/dev/null 2>&1 || true; warn "acme.sh did not create IP certificate files"; return 1; }
     ensure_full_chain "$address" "$cert" || true
     /root/.acme.sh/acme.sh --upgrade --auto-upgrade >/dev/null 2>&1 || warn "certificate works, but acme.sh auto-upgrade could not be enabled"
@@ -390,7 +390,7 @@ validate_config_value() {
 
 github_url() {
     local url="$1"
-    if [[ -n "${MUI_GITHUB_PROXY:-}" ]]; then printf '%s%s' "${MUI_GITHUB_PROXY%/}/" "$url"; else printf '%s' "$url"; fi
+    if [[ -n "${UNIFIEDPROXY_GITHUB_PROXY:-}" ]]; then printf '%s%s' "${UNIFIEDPROXY_GITHUB_PROXY%/}/" "$url"; else printf '%s' "$url"; fi
 }
 
 fetch_release_json() {
@@ -425,41 +425,34 @@ asset_urls_from_json() {
     sed -n 's/.*"browser_download_url"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/p' "$1"
 }
 
-download_mui() {
+download_unifiedproxy() {
     local destination="$1"
-    if [[ -n "${MUI_BINARY_PATH:-}" ]]; then
-        [[ -f "$MUI_BINARY_PATH" ]] || die "MUI_BINARY_PATH does not exist"
-        cp "$MUI_BINARY_PATH" "$destination"; chmod 0755 "$destination"
-        "$destination" version >/dev/null 2>&1 || die "MUI_BINARY_PATH is not a runnable UnifiedProxy binary"
+    if [[ -n "${UNIFIEDPROXY_BINARY_PATH:-}" ]]; then
+        [[ -f "$UNIFIEDPROXY_BINARY_PATH" ]] || die "UNIFIEDPROXY_BINARY_PATH does not exist"
+        cp "$UNIFIEDPROXY_BINARY_PATH" "$destination"; chmod 0755 "$destination"
+        "$destination" version >/dev/null 2>&1 || die "UNIFIEDPROXY_BINARY_PATH is not a runnable UnifiedProxy binary"
         return
     fi
-    local json="${TEMP_DIR}/m-ui-release.json" tag="" url="" candidate
+    local json="${TEMP_DIR}/unifiedproxy-release.json" tag="" url="" candidate
     local asset="unifiedproxy-linux-${ARCH}.tar.gz"
-    local legacy_asset="m-ui-linux-${ARCH}.tar.gz"
     if fetch_release_json "$REPO" "$VERSION" "$json"; then
         tag="$(release_tag_from_json "$json")"; [[ -n "$tag" ]] || die "GitHub release did not contain a tag"
         while IFS= read -r candidate; do
             local base="${candidate##*/}"
             [[ "$base" == "$asset" ]] && { url="$candidate"; break; }
         done < <(asset_urls_from_json "$json")
-        if [[ -z "$url" ]]; then
-            while IFS= read -r candidate; do
-                local base="${candidate##*/}"
-                [[ "$base" == "$legacy_asset" ]] && { url="$candidate"; asset="$legacy_asset"; break; }
-            done < <(asset_urls_from_json "$json")
-        fi
-        [[ -n "$url" ]] || die "release ${tag} has no UnifiedProxy Linux package for ${ARCH}; expected ${asset}. This release may predate UnifiedProxy packaging"
+        [[ -n "$url" ]] || die "release ${tag} has no UnifiedProxy Linux package for ${ARCH}; expected ${asset}"
     else
         warn "the GitHub API did not answer (often its hourly limit for this IP address); looking the release up on github.com instead"
-        tag="$(release_tag_without_api "$REPO" "$VERSION")" || die "could not fetch UnifiedProxy release information from GitHub; check the network or set MUI_GITHUB_PROXY"
+        tag="$(release_tag_without_api "$REPO" "$VERSION")" || die "could not fetch UnifiedProxy release information from GitHub; check the network or set UNIFIEDPROXY_GITHUB_PROXY"
         url="https://github.com/${REPO}/releases/download/${tag}/${asset}"
     fi
     info "Downloading UnifiedProxy ${tag} for ${ARCH}..."
-    local archive="${TEMP_DIR}/${asset}" unpack="${TEMP_DIR}/m-ui-unpack" source=""
+    local archive="${TEMP_DIR}/${asset}" unpack="${TEMP_DIR}/unifiedproxy-unpack" source=""
     curl -fL --retry 3 --connect-timeout 10 "$(github_url "$url")" -o "$archive" || die "UnifiedProxy download failed"
     mkdir -p "$unpack"
     tar -xzf "$archive" -C "$unpack" || die "could not extract ${asset}"
-    source="$(find "$unpack" -type f \( -name m-ui -o -name "m-ui-linux-${ARCH}" -o -name "unifiedproxy-linux-${ARCH}" \) -print -quit)"
+    source="$(find "$unpack" -type f -name "unifiedproxy-linux-${ARCH}" -print -quit)"
     [[ -n "$source" && -f "$source" ]] || die "UnifiedProxy release archive did not contain the expected binary"
     [[ "$source" == "$destination" ]] || cp "$source" "$destination"
     chmod 0755 "$destination"
@@ -475,7 +468,7 @@ download_mihomo() {
     local tag=""
     if ! fetch_release_json "$MIHOMO_REPO" "$MIHOMO_VERSION" "$json"; then
         warn "the GitHub API did not answer for Mihomo; looking the release up on github.com instead"
-        tag="$(release_tag_without_api "$MIHOMO_REPO" "$MIHOMO_VERSION")" || die "could not fetch Mihomo release information; check the network or set MUI_GITHUB_PROXY"
+        tag="$(release_tag_without_api "$MIHOMO_REPO" "$MIHOMO_VERSION")" || die "could not fetch Mihomo release information; check the network or set UNIFIEDPROXY_GITHUB_PROXY"
         : > "$json"
     fi
     case "$ARCH" in
@@ -518,7 +511,7 @@ prune_backups() {
     # Glob order is lexicographic, which is chronological here: every snapshot is
     # stamped YYYYmmdd-HHMMSS. Avoids parsing ls, and avoids `head -n -N`, which
     # busybox (Alpine) does not implement.
-    for candidate in "${BACKUP_DIR}"/m-ui-data-*.tar.gz; do
+    for candidate in "${BACKUP_DIR}"/unifiedproxy-data-*.tar.gz; do
         [[ -f "$candidate" ]] && existing+=("$candidate")
     done
     total=${#existing[@]}
@@ -543,7 +536,7 @@ backup_data_dir() {
     fi
     local stamp archive
     stamp="$(date +%Y%m%d-%H%M%S)"
-    archive="${BACKUP_DIR}/m-ui-data-${stamp}.tar.gz"
+    archive="${BACKUP_DIR}/unifiedproxy-data-${stamp}.tar.gz"
     # Build under a temporary name so an interrupted run never leaves a
     # truncated archive that later looks like a usable snapshot.
     if ! tar -czf "${archive}.partial" -C "$DATA_DIR" "${present[@]}" 2>/dev/null; then
@@ -561,19 +554,19 @@ backup_data_dir() {
 
 install_service() {
     if command -v systemctl >/dev/null 2>&1 && [[ -d /run/systemd/system ]]; then
-        install_repo_file deploy/m-ui.service "$SYSTEMD_UNIT" 0644
-        if [[ "$INSTALL_DIR" != "/usr/local/m-ui" ]]; then sed -i "s#/usr/local/m-ui#${INSTALL_DIR//\#/\\#}#g" "$SYSTEMD_UNIT"; fi
+        install_repo_file deploy/unifiedproxy.service "$SYSTEMD_UNIT" 0644
+        if [[ "$INSTALL_DIR" != "/usr/local/unifiedproxy" ]]; then sed -i "s#/usr/local/unifiedproxy#${INSTALL_DIR//\#/\\#}#g" "$SYSTEMD_UNIT"; fi
         systemctl daemon-reload
-        systemctl enable m-ui >/dev/null
-        systemctl restart m-ui
+        systemctl enable unifiedproxy >/dev/null
+        systemctl restart unifiedproxy
         sleep 1
-        systemctl is-active --quiet m-ui || { systemctl status m-ui --no-pager || true; die "UnifiedProxy service failed to start"; }
+        systemctl is-active --quiet unifiedproxy || { systemctl status unifiedproxy --no-pager || true; die "UnifiedProxy service failed to start"; }
         echo systemd
     elif command -v rc-service >/dev/null 2>&1; then
-        install_repo_file deploy/m-ui.openrc "$OPENRC_UNIT" 0755
-        if [[ "$INSTALL_DIR" != "/usr/local/m-ui" ]]; then sed -i "s#/usr/local/m-ui#${INSTALL_DIR//\#/\\#}#g" "$OPENRC_UNIT"; fi
-        rc-update add m-ui default >/dev/null 2>&1 || true
-        rc-service m-ui restart
+        install_repo_file deploy/unifiedproxy.openrc "$OPENRC_UNIT" 0755
+        if [[ "$INSTALL_DIR" != "/usr/local/unifiedproxy" ]]; then sed -i "s#/usr/local/unifiedproxy#${INSTALL_DIR//\#/\\#}#g" "$OPENRC_UNIT"; fi
+        rc-update add unifiedproxy default >/dev/null 2>&1 || true
+        rc-service unifiedproxy restart
         echo openrc
     else
         die "neither systemd nor OpenRC was found"
@@ -582,7 +575,7 @@ install_service() {
 
 install_dependencies
 validate_config_value
-TEMP_DIR="$(mktemp -d /tmp/m-ui-install.XXXXXX)"
+TEMP_DIR="$(mktemp -d /tmp/unifiedproxy-install.XXXXXX)"
 trap 'rm -rf "$TEMP_DIR"' EXIT
 new_install=0; [[ -f "$DATA_DIR/state.json" ]] || new_install=1
 
@@ -603,7 +596,7 @@ fi
 
 # A zero-length or truncated state.json (left behind by a power loss) must not be
 # updated over: the snapshot would only keep the broken file and push the older,
-# good snapshots out of the rotation. m-ui v0.2.6+ recovers from state.json.bak on
+# good snapshots out of the rotation. UnifiedProxy v0.2.6+ recovers from state.json.bak on
 # its own, so only stop when that copy is missing too.
 state_json_ok() {
     local first last
@@ -623,11 +616,11 @@ fi
 mkdir -p "$INSTALL_DIR" "$DATA_DIR"
 chmod 0700 "$DATA_DIR"
 
-download_mui "${TEMP_DIR}/m-ui"
+download_unifiedproxy "${TEMP_DIR}/unifiedproxy"
 download_mihomo "${TEMP_DIR}/mihomo"
 
-if command -v systemctl >/dev/null 2>&1; then systemctl stop m-ui >/dev/null 2>&1 || true
-elif command -v rc-service >/dev/null 2>&1; then rc-service m-ui stop >/dev/null 2>&1 || true
+if command -v systemctl >/dev/null 2>&1; then systemctl stop unifiedproxy >/dev/null 2>&1 || true
+elif command -v rc-service >/dev/null 2>&1; then rc-service unifiedproxy stop >/dev/null 2>&1 || true
 fi
 
 # Snapshot after the panel is stopped so state.json cannot be rewritten midway,
@@ -636,10 +629,10 @@ fi
 backup_data_dir
 
 old_binary=""
-if [[ -f "$BIN_PATH" ]]; then old_binary="${TEMP_DIR}/m-ui.old"; cp "$BIN_PATH" "$old_binary"; fi
+if [[ -f "$BIN_PATH" ]]; then old_binary="${TEMP_DIR}/unifiedproxy.old"; cp "$BIN_PATH" "$old_binary"; fi
 old_core=""
 if [[ -f "$CORE_PATH" ]]; then old_core="${TEMP_DIR}/mihomo.old"; cp "$CORE_PATH" "$old_core"; fi
-install -m 0755 "${TEMP_DIR}/m-ui" "$BIN_PATH"
+install -m 0755 "${TEMP_DIR}/unifiedproxy" "$BIN_PATH"
 if [[ -s "${TEMP_DIR}/mihomo" ]]; then install -m 0755 "${TEMP_DIR}/mihomo" "$CORE_PATH"; fi
 
 configure_args=(configure --data-dir "$DATA_DIR")
@@ -664,16 +657,16 @@ if [[ $new_install -eq 1 || ${#configure_args[@]} -gt 3 ]]; then
     }
 fi
 
-install_repo_file scripts/m-ui.sh "${INSTALL_DIR}/m-ui.sh" 0755
-if [[ "$INSTALL_DIR" != "/usr/local/m-ui" ]]; then sed -i "s#/usr/local/m-ui#${INSTALL_DIR//\#/\\#}#g" "${INSTALL_DIR}/m-ui.sh"; fi
-ln -sfn "${INSTALL_DIR}/m-ui.sh" "$MANAGER_PATH"
+install_repo_file scripts/unifiedproxy.sh "${INSTALL_DIR}/unifiedproxy.sh" 0755
+if [[ "$INSTALL_DIR" != "/usr/local/unifiedproxy" ]]; then sed -i "s#/usr/local/unifiedproxy#${INSTALL_DIR//\#/\\#}#g" "${INSTALL_DIR}/unifiedproxy.sh"; fi
+ln -sfn "${INSTALL_DIR}/unifiedproxy.sh" "$MANAGER_PATH"
 chown -R root:root "$INSTALL_DIR"
 chmod 0700 "$DATA_DIR"
 if ! init_system="$(install_service)"; then
     [[ -n "$old_binary" ]] && cp "$old_binary" "$BIN_PATH"
     [[ -n "$old_core" ]] && cp "$old_core" "$CORE_PATH"
-    if command -v systemctl >/dev/null 2>&1; then systemctl restart m-ui >/dev/null 2>&1 || true
-    elif command -v rc-service >/dev/null 2>&1; then rc-service m-ui restart >/dev/null 2>&1 || true
+    if command -v systemctl >/dev/null 2>&1; then systemctl restart unifiedproxy >/dev/null 2>&1 || true
+    elif command -v rc-service >/dev/null 2>&1; then rc-service unifiedproxy restart >/dev/null 2>&1 || true
     fi
     [[ -n "$BACKUP_PATH" ]] && warn "data snapshot from before this attempt: ${BACKUP_PATH}"
     die "service installation failed; the previous binaries were restored when available"
@@ -686,7 +679,7 @@ ssl_requested="$SSL_MODE"
 if [[ $new_install -eq 1 || -n "$SSL_MODE" ]]; then
     if ! configure_tls; then
         tls_failed=1
-        warn "TLS certificate setup failed; the panel runs over HTTP for now. Try again later with: m-ui ssl"
+        warn "TLS certificate setup failed; the panel runs over HTTP for now. Try again later with: unifiedproxy ssl"
     fi
 fi
 
@@ -704,23 +697,23 @@ if [[ "$current_tls" == enabled ]]; then
 fi
 
 echo
-info "UnifiedProxy installation completed (${init_system})"
+info "unifiedproxy installation completed (${init_system})"
 echo -e "${green}Access URL:${plain} ${access_scheme}://${access_host}:${current_port}${current_path}"
 echo -e "${green}Username:${plain}   ${current_user}"
 if [[ $new_install -eq 1 || $PASSWORD_SET -eq 1 ]]; then echo -e "${green}Password:${plain}   ${PASSWORD}"
-else echo -e "${green}Password:${plain}   unchanged (forgot it? run: m-ui reset-credentials)"
+else echo -e "${green}Password:${plain}   unchanged (forgot it? run: unifiedproxy reset-credentials)"
 fi
 echo -e "${yellow}Save these credentials now. Configure HTTPS in Panel Settings before exposing the panel publicly.${plain}"
 if [[ -n "$BACKUP_PATH" ]]; then
     echo
     echo -e "${green}Data snapshot:${plain} ${BACKUP_PATH}"
     echo "Restore it with:"
-    echo "  m-ui stop && tar -xzf ${BACKUP_PATH} -C ${DATA_DIR} && m-ui start"
+    echo "  unifiedproxy stop && tar -xzf ${BACKUP_PATH} -C ${DATA_DIR} && unifiedproxy start"
 fi
 echo
 echo "Management commands:"
-echo "  m-ui start | stop | restart | status | logs | settings | configure"
-echo "  m-ui update | update-menu | ssl | reset-credentials | reset-path | uninstall"
+echo "  unifiedproxy start | stop | restart | status | logs | settings | configure"
+echo "  unifiedproxy update | update-menu | ssl | reset-credentials | reset-path | uninstall"
 # A TLS mode given on the command line is part of what was asked for; report it
 # after the credentials have been shown.
 if [[ $tls_failed -eq 1 && -n "$ssl_requested" ]]; then exit 1; fi

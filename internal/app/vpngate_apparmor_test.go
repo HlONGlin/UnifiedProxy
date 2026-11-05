@@ -56,7 +56,7 @@ func TestVPNGateAppArmorPreparesLocalPolicy(t *testing.T) {
 			f := newVPNGateAppArmorFixture(t, test.profile, test.include)
 			f.local = filepath.Join(f.policyDir, "local", test.local)
 			// Include the user's earlier manual repair: it must remain intact.
-			original := "# administrator rules\n/etc/custom-dhcp.conf r,\n# m-ui VPNGate DHCP paths\n/usr/local/m-ui/data/vpngate/run/[0-9]/dhclient-hook.sh Uxr,\n"
+			original := "# administrator rules\n/etc/custom-dhcp.conf r,\n# UnifiedProxy VPNGate DHCP paths\n/usr/local/unifiedproxy/data/vpngate/run/[0-9]/dhclient-hook.sh Uxr,\n"
 			vpnGateAppArmorTestWrite(t, f.local, original)
 			profileBefore := vpnGateAppArmorTestRead(t, f.profile)
 			var manager vpnGateAppArmor
@@ -91,7 +91,7 @@ func TestVPNGateAppArmorPreparesLocalPolicy(t *testing.T) {
 			}
 			ensure(&manager)
 			first := vpnGateAppArmorTestRead(t, f.local)
-			backup := filepath.Join(filepath.Dir(f.local), "."+test.local+".m-ui-vpngate.bak")
+			backup := filepath.Join(filepath.Dir(f.local), "."+test.local+".UnifiedProxy-vpngate.bak")
 			if vpnGateAppArmorTestRead(t, backup) != original {
 				t.Fatal("original rules were not backed up")
 			}
@@ -126,7 +126,7 @@ func TestVPNGateAppArmorSkipsUnconfinedDHCP(t *testing.T) {
 				vpnGateAppArmorTestWrite(t, f.profiles, profiles)
 			}
 			var manager vpnGateAppArmor
-			err := manager.ensure(context.Background(), "/srv/m-ui/vpngate/run", f.profiles, f.policyDir, func(context.Context, string) error {
+			err := manager.ensure(context.Background(), "/srv/unifiedproxy/vpngate/run", f.profiles, f.policyDir, func(context.Context, string) error {
 				t.Fatal("must not enable an inactive dhclient profile")
 				return nil
 			})
@@ -154,7 +154,7 @@ func TestVPNGateAppArmorRollback(t *testing.T) {
 			defer cancel()
 			var manager vpnGateAppArmor
 			calls := 0
-			err := manager.ensure(ctx, "/srv/m-ui/vpngate/run", f.profiles, f.policyDir, func(ctx context.Context, _ string) error {
+			err := manager.ensure(ctx, "/srv/unifiedproxy/vpngate/run", f.profiles, f.policyDir, func(ctx context.Context, _ string) error {
 				calls++
 				if calls == 1 {
 					cancel()
@@ -175,7 +175,7 @@ func TestVPNGateAppArmorRollback(t *testing.T) {
 			if err == nil || !strings.Contains(err.Error(), "parser rejected") || calls != 2 {
 				t.Fatalf("failed policy update was not rolled back: calls=%d, error=%v", calls, err)
 			}
-			if err := manager.ensure(context.Background(), "/srv/m-ui/vpngate/run", f.profiles, f.policyDir, func(context.Context, string) error { calls++; return nil }); err != nil {
+			if err := manager.ensure(context.Background(), "/srv/unifiedproxy/vpngate/run", f.profiles, f.policyDir, func(context.Context, string) error { calls++; return nil }); err != nil {
 				t.Fatal(err)
 			}
 			if calls != 3 {
@@ -194,7 +194,7 @@ func TestVPNGateAppArmorConcurrentSlots(t *testing.T) {
 		wait.Add(1)
 		go func() {
 			defer wait.Done()
-			err := manager.ensure(context.Background(), "/srv/m-ui/vpngate/run", f.profiles, f.policyDir, func(context.Context, string) error { calls++; return nil })
+			err := manager.ensure(context.Background(), "/srv/unifiedproxy/vpngate/run", f.profiles, f.policyDir, func(context.Context, string) error { calls++; return nil })
 			if err != nil {
 				t.Error(err)
 			}
@@ -213,7 +213,7 @@ func TestVPNGateAppArmorRetainsConcurrentAdministratorEdit(t *testing.T) {
 	vpnGateAppArmorTestWrite(t, f.local, original)
 	var manager vpnGateAppArmor
 	updatedByAdmin := "# changed by admin during reload\n"
-	err := manager.ensure(context.Background(), "/srv/m-ui/vpngate/run", f.profiles, f.policyDir, func(context.Context, string) error {
+	err := manager.ensure(context.Background(), "/srv/unifiedproxy/vpngate/run", f.profiles, f.policyDir, func(context.Context, string) error {
 		vpnGateAppArmorTestWrite(t, f.local, updatedByAdmin)
 		return errors.New("reload failed")
 	})
@@ -229,7 +229,7 @@ func TestVPNGateAppArmorRefreshesChangedProfile(t *testing.T) {
 	calls := 0
 	ensure := func() {
 		t.Helper()
-		err := manager.ensure(context.Background(), "/srv/m-ui/vpngate/run", f.profiles, f.policyDir, func(context.Context, string) error { calls++; return nil })
+		err := manager.ensure(context.Background(), "/srv/unifiedproxy/vpngate/run", f.profiles, f.policyDir, func(context.Context, string) error { calls++; return nil })
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -254,7 +254,7 @@ func TestVPNGateAppArmorRefreshesChangedProfile(t *testing.T) {
 func TestVPNGateAppArmorRejectsUnsupportedPolicyAndPaths(t *testing.T) {
 	f := newVPNGateAppArmorFixture(t, "sbin.dhclient", "# no local customization point")
 	var manager vpnGateAppArmor
-	err := manager.ensure(context.Background(), "/srv/m-ui/vpngate/run", f.profiles, f.policyDir, func(context.Context, string) error {
+	err := manager.ensure(context.Background(), "/srv/unifiedproxy/vpngate/run", f.profiles, f.policyDir, func(context.Context, string) error {
 		t.Fatal("unsupported profile must not be reloaded")
 		return nil
 	})
@@ -302,7 +302,7 @@ func TestVPNGateAppArmorPolicyParses(t *testing.T) {
 		t.Fatal(err)
 	}
 	profile := filepath.Join(t.TempDir(), "test-profile")
-	vpnGateAppArmorTestWrite(t, profile, "profile mui-vpngate-test /nonexistent/mui-vpngate-test {\n"+rules+"}\n")
+	vpnGateAppArmorTestWrite(t, profile, "profile up-vpngate-test /nonexistent/up-vpngate-test {\n"+rules+"}\n")
 	// Compile the real policy grammar without loading anything into the kernel.
 	if output, err := exec.Command(parser, "-Q", "-T", profile).CombinedOutput(); err != nil {
 		t.Fatalf("generated AppArmor policy does not compile: %v\n%s", err, output)

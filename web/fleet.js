@@ -18,7 +18,7 @@
     publish: ['Publish','发布','發布','反映','Применить','انتشار','Áp dụng','Publicar','Yayınla','Застосувати','Publicar'],
     revoke: ['Revoke identity','吊销身份','撤銷身分','IDを失効','Отозвать ключ','لغو هویت','Thu hồi danh tính','Revocar identidad','Kimliği iptal et','Відкликати ключ','Revogar identidade'],
     edit: ['Edit','编辑','編輯','編集','Изменить','ویرایش','Sửa','Editar','Düzenle','Редагувати','Editar'],
-    model: ['Native m-ui model (JSON)','m-ui 原生模型（JSON）','m-ui 原生模型（JSON）','m-ui モデル（JSON）','Модель m-ui (JSON)','مدل بومی m-ui (JSON)','Mô hình m-ui (JSON)','Modelo m-ui (JSON)','m-ui modeli (JSON)','Модель m-ui (JSON)','Modelo m-ui (JSON)'],
+    model: ['Native UnifiedProxy model (JSON)','UnifiedProxy 原生模型（JSON）','UnifiedProxy 原生模型（JSON）','UnifiedProxy モデル（JSON）','Модель UnifiedProxy (JSON)','مدل بومی UnifiedProxy (JSON)','Mô hình UnifiedProxy (JSON)','Modelo UnifiedProxy (JSON)','UnifiedProxy modeli (JSON)','Модель UnifiedProxy (JSON)','Modelo UnifiedProxy (JSON)'],
     sidecars: ['Sidecars (JSON; unmetered)','Sidecar（JSON；不计量）','Sidecar（JSON；不計量）','Sidecar（JSON・計量なし）','Sidecar (JSON; без учёта)','سرویس جانبی (JSON؛ بدون سنجش)','Sidecar (JSON; không đo lưu lượng)','Sidecars (JSON; sin medición)','Sidecar (JSON; ölçümsüz)','Sidecar (JSON; без обліку)','Sidecars (JSON; sem medição)'],
     tasks: ['Tasks / results','任务／结果','工作／結果','タスク／結果','Задания / результаты','وظایف / نتایج','Tác vụ / kết quả','Tareas / resultados','Görevler / sonuçlar','Завдання / результати','Tarefas / resultados'],
     batch: ['Batch action','批量操作','批次操作','一括操作','Групповая операция','عملیات گروهی','Thao tác hàng loạt','Acción por lotes','Toplu işlem','Групова операція','Ação em lote'],
@@ -52,7 +52,7 @@
     downloadLog: ['Download conversion log','下载转换日志','下載轉換記錄','変換ログを保存','Скачать журнал','دریافت گزارش تبدیل','Tải nhật ký chuyển đổi','Descargar registro','Dönüşüm kaydını indir','Завантажити журнал','Baixar registro'],
     subscriptions: ['User subscriptions','用户订阅','使用者訂閱','ユーザー購読','Подписки пользователей','اشتراک کاربران','Đăng ký người dùng','Suscripciones','Kullanıcı abonelikleri','Підписки користувачів','Assinaturas']
   });
-  function t(key) { const lang = window.muiGetLang?.() || 'en'; const i = Math.max(0, locales.indexOf(lang)); return words[key]?.[i] || key; }
+  function t(key) { const lang = window.upGetLang?.() || 'en'; const i = Math.max(0, locales.indexOf(lang)); return words[key]?.[i] || key; }
   Object.assign(words, {
     username: ['Username','用户名','使用者名稱','ユーザー名','Имя пользователя','نام کاربری','Tên người dùng','Usuario','Kullanıcı adı','Ім’я користувача','Usuário'],
     password: ['Password','密码','密碼','パスワード','Пароль','گذرواژه','Mật khẩu','Contraseña','Parola','Пароль','Senha'],
@@ -71,7 +71,7 @@
     inbound: ['Create inbound','创建入站','建立入站','インバウンドを作成','Создать входящее подключение','ایجاد ورودی','Tạo đầu vào','Crear entrada','Gelen bağlantı oluştur','Створити вхідне підключення','Criar entrada']
   });
   const originalFetch = window.fetch.bind(window);
-  let selected = sessionStorage.getItem('mui-fleet-node') || '';
+  let selected = sessionStorage.getItem('up-fleet-node') || '';
   window.fetch = function (input, options) {
     const request = new Request(input, options);
     const u = new URL(request.url);
@@ -95,7 +95,7 @@
   async function load(){fleet=await request('');render();}
   function showEnrollment(result){
     const quote=value=>String.fromCharCode(39)+String(value).split(String.fromCharCode(39)).join(String.fromCharCode(39,34,39,34,39))+String.fromCharCode(39);
-    output({...result,[t('command')]:'node agent join --data-dir /usr/local/m-ui-node/data --control '+quote(location.origin)+' --control-key '+quote(result.controlKey)+' --token-stdin'});
+    output({...result,[t('command')]:'node agent join --data-dir /usr/local/unifiedproxy-node/data --control '+quote(location.origin)+' --control-key '+quote(result.controlKey)+' --token-stdin'});
   }
   button.onclick=()=>{if(typeof setView==='function'){labels.fleet='crumb.dashboard';setView('fleet');document.querySelector('#crumb').textContent=t('title');}load().catch(error=>output(error.message,true));};
   function render(){
@@ -105,7 +105,7 @@
     if(role==='control'){
       const label=element('label',t('target')+' ',toolbar);const selector=element('select',undefined,label);
       element('option',t('global'),selector,{value:''});for(const node of fleet.nodes||[])element('option',node.name||node.id,selector,{value:node.id});selector.value=selected;
-      selector.onchange=()=>{selected=selector.value;sessionStorage.setItem('mui-fleet-node',selected);if(typeof refresh==='function')refresh();};
+      selector.onchange=()=>{selected=selector.value;sessionStorage.setItem('up-fleet-node',selected);if(typeof refresh==='function')refresh();};
       element('p',t('key')+': '+fleet.publicKey,panel);
       const form=element('div',undefined,panel,{className:'fleet-toolbar'});const name=input('name',form),address=input('address',form);
       action('add',form,async()=>{await request('/nodes',{name:name.value,address:address.value});await load();});
@@ -120,10 +120,10 @@
         const statusCell=element('td',nodeStatus(node),row);statusCell.dataset.fleetStatus=node.id;statusCell.title=node.status?.error||'';
         const trafficCell=element('td',nodeTraffic(node),row);trafficCell.dataset.fleetTraffic=node.id;
         const actions=element('td',undefined,row);
-        action('edit',actions,async()=>{selected=node.id;sessionStorage.setItem('mui-fleet-node',selected);selector.value=selected;const detail=await request('/nodes/'+node.id);modelID=node.id;model.value=JSON.stringify(detail.draft||detail.desired?.model||{},null,2);sidecars.value=JSON.stringify(detail.desired?.sidecars||[],null,2);if(typeof refresh==='function')await refresh();});
+        action('edit',actions,async()=>{selected=node.id;sessionStorage.setItem('up-fleet-node',selected);selector.value=selected;const detail=await request('/nodes/'+node.id);modelID=node.id;model.value=JSON.stringify(detail.draft||detail.desired?.model||{},null,2);sidecars.value=JSON.stringify(detail.desired?.sidecars||[],null,2);if(typeof refresh==='function')await refresh();});
         action('rebind',actions,async()=>showEnrollment(await request('/tokens',{nodeId:node.id,name:node.name})));
         action('publish',actions,async()=>{output(await request('/nodes/'+node.id+'/publish',{}));});
-        action('revoke',actions,async()=>{if(await muiConfirm(t('confirm'),{danger:true})){await request('/nodes/'+node.id+'/revoke',{});await load();}});
+        action('revoke',actions,async()=>{if(await upConfirm(t('confirm'),{danger:true})){await request('/nodes/'+node.id+'/revoke',{});await load();}});
       }
       const batch=element('div',undefined,section,{className:'fleet-block'});element('h3',t('batch'),batch);
       const kind=element('select',undefined,batch);for(const k of ['collect-status','test-egress','kernel-switch','geo-update','cert-renew','agent-upgrade','defaults','quota','inbound'])element('option',t(k),kind,{value:k});
@@ -139,17 +139,17 @@
       for(const [label,path] of [['issue','issue'],['renew','renew'],['importCert','import'],['bind','bind']])action(label,certBox,async()=>output(await request('/certificates/'+path,JSON.parse(certJSON.value))));
       const updates=element('details',undefined,section,{className:'fleet-block'});element('summary',t('updateControl'),updates);const updateJSON=element('textarea',undefined,updates,{value:JSON.stringify({url:'',sha256:''},null,2),ariaLabel:t('updateControl')});
       action('checkUpdate',updates,async()=>{const info=await request('/update/check');updateJSON.value=JSON.stringify({url:info.url,sha256:info.sha256},null,2);output(info);});
-      action('updateControl',updates,async()=>{if(await muiConfirm(t('confirm'),{danger:true}))output(await request('/update',JSON.parse(updateJSON.value)));});
+      action('updateControl',updates,async()=>{if(await upConfirm(t('confirm'),{danger:true}))output(await request('/update',JSON.parse(updateJSON.value)));});
       action('subscriptions',panel,async()=>output(await request('/subscriptions')));
       const backup=element('div',undefined,section,{className:'fleet-block'});element('a',t('backup'),backup,{href:apiURL('/backup'),download:'fleet-backup.json'});
       const importer=input('import',backup,'file');importer.accept='.json';importer.onchange=async()=>{try{const result=await request('/import/merit',JSON.parse(await importer.files[0].text()));await load();output(result);const link=element('a',t('downloadLog'),section,{href:URL.createObjectURL(new Blob([JSON.stringify(result,null,2)],{type:'application/json'})),download:'merit-conversion-log.json'});link.onclick=()=>setTimeout(()=>URL.revokeObjectURL(link.href),1000);}catch(e){output(e.message,true);}};
-      const restore=input('restore',backup,'file');restore.accept='.json';restore.onchange=async()=>{try{if(await muiConfirm(t('confirm'),{danger:true}))output(await request('/backup',{action:'restore',backup:JSON.parse(await restore.files[0].text())}));}catch(e){output(e.message,true);}};
-      const dav=element('details',undefined,backup);element('summary','WebDAV',dav);const davURL=element('input',undefined,dav,{type:'url',placeholder:'https://…/fleet-backup.json','ariaLabel':'WebDAV URL'});const davUser=input('username',dav),davPass=input('password',dav,'password');davPass.autocomplete='new-password';action('uploadBackup',dav,async()=>output(await request('/backup',{action:'upload',webdav:{url:davURL.value,username:davUser.value,password:davPass.value}})));action('restore',dav,async()=>{if(await muiConfirm(t('confirm'),{danger:true}))output(await request('/backup',{action:'download',webdav:{url:davURL.value,username:davUser.value,password:davPass.value}}));});
+      const restore=input('restore',backup,'file');restore.accept='.json';restore.onchange=async()=>{try{if(await upConfirm(t('confirm'),{danger:true}))output(await request('/backup',{action:'restore',backup:JSON.parse(await restore.files[0].text())}));}catch(e){output(e.message,true);}};
+      const dav=element('details',undefined,backup);element('summary','WebDAV',dav);const davURL=element('input',undefined,dav,{type:'url',placeholder:'https://…/fleet-backup.json','ariaLabel':'WebDAV URL'});const davUser=input('username',dav),davPass=input('password',dav,'password');davPass.autocomplete='new-password';action('uploadBackup',dav,async()=>output(await request('/backup',{action:'upload',webdav:{url:davURL.value,username:davUser.value,password:davPass.value}})));action('restore',dav,async()=>{if(await upConfirm(t('confirm'),{danger:true}))output(await request('/backup',{action:'download',webdav:{url:davURL.value,username:davUser.value,password:davPass.value}}));});
       element('h3',t('tasks'),section);const tasks=element('pre',undefined,section,{id:'fleet-tasks',className:'fleet-result'});tasks.textContent=taskSummary(fleet.tasks);
     } else {
       const url=input('controlURL',panel,'url'),key=input('key',panel),token=input('enrollmentToken',panel,'password');url.placeholder='https://control.example';
       action('join',panel,async()=>output(await request('/join',{url:url.value,key:key.value,token:token.value})));
-      if(fleet.managed){element('pre',JSON.stringify(fleet.status,null,2),panel,{className:'fleet-result'});action('emergency',panel,async()=>{if(await muiConfirm(t('confirm'),{danger:true}))output(await request('/break-glass',{}));});}
+      if(fleet.managed){element('pre',JSON.stringify(fleet.status,null,2),panel,{className:'fleet-result'});action('emergency',panel,async()=>{if(await upConfirm(t('confirm'),{danger:true}))output(await request('/break-glass',{}));});}
       else{
         const local=element('details',undefined,panel);element('summary',t('sidecars'),local);const localJSON=element('textarea',undefined,local,{value:'[]',ariaLabel:t('sidecars')});action('refresh',local,async()=>{localJSON.value=JSON.stringify(await request('/sidecars'),null,2);});action('save',local,async()=>output(await request('/sidecars',JSON.parse(localJSON.value))));
         const nodeID=input('legacyNode',local);const file=input('import',local,'file');file.accept='.json';file.onchange=async()=>{try{const result=await request('/import/merit?nodeId='+encodeURIComponent(nodeID.value),JSON.parse(await file.files[0].text()));output(result);}catch(error){output(error.message,true);}};
@@ -161,6 +161,6 @@
   function nodeTraffic(node){let up=0,down=0,legacy=0;for(const [key,value] of Object.entries(node.status?.traffic||{})){if(!key.includes(':')){up+=value.up||0;down+=value.down||0;legacy+=value.legacyCombined||0;}}const format=value=>new Intl.NumberFormat().format(value);return 'Σ '+format(up+down+legacy)+' / ↑ '+format(up)+' / ↓ '+format(down)+(legacy?' / ↔ '+format(legacy):'');}
   function taskSummary(tasks){return JSON.stringify((tasks||[]).slice(-30).map(({id,nodeId,kind,status,attempts,result})=>({id,nodeId,kind,status,attempts,result})),null,2);}
   let polling=false;setInterval(async()=>{if(polling||role!=='control'||!section.classList.contains('active'))return;polling=true;try{fleet=await request('');for(const node of fleet.nodes||[]){for(const el of section.querySelectorAll('[data-fleet-status]'))if(el.dataset.fleetStatus===node.id){el.textContent=nodeStatus(node);el.title=node.status?.error||'';}for(const el of section.querySelectorAll('[data-fleet-traffic]'))if(el.dataset.fleetTraffic===node.id)el.textContent=nodeTraffic(node);}const tasks=section.querySelector('#fleet-tasks');if(tasks)tasks.textContent=taskSummary(fleet.tasks);}catch(error){output(error.message,true);}finally{polling=false;}},15000);
-  button.textContent=t('title');window.addEventListener('mui-langchange',()=>{button.textContent=t('title');if(fleet)render();if(section.classList.contains('active'))document.querySelector('#crumb').textContent=t('title');});
-  window.MUIFleet={locales,words};
+  button.textContent=t('title');window.addEventListener('up-langchange',()=>{button.textContent=t('title');if(fleet)render();if(section.classList.contains('active'))document.querySelector('#crumb').textContent=t('title');});
+  window.UPFleet={locales,words};
 }());

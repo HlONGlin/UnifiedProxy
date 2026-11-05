@@ -1,11 +1,11 @@
 /*
 UnifiedProxy 界面多语言核心（简体中文 / 繁體中文 / English / 日本語 / Русский / فارسی / Tiếng Việt / Español / Türkçe / Українська / Português）。
 机制：
-- DICT 按语言存全部 key；muiT(key, params) 取词，缺 key 时回退另一语言再回退 key 本身。
-- muiApply 两遍扫描：先处理已打标的 data-i18n* 属性，再对未打标元素按“原始文案精确匹配”
+- DICT 按语言存全部 key；upT(key, params) 取词，缺 key 时回退另一语言再回退 key 本身。
+- upApply 两遍扫描：先处理已打标的 data-i18n* 属性，再对未打标元素按“原始文案精确匹配”
   （SOURCE/SOURCE_PH/SOURCE_TITLE/SOURCE_ARIA）翻译文本节点并打标，之后切换语言只走打标路径。
-- 语言存 localStorage['mui-language']（与 Panel Settings 的 language 设置、登录页
-  data-default-language 注入值同值域：zh-CN / zh-TW / en / ja / ru / fa / vi / es / tr / uk / pt-BR），切换后广播 window 事件 mui-langchange，
+- 语言存 localStorage['up-language']（与 Panel Settings 的 language 设置、登录页
+  data-default-language 注入值同值域：zh-CN / zh-TW / en / ja / ru / fa / vi / es / tr / uk / pt-BR），切换后广播 window 事件 up-langchange，
   index 主脚本与卫星脚本监听该事件重渲染动态内容。
 本文件由 index.html 以 <script src="static/i18n.js"> 引入，须在其余卫星脚本之前。
 */
@@ -242,7 +242,7 @@ UnifiedProxy 界面多语言核心（简体中文 / 繁體中文 / English / 日
       'modal.backUp': '备份',
       'modal.backUpDesc': '下载完整备份：面板设置、入口数据、Multi-control 身份与跨面板订阅缓存。',
       'modal.restore': '恢复',
-      'modal.restoreDesc': '选择由 UnifiedProxy 导出的 ZIP 备份文件恢复数据。TLS 证书不在备份内，恢复后请用 m-ui ssl 重新签发。',
+      'modal.restoreDesc': '选择由 UnifiedProxy 导出的 ZIP 备份文件恢复数据。TLS 证书不在备份内，恢复后请用 unifiedproxy ssl 重新签发。',
       'modal.restoreIdentity': '同时恢复 Multi-control 身份（仅整机迁移时勾选）',
       'modal.exportSubsTitle': '导出全部链接 - 订阅',
       'modal.qrTitle': '二维码',
@@ -1163,7 +1163,7 @@ UnifiedProxy 界面多语言核心（简体中文 / 繁體中文 / English / 日
       'modal.backUp': 'Back Up',
       'modal.backUpDesc': 'Download a full backup: panel settings, inbound data, the multi-control identity and the cross-panel subscription cache.',
       'modal.restore': 'Restore',
-      'modal.restoreDesc': 'Choose a ZIP backup exported by UnifiedProxy to restore data. TLS certificates are not included — reissue them with m-ui ssl afterwards.',
+      'modal.restoreDesc': 'Choose a ZIP backup exported by UnifiedProxy to restore data. TLS certificates are not included — reissue them with unifiedproxy ssl afterwards.',
       'modal.restoreIdentity': 'Also restore the multi-control identity (only for whole-machine migration)',
       'modal.exportSubsTitle': 'Export All URLs - Subscription',
       'modal.qrTitle': 'QR Code',
@@ -1916,12 +1916,12 @@ UnifiedProxy 界面多语言核心（简体中文 / 繁體中文 / English / 日
       'client.add':'Añadir cliente','client.edit':'Editar cliente','client.email':'Correo electrónico','client.username':'Usuario','client.passwordToken':'Contraseña / token','client.totalFlowGb':'Tráfico total (GB)','client.expiryTime':'Caducidad','client.comment':'Comentario','client.addClients':'Añadir clientes','common.update':'Actualizar','action.edit':'Editar','action.clone':'Clonar','action.exportInbound':'Exportar entrada','action.resetTraffic':'Restablecer tráfico','action.recommended':'Recomendado'
     }
   };
-  var GENERATED_LOCALES = window.MUI_LOCALES || {};
+  var GENERATED_LOCALES = window.UNIFIEDPROXY_LOCALES || {};
   Object.keys(GENERATED_LOCALES).forEach(function (language) {
     DICT[language] = Object.assign({}, DICT.en, GENERATED_LOCALES[language], LOCALIZED[language] || {});
   });
 
-  /* 页面原始文案 → key。首遍 muiApply 按原文精确匹配并打标；之后按 data-i18n* 属性走。 */
+  /* 页面原始文案 → key。首遍 upApply 按原文精确匹配并打标；之后按 data-i18n* 属性走。 */
   var SOURCE = {
     'Theme': 'nav.theme', 'Dark': 'nav.dark', 'Ultra Dark': 'nav.ultraDark',
     'Overview': 'nav.overview', 'Inbounds': 'nav.inbounds', 'Mihomo Settings': 'nav.mihomoSettings',
@@ -2034,7 +2034,7 @@ UnifiedProxy 界面多语言核心（简体中文 / 繁體中文 / English / 日
     '更新 GeoIP.dat、GeoSite.dat 和 geoip.metadb': 'modal.geofilesDesc',
     'Database Backup & Restore': 'modal.backupTitle',
     'Back Up': 'modal.backUp', '下载完整备份：面板设置、入口数据、Multi-control 身份与跨面板订阅缓存。': 'modal.backUpDesc',
-    'Restore': 'modal.restore', '选择由 UnifiedProxy 导出的 ZIP 备份文件恢复数据。TLS 证书不在备份内，恢复后请用 m-ui ssl 重新签发。': 'modal.restoreDesc',
+    'Restore': 'modal.restore', '选择由 UnifiedProxy 导出的 ZIP 备份文件恢复数据。TLS 证书不在备份内，恢复后请用 unifiedproxy ssl 重新签发。': 'modal.restoreDesc',
     '同时恢复 Multi-control 身份（仅整机迁移时勾选）': 'modal.restoreIdentity',
     'Export All URLs - Subscription': 'modal.exportSubsTitle',
     'QR Code': 'modal.qrTitle', '点击二维码即可复制此 Client 的分享链接': 'modal.qrHint',
@@ -2237,7 +2237,7 @@ UnifiedProxy 界面多语言核心（简体中文 / 繁體中文 / English / 日
     'Outbound YAML': 'mihomo.outboundYamlAria'
   };
 
-  /* JS 会动态覆写文案的元素不参与原文匹配/打标，动态文案在 JS 里直接用 muiT。 */
+  /* JS 会动态覆写文案的元素不参与原文匹配/打标，动态文案在 JS 里直接用 upT。 */
   var SKIP_IDS = {
     'crumb': 1, 'logs-box': 1, 'modal-log-content': 1, 'release-list': 1,
     'connection-count': 1, 'system-load': 1, 'core-uptime': 1, 'os-uptime': 1,
@@ -2258,19 +2258,19 @@ UnifiedProxy 界面多语言核心（简体中文 / 繁體中文 / English / 日
     'cs-progress-title': 1, 'cs-progress-status': 1, 'cs-cache-summary': 1, 'cs-error': 1
   };
   var SKIP_TAGS = { SCRIPT: 1, STYLE: 1, TEXTAREA: 1, PRE: 1, CODE: 1, SVG: 1, OPTION: 1, NOSCRIPT: 1 };
-  var SKIP_SELECTOR = '#security-segmented,.mui-select-menu,.release-list';
+  var SKIP_SELECTOR = '#security-segmented,.up-select-menu,.release-list';
 
   var lang = 'zh-CN';
   var SUPPORTED_LANGUAGES = ['zh-CN', 'zh-TW', 'en', 'ja', 'ru', 'fa', 'vi', 'es', 'tr', 'uk', 'pt-BR'];
 
-  function muiGetLang() {
+  function upGetLang() {
     var stored = null;
-    try { stored = localStorage.getItem('mui-language'); } catch (e) {}
+    try { stored = localStorage.getItem('up-language'); } catch (e) {}
     var value = stored || document.documentElement.getAttribute('data-default-language') || 'zh-CN';
     return SUPPORTED_LANGUAGES.indexOf(value) >= 0 ? value : 'zh-CN';
   }
 
-  function muiT(key, params) {
+  function upT(key, params) {
     var table = DICT[lang] || DICT['zh-CN'];
     var text = table[key];
     if (text === undefined && lang !== 'zh-CN') text = DICT['en'][key];
@@ -2285,7 +2285,7 @@ UnifiedProxy 界面多语言核心（简体中文 / 繁體中文 / English / 日
   }
 
   function setAttr(el, attr, key) {
-    var value = muiT(key);
+    var value = upT(key);
     if (attr === 'placeholder') el.setAttribute('placeholder', value);
     else if (attr === 'title') el.setAttribute('title', value);
     else if (attr === 'aria-label') el.setAttribute('aria-label', value);
@@ -2300,9 +2300,9 @@ UnifiedProxy 界面多语言核心（简体中文 / 繁體中文 / English / 日
     return out;
   }
 
-  function muiApply(root) {
+  function upApply(root) {
     root = root || document;
-    lang = muiGetLang();
+    lang = upGetLang();
     document.documentElement.lang = lang;
     document.documentElement.dir = lang === 'fa' ? 'rtl' : 'ltr';
 
@@ -2312,12 +2312,12 @@ UnifiedProxy 界面多语言核心（简体中文 / 繁體中文 / English / 日
       var el = stamped[i];
       /* 显式打标的 OPTION/TEXTAREA 视为有意翻译，只跳过绝不该动的标签 */
       if (el.tagName === 'SCRIPT' || el.tagName === 'STYLE' || el.tagName === 'NOSCRIPT' || el.tagName === 'SVG') continue;
-      if (el.hasAttribute('data-i18n')) el.textContent = muiT(el.getAttribute('data-i18n'));
-      if (el.hasAttribute('data-i18n-html')) el.innerHTML = muiT(el.getAttribute('data-i18n-html'));
+      if (el.hasAttribute('data-i18n')) el.textContent = upT(el.getAttribute('data-i18n'));
+      if (el.hasAttribute('data-i18n-html')) el.innerHTML = upT(el.getAttribute('data-i18n-html'));
       if (el.hasAttribute('data-i18n-multi')) {
         var keys = el.getAttribute('data-i18n-multi').split(',');
         var nodes = textNodesOf(el);
-        for (var k = 0; k < keys.length && k < nodes.length; k++) nodes[k].textContent = muiT(keys[k]);
+        for (var k = 0; k < keys.length && k < nodes.length; k++) nodes[k].textContent = upT(keys[k]);
       }
       if (el.hasAttribute('data-i18n-placeholder')) setAttr(el, 'placeholder', el.getAttribute('data-i18n-placeholder'));
       if (el.hasAttribute('data-i18n-title')) setAttr(el, 'title', el.getAttribute('data-i18n-title'));
@@ -2357,7 +2357,7 @@ UnifiedProxy 界面多语言核心（简体中文 / 繁體中文 / English / 日
         if (SOURCE[t]) { matchedKeys.push(SOURCE[t]); matchedNodes.push(own[m]); }
       }
       if (!matchedKeys.length) continue;
-      for (var n = 0; n < matchedNodes.length; n++) matchedNodes[n].textContent = muiT(matchedKeys[n]);
+      for (var n = 0; n < matchedNodes.length; n++) matchedNodes[n].textContent = upT(matchedKeys[n]);
       if (matchedKeys.length === 1 && node2.children.length === 0) {
         node2.setAttribute('data-i18n', matchedKeys[0]);
       } else {
@@ -2366,28 +2366,28 @@ UnifiedProxy 界面多语言核心（简体中文 / 繁體中文 / English / 日
     }
   }
 
-  function muiSetLang(value) {
+  function upSetLang(value) {
     var next = SUPPORTED_LANGUAGES.indexOf(value) >= 0 ? value : 'zh-CN';
-    try { localStorage.setItem('mui-language', next); } catch (e) {}
+    try { localStorage.setItem('up-language', next); } catch (e) {}
     lang = next;
-    muiApply(document);
-    window.dispatchEvent(new Event('mui-langchange'));
+    upApply(document);
+    window.dispatchEvent(new Event('up-langchange'));
   }
 
-  window.muiT = muiT;
-  window.muiApply = muiApply;
-  window.muiSetLang = muiSetLang;
-  window.muiGetLang = muiGetLang;
-  window.muiGetAppliedLang = function () { return lang; };
+  window.upT = upT;
+  window.upApply = upApply;
+  window.upSetLang = upSetLang;
+  window.upGetLang = upGetLang;
+  window.upGetAppliedLang = function () { return lang; };
 
   // Text that page scripts build before DOMContentLoaded (tool button titles,
   // for example) must already be in the chosen language, not zh-CN.
-  lang = muiGetLang();
+  lang = upGetLang();
 
   function boot() {
-    lang = muiGetLang();
-    muiApply(document);
-    window.dispatchEvent(new Event('mui-langchange'));
+    lang = upGetLang();
+    upApply(document);
+    window.dispatchEvent(new Event('up-langchange'));
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot);
   else boot();

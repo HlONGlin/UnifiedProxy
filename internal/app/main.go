@@ -30,7 +30,7 @@ import (
 	"syscall"
 	"time"
 
-	webassets "github.com/RomanovCaesar/m-ui/web"
+	webassets "github.com/hlonglin/unifiedproxy/web"
 	// 时区数据库随二进制打包，这样 -trimpath 出来的 exe 在没装 Go / 没有 zoneinfo 的机器上
 	// 也能 time.LoadLocation("Asia/Shanghai")。
 	_ "time/tzdata"
@@ -47,7 +47,7 @@ const (
 var appVersion = "dev"
 
 // 面板行为设置的默认值。除了 expireDiff / trafficDiff 之外都和 3x-ui 一致；
-// 这两个阈值 3x-ui 默认是 0（不提醒），m-ui 一直有"即将到期 / 流量将尽"的橙色角标，
+// 这两个阈值 3x-ui 默认是 0（不提醒），UnifiedProxy 一直有"即将到期 / 流量将尽"的橙色角标，
 // 所以给成 7 天 / 1 GB，保持原有观感。
 const (
 	defaultRemarkModel   = "-ie"
@@ -407,7 +407,7 @@ type AnyTLSSettings struct {
 // or the packet listener factory), so it is not a "also relay UDP" switch like
 // the shadowsocks/socks `udp` key. TrafficPattern is an opaque base64 protobuf
 // blob produced by mieru's own tooling; the kernel decodes it with
-// mierutp.Decode + Validate, which the panel cannot replicate, so m-ui only
+// mierutp.Decode + Validate, which the panel cannot replicate, so UnifiedProxy only
 // checks that it is well-formed base64 and lets Mihomo reject bad content.
 type MieruSettings struct {
 	Transport           string `json:"transport"`
@@ -417,7 +417,7 @@ type MieruSettings struct {
 
 // Sudoku listeners authenticate with a single shared Key (see singleSecretType).
 // Padding is a tri-state in Mihomo (*int, defaults 10/30), so PaddingEnabled
-// gates whether m-ui writes the pair at all — otherwise a deliberate 0 could not
+// gates whether UnifiedProxy writes the pair at all — otherwise a deliberate 0 could not
 // be told apart from "unset". CustomTables holds one or more 8-symbol layouts;
 // a single entry is written as `custom-table`, several as `custom-tables`,
 // because a non-empty `custom-tables` makes the kernel ignore `custom-table`.
@@ -649,7 +649,7 @@ type CoreManager struct {
 	lastTrafficSave    time.Time
 	lastStateBackup    time.Time
 	// stateDigest is the SHA-256 of state.json as this process last read or wrote
-	// it, so a save can tell that `m-ui configure` changed the file meanwhile.
+	// it, so a save can tell that `unifiedproxy configure` changed the file meanwhile.
 	stateDigest     [sha256.Size]byte
 	enforcedClients map[string]bool
 	// External Traffic Inform 攒下的增量，按 3x-ui 的节奏批量上报。
@@ -704,7 +704,7 @@ type apiResponse struct {
 	Data    any    `json:"data,omitempty"`
 }
 
-// Run starts the m-ui command-line entry point or web panel. buildVersion is
+// Run starts the UnifiedProxy command-line entry point or web panel. buildVersion is
 // supplied by the tiny root command, whose version variable can be set with
 // Go's -X linker option without coupling release tooling to an internal path.
 func Run(buildVersion string) { RunMode(buildVersion, "node") }
@@ -743,7 +743,7 @@ func RunMode(buildVersion, role string) {
 		log.Fatal(err)
 	}
 	dataDir := filepath.Join(root, defaultConfigDir)
-	if configured := strings.TrimSpace(os.Getenv("MUI_DATA_DIR")); configured != "" {
+	if configured := strings.TrimSpace(os.Getenv("UNIFIEDPROXY_DATA_DIR")); configured != "" {
 		dataDir, err = filepath.Abs(configured)
 		if err != nil {
 			log.Fatal(err)
@@ -850,7 +850,7 @@ func RunMode(buildVersion, role string) {
 				}
 			}
 		}
-		log.Printf("m-ui %s listening at %s://%s%s", appVersion, scheme, panelServer.Addr, manager.panelPath())
+		log.Printf("UnifiedProxy %s listening at %s://%s%s", appVersion, scheme, panelServer.Addr, manager.panelPath())
 		servers := []*http.Server{panelServer}
 		if settings.SubscriptionPort != 0 {
 			subscriptionServer := newSubscriptionServer(subscriptionListenAddress(settings), app.subscriptionRoutes())
@@ -1763,7 +1763,7 @@ func (m *CoreManager) load() error {
 	}
 	// Every install used to share the same controller secret. An empty secret is the
 	// operator's explicit "no auth" choice and is left alone.
-	if m.state.Settings.APISecret == legacyAPISecret {
+	if isLegacyAPISecret(m.state.Settings.APISecret) {
 		m.state.Settings.APISecret = newAPISecret()
 		settingsMigrated = true
 	}
@@ -1858,7 +1858,7 @@ func (m *CoreManager) saveLocked() error {
 	return nil
 }
 
-// adoptExternalSettingsLocked keeps the settings that `m-ui configure` (the
+// adoptExternalSettingsLocked keeps the settings that `unifiedproxy configure` (the
 // management script, the installer, a certificate renewal) wrote to state.json
 // while this panel was running. The panel saves every few seconds and when it
 // stops, so it used to write its old settings straight back: a new port, path,
@@ -2111,7 +2111,7 @@ var remarkSeparators = []string{" ", "-", "_", "@", ":", "~", "|", ",", ".", "/"
 var supportedLanguages = []string{"zh-CN", "zh-TW", "en", "ja", "ru", "fa", "vi", "es", "tr", "uk", "pt-BR"}
 
 // normalizeRemarkModel 校验备注模板串：首字符是分隔符，后面跟着去重后的标签字符。
-// m-ui 只做 Inbound(i) + Email(e)，没有 3x-ui 的 Other(o)。
+// UnifiedProxy 只做 Inbound(i) + Email(e)，没有 3x-ui 的 Other(o)。
 func normalizeRemarkModel(model string) (string, error) {
 	if model == "" {
 		return defaultRemarkModel, nil
@@ -2722,7 +2722,7 @@ func containsString(values []string, target string) bool {
 }
 
 // snellVersion mirrors Mihomo's listener default (4), which differs from the
-// outbound default (1); m-ui therefore always states the version explicitly.
+// outbound default (1); UnifiedProxy therefore always states the version explicitly.
 func snellVersion(inbound Inbound) int {
 	if inbound.Snell.Version == 0 {
 		return 4
@@ -2858,7 +2858,7 @@ func appendManagedMetadata(config []byte, inbounds []Inbound) []byte {
 		return config
 	}
 	result := append([]byte(nil), config...)
-	result = append(result, []byte("\n# m-ui managed client metadata; comments are ignored by Mihomo\n")...)
+	result = append(result, []byte("\n# UnifiedProxy managed client metadata; comments are ignored by Mihomo\n")...)
 	result = append(result, []byte(metadata.String())...)
 	return result
 }
@@ -2967,7 +2967,7 @@ func managedInboundConfig(i Inbound) (map[string]any, error) {
 			users = append(users, map[string]any{"username": valueOr(client.Username, client.Name), "uuid": client.UUID, "alterId": client.AlterID})
 		}
 		if len(users) == 0 {
-			users = append(users, map[string]any{"username": valueOr(i.Username, "m-ui"), "uuid": valueOr(i.UUID, "00000000-0000-0000-0000-000000000001"), "alterId": 0})
+			users = append(users, map[string]any{"username": valueOr(i.Username, "UnifiedProxy"), "uuid": valueOr(i.UUID, "00000000-0000-0000-0000-000000000001"), "alterId": 0})
 		}
 		result["users"] = users
 	case "vless":
@@ -2976,13 +2976,13 @@ func managedInboundConfig(i Inbound) (map[string]any, error) {
 			users = append(users, map[string]any{"username": valueOr(client.Username, client.Name), "uuid": client.UUID, "flow": client.Flow})
 		}
 		if len(users) == 0 {
-			users = append(users, map[string]any{"username": valueOr(i.Username, "m-ui"), "uuid": valueOr(i.UUID, "00000000-0000-0000-0000-000000000001")})
+			users = append(users, map[string]any{"username": valueOr(i.Username, "UnifiedProxy"), "uuid": valueOr(i.UUID, "00000000-0000-0000-0000-000000000001")})
 		}
 		result["users"] = users
 	case "trojan":
-		result["users"] = clientUserList(clients, valueOr(i.Username, "m-ui"), i.Password)
+		result["users"] = clientUserList(clients, valueOr(i.Username, "UnifiedProxy"), i.Password)
 	case "hysteria2":
-		result["users"] = clientMap(clients, valueOr(i.Username, "m-ui"), i.Password)
+		result["users"] = clientMap(clients, valueOr(i.Username, "UnifiedProxy"), i.Password)
 	case "hysteria2-realm":
 		// No users at all: the rendezvous API authenticates with a bearer token and
 		// the listener never even looks at the tunnel it is handed.
@@ -2993,19 +2993,19 @@ func managedInboundConfig(i Inbound) (map[string]any, error) {
 			users[valueOr(client.UUID, valueOr(client.Username, client.Name))] = client.Password
 		}
 		if len(users) == 0 {
-			users[valueOr(i.UUID, valueOr(i.Username, "m-ui"))] = i.Password
+			users[valueOr(i.UUID, valueOr(i.Username, "UnifiedProxy"))] = i.Password
 		}
 		result["users"] = users
 	case "shadowquic":
-		result["users"] = clientUserList(clients, valueOr(i.Username, "m-ui"), i.Password)
+		result["users"] = clientUserList(clients, valueOr(i.Username, "UnifiedProxy"), i.Password)
 		applyShadowQuicConfig(result, i.ShadowQuic)
 	case "anytls":
-		result["users"] = clientMap(clients, valueOr(i.Username, "m-ui"), i.Password)
+		result["users"] = clientMap(clients, valueOr(i.Username, "UnifiedProxy"), i.Password)
 	case "mieru":
 		// Mieru's transport is a hard TCP/UDP enum that also decides whether the
 		// socket is a stream or a packet listener, so it is always written.
 		result["transport"] = strings.ToUpper(strings.TrimSpace(i.Mieru.Transport))
-		result["users"] = clientMap(clients, valueOr(i.Username, "m-ui"), i.Password)
+		result["users"] = clientMap(clients, valueOr(i.Username, "UnifiedProxy"), i.Password)
 		if pattern := strings.TrimSpace(i.Mieru.TrafficPattern); pattern != "" {
 			result["traffic-pattern"] = pattern
 		}
@@ -3023,7 +3023,7 @@ func managedInboundConfig(i Inbound) (map[string]any, error) {
 		result["key"] = key
 		applySudokuConfig(result, i.Sudoku)
 	case "trusttunnel":
-		result["users"] = clientUserList(clients, valueOr(i.Username, "m-ui"), i.Password)
+		result["users"] = clientUserList(clients, valueOr(i.Username, "UnifiedProxy"), i.Password)
 		applyTrustTunnelConfig(result, i.TrustTunnel)
 	}
 	if inboundLoadsCertificate(i) && i.Certificate != "" && i.PrivateKey != "" {
@@ -4842,14 +4842,20 @@ func (m *CoreManager) coreRequest(method, path string) (any, error) {
 	return data, err
 }
 
-// legacyAPISecret was the controller secret of every install before v0.2.10.
-const legacyAPISecret = "m-ui-local"
+// legacyAPISecretFingerprint identifies the old globally shared controller key
+// without keeping that key in clear text in the source tree.
+const legacyAPISecretFingerprint = "1d995fd7eabd67ff77a5ea9e684f3278b0955da00970a8f0c8ad0019c6c2d311"
+
+func isLegacyAPISecret(secret string) bool {
+	fingerprint := sha256.Sum256([]byte(secret))
+	return hex.EncodeToString(fingerprint[:]) == legacyAPISecretFingerprint
+}
 
 // controllerCORSOrigin is the only origin the Mihomo controller answers. The panel
 // talks to the controller from the server, never from the browser, so no web page
 // needs it. It cannot simply be omitted: an empty allow-origins list means "allow
 // every origin" in the CORS library Mihomo uses. `.invalid` can never resolve.
-const controllerCORSOrigin = "https://m-ui.invalid"
+const controllerCORSOrigin = "https://unifiedproxy.invalid"
 
 func newAPISecret() string {
 	var secret string

@@ -1,16 +1,16 @@
-name: m-ui
+name: unifiedproxy
 
 services:
-  m-ui:
-    image: ghcr.io/hlonglin/unifiedproxy:${MUI_IMAGE_TAG:-latest}
+  unifiedproxy:
+    image: ghcr.io/hlonglin/unifiedproxy:${UNIFIEDPROXY_IMAGE_TAG:-latest}
     build:
       context: .
       args:
-        MUI_VERSION: ${MUI_BUILD_VERSION:-dev}
+        UNIFIEDPROXY_VERSION: ${UNIFIEDPROXY_BUILD_VERSION:-dev}
         MIHOMO_VERSION: ${MIHOMO_VERSION:-1.19.33}
         MIHOMO_SHA256: ${MIHOMO_SHA256:-386508bfb1c72c43b6a0eda73708ecdce82546581b0ebcb16366c53757c622b6}
     platform: linux/amd64
-    container_name: m-ui
+    container_name: unifiedproxy
     restart: unless-stopped
     stop_grace_period: 10s
 
@@ -20,15 +20,15 @@ services:
 
     environment:
       TZ: ${TZ:-UTC}
-      MUI_LISTEN_IP: 0.0.0.0
-      MUI_PANEL_PORT: ${MUI_PANEL_PORT:-2053}
-      MUI_USERNAME: ${MUI_USERNAME:-admin}
-      MUI_PASSWORD: ${MUI_PASSWORD:-}
-      MUI_PATH: ${MUI_PATH:-}
+      UNIFIEDPROXY_LISTEN_IP: 0.0.0.0
+      UNIFIEDPROXY_PANEL_PORT: ${UNIFIEDPROXY_PANEL_PORT:-2053}
+      UNIFIEDPROXY_USERNAME: ${UNIFIEDPROXY_USERNAME:-admin}
+      UNIFIEDPROXY_PASSWORD: ${UNIFIEDPROXY_PASSWORD:-}
+      UNIFIEDPROXY_PATH: ${UNIFIEDPROXY_PATH:-}
 
     volumes:
-      - m-ui-data:/opt/m-ui/data
-      - m-ui-core:/opt/m-ui/core
+      - unifiedproxy-data:/opt/unifiedproxy/data
+      - unifiedproxy-core:/opt/unifiedproxy/core
 
     # TUN inbounds need these two settings. Leave them commented when TUN is
     # not used, since ordinary proxy inbounds and outbounds do not need them.
@@ -38,5 +38,5 @@ services:
     #   - /dev/net/tun:/dev/net/tun
 
 volumes:
-  m-ui-data:
-  m-ui-core:
+  unifiedproxy-data:
+  unifiedproxy-core:

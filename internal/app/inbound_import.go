@@ -486,7 +486,7 @@ func importedInboundUDP(native map[string]any) bool {
 	value, ok := native["udp"]
 	if !ok || value == nil {
 		typ := strings.ToLower(inboundString(native["type"]))
-		// Snell only relays UDP from v3 on and m-ui rejects UDP below that, so an old
+		// Snell only relays UDP from v3 on and UnifiedProxy rejects UDP below that, so an old
 		// listener without the key imports as TCP-only instead of failing validation.
 		if version := intValue(native["version"]); typ == "snell" && version > 0 && version < 3 {
 			return false

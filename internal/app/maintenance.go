@@ -102,7 +102,7 @@ func (a *App) handleBackup(w http.ResponseWriter, r *http.Request) {
 		}
 		file, _, err := r.FormFile("backup")
 		if err != nil {
-			writeJSON(w, http.StatusBadRequest, apiResponse{Message: a.tr("请选择 m-ui 备份文件")})
+			writeJSON(w, http.StatusBadRequest, apiResponse{Message: a.tr("请选择 UnifiedProxy 备份文件")})
 			return
 		}
 		defer file.Close()
@@ -198,7 +198,7 @@ func (a *App) exportBackup(w http.ResponseWriter) {
 	}
 	manifest, err := json.MarshalIndent(map[string]any{
 		"format":    backupFormatVersion,
-		"app":       "m-ui",
+		"app":       "UnifiedProxy",
 		"version":   appVersion,
 		"createdAt": time.Now().Format(time.RFC3339),
 		"contents":  contents,
@@ -208,7 +208,7 @@ func (a *App) exportBackup(w http.ResponseWriter) {
 		return
 	}
 	w.Header().Set("Content-Type", "application/zip")
-	w.Header().Set("Content-Disposition", fmt.Sprintf(`attachment; filename="m-ui-backup-%s.zip"`, time.Now().Format("20060102-150405")))
+	w.Header().Set("Content-Disposition", fmt.Sprintf(`attachment; filename="UnifiedProxy-backup-%s.zip"`, time.Now().Format("20060102-150405")))
 	archive := zip.NewWriter(w)
 	for _, entry := range entries {
 		writer, err := archive.Create(entry.name)
@@ -303,7 +303,7 @@ func (a *App) importBackup(source multipart.File, replaceIdentity bool) (restore
 		}
 	}
 	if format > backupFormatVersion {
-		return outcome, fmt.Errorf("备份版本过新，请升级 m-ui")
+		return outcome, fmt.Errorf("备份版本过新，请升级 UnifiedProxy")
 	}
 	stateData, err := readBackupEntry(reader, backupStateFile, 4<<20)
 	if err != nil {
@@ -537,7 +537,7 @@ func (a *App) handleGeofileUpdate(w http.ResponseWriter, r *http.Request) {
 func fetchReleases(ctx context.Context) ([]githubRelease, error) {
 	request, _ := http.NewRequestWithContext(ctx, http.MethodGet, githubAPIBase+"/releases?per_page=30", nil)
 	request.Header.Set("Accept", "application/vnd.github+json")
-	request.Header.Set("User-Agent", "m-ui/"+appVersion)
+	request.Header.Set("User-Agent", "UnifiedProxy/"+appVersion)
 	response, err := (&http.Client{Timeout: 20 * time.Second}).Do(request)
 	if err != nil {
 		return nil, fmt.Errorf("无法连接 GitHub: %w", err)
@@ -556,7 +556,7 @@ func fetchReleases(ctx context.Context) ([]githubRelease, error) {
 func fetchRelease(ctx context.Context, tag string) (githubRelease, error) {
 	request, _ := http.NewRequestWithContext(ctx, http.MethodGet, githubAPIBase+"/releases/tags/"+url.PathEscape(tag), nil)
 	request.Header.Set("Accept", "application/vnd.github+json")
-	request.Header.Set("User-Agent", "m-ui/"+appVersion)
+	request.Header.Set("User-Agent", "UnifiedProxy/"+appVersion)
 	response, err := (&http.Client{Timeout: 20 * time.Second}).Do(request)
 	if err != nil {
 		return githubRelease{}, err
@@ -941,7 +941,7 @@ func downloadOfficialFile(ctx context.Context, sourceURL, destination string, ma
 		return fmt.Errorf("拒绝未授权的下载地址")
 	}
 	request, _ := http.NewRequestWithContext(ctx, http.MethodGet, sourceURL, nil)
-	request.Header.Set("User-Agent", "m-ui/"+appVersion)
+	request.Header.Set("User-Agent", "UnifiedProxy/"+appVersion)
 	client := &http.Client{Timeout: 15 * time.Minute, CheckRedirect: func(request *http.Request, via []*http.Request) error {
 		if len(via) > 8 {
 			return errors.New("too many redirects")

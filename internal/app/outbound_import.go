@@ -10,7 +10,7 @@ import (
 	"strconv"
 	"strings"
 
-	convert "github.com/RomanovCaesar/m-ui/internal/mihomoconvert"
+	convert "github.com/hlonglin/unifiedproxy/internal/mihomoconvert"
 	"gopkg.in/yaml.v3"
 )
 

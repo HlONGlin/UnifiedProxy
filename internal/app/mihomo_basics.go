@@ -15,8 +15,8 @@ import (
 	"time"
 )
 
-const basicsDirectName = "MUI-DIRECT"
-const basicsIPv4Name = "MUI-IPV4"
+const basicsDirectName = "UP-DIRECT"
+const basicsIPv4Name = "UP-IPV4"
 
 type MihomoBasics struct {
 	Mode                       string   `json:"mode"`

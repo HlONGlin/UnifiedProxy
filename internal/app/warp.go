@@ -196,7 +196,7 @@ func (m *CoreManager) createWarpAccount(ctx context.Context) (*WarpAccount, erro
 	if err != nil {
 		return nil, err
 	}
-	input := map[string]any{"key": base64.StdEncoding.EncodeToString(key.PublicKey().Bytes()), "tos": time.Now().UTC().Format("2006-01-02T15:04:05.000Z"), "type": "PC", "model": "m-ui", "name": "m-ui"}
+	input := map[string]any{"key": base64.StdEncoding.EncodeToString(key.PublicKey().Bytes()), "tos": time.Now().UTC().Format("2006-01-02T15:04:05.000Z"), "type": "PC", "model": "UnifiedProxy", "name": "UnifiedProxy"}
 	var device WarpDevice
 	if err = m.cloudflareWarpClient().request(ctx, http.MethodPost, "/reg", "", input, &device); err != nil {
 		return nil, err

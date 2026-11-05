@@ -17,7 +17,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/RomanovCaesar/m-ui/internal/fleet"
+	"github.com/hlonglin/unifiedproxy/internal/fleet"
 )
 
 // These release pins are preserved from UnifiedProxy's sidecar installers.

@@ -10,7 +10,7 @@ if ! "$python_bin" --version >/dev/null 2>&1; then
   python_bin=python
 fi
 "$python_bin" -m py_compile scripts/acceptance/check-fleet.py scripts/acceptance/browser-smoke.py scripts/acceptance/local-live.py scripts/acceptance/systemd-live.py
-if [[ "${MUI_FLEET_INTEGRATION:-0}" == 1 ]]; then
+if [[ "${UNIFIEDPROXY_FLEET_INTEGRATION:-0}" == 1 ]]; then
   command -v tar >/dev/null && command -v xz >/dev/null
   go test ./internal/app -run TestFleetRealSidecarProcesses -count=1 -v
 fi

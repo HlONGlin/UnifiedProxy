@@ -1,4 +1,4 @@
-// Package webassets embeds the panel frontend in the m-ui executable.
+// Package webassets embeds the panel frontend in the UnifiedProxy executable.
 package webassets
 
 import (

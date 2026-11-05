@@ -19,24 +19,24 @@ Bắt đầu với [triển khai và di chuyển](docs/unifiedproxy-migration.md
 Chạy với quyền `root` trên Linux dùng systemd hoặc OpenRC:
 
 ```bash
-bash <(curl -Ls https://raw.githubusercontent.com/HlONGlin/UnifiedProxy/main/install.sh)
+bash <(curl -Ls https://raw.githubusercontent.com/HlONGlin/unifiedproxy/main/install.sh)
 ```
 
 Trình cài đặt chọn một cổng trống có năm chữ số, tạo đường dẫn bảng điều khiển 16 ký tự, tên người dùng 14 ký tự và mật khẩu 16 ký tự. Địa chỉ truy cập và thông tin đăng nhập chỉ được in một lần khi kết thúc. Bạn cũng có thể tự chỉ định:
 
 ```bash
-bash <(curl -Ls https://raw.githubusercontent.com/HlONGlin/UnifiedProxy/main/install.sh) \
+bash <(curl -Ls https://raw.githubusercontent.com/HlONGlin/unifiedproxy/main/install.sh) \
   --port 34567 \
   --path MyPanelA1b2C3d4 \
   --username AdminUserA1234 \
   --password 'ChangeThisA12345'
 ```
 
-UnifiedProxy được cài vào `/usr/local/m-ui`, dữ liệu nằm trong `/usr/local/m-ui/data`. Trình cài đặt cũng tải lõi Mihomo cho kiến trúc hiện tại; lõi đã có sẽ được giữ lại trừ khi bạn dùng `--update-mihomo`.
+UnifiedProxy được cài vào `/usr/local/unifiedproxy`, dữ liệu nằm trong `/usr/local/unifiedproxy/data`. Trình cài đặt cũng tải lõi Mihomo cho kiến trúc hiện tại; lõi đã có sẽ được giữ lại trừ khi bạn dùng `--update-mihomo`.
 
-`m-ui update` nâng cấp UnifiedProxy và giữ nguyên mọi cài đặt. Trước khi cập nhật, nó chụp nhanh thư mục dữ liệu vào `data/backups/` và giữ 3 bản mới nhất.
+`unifiedproxy update` nâng cấp UnifiedProxy và giữ nguyên mọi cài đặt. Trước khi cập nhật, nó chụp nhanh thư mục dữ liệu vào `data/backups/` và giữ 3 bản mới nhất.
 
-Gói UnifiedProxy dùng tên `unifiedproxy-linux-<architecture>.tar.gz` cho `386`, `amd64`, `arm64`, `armv5`, `armv6`, `armv7`, `s390x` và `unifiedproxy-windows-amd64.zip`; dịch vụ và lệnh quản lý tiếp tục dùng tên tương thích `m-ui`.
+Gói UnifiedProxy dùng tên `unifiedproxy-linux-<architecture>.tar.gz` cho `386`, `amd64`, `arm64`, `armv5`, `armv6`, `armv7`, `s390x` và `unifiedproxy-windows-amd64.zip`. dịch vụ và lệnh quản lý tiếp tục dùng tên tương thích `unifiedproxy`.
 
 <details>
 <summary>Docker</summary>
@@ -44,14 +44,14 @@ Gói UnifiedProxy dùng tên `unifiedproxy-linux-<architecture>.tar.gz` cho `386
 Image Docker dành cho Linux amd64, chứa UnifiedProxy và một lõi Mihomo có phiên bản cố định, đã được kiểm tra. Compose dùng mạng của máy chủ, nên cổng của các inbound thêm trong bảng điều khiển hoạt động ngay mà không cần ánh xạ cổng.
 
 ```bash
-git clone https://github.com/HlONGlin/UnifiedProxy.git
-cd UnifiedProxy
+git clone https://github.com/HlONGlin/unifiedproxy.git
+cd unifiedproxy
 cp .env.example .env
 docker compose up -d --build
-docker compose logs m-ui
+docker compose logs unifiedproxy
 ```
 
-Xây dựng từ kho này. Các bản phát hành gắn thẻ có thể xuất bản `ghcr.io/hlonglin/unifiedproxy:<tag>` và `latest`; chỉ dùng `docker compose pull` khi ảnh UnifiedProxy tương ứng đã có. `MUI_PASSWORD` / `MUI_PATH` để trống được tạo ở lần chạy đầu và in một lần vào log. Giữ tên dịch vụ `m-ui` và các volume `m-ui-data`, `m-ui-core` khi nâng cấp để bảo toàn dữ liệu.
+Xây dựng từ kho này. Các bản phát hành gắn thẻ có thể xuất bản `ghcr.io/hlonglin/unifiedproxy:<tag>` và `latest`; chỉ dùng `docker compose pull` khi ảnh UnifiedProxy tương ứng đã có. `UNIFIEDPROXY_PASSWORD` / `UNIFIEDPROXY_PATH` để trống được tạo ở lần chạy đầu và in một lần vào log. Giữ tên dịch vụ `unifiedproxy` và các volume `unifiedproxy-data`, `unifiedproxy-core` khi nâng cấp để bảo toàn dữ liệu.
 
 </details>
 
@@ -184,7 +184,7 @@ Xây dựng từ kho này. Các bản phát hành gắn thẻ có thể xuất b
 Lần cài đặt tương tác đầu tiên cho phép chọn chứng chỉ Let's Encrypt cho tên miền, chứng chỉ Let's Encrypt ngắn hạn cho IPv4, chứng chỉ có sẵn, hoặc bỏ qua TLS. Sau khi cài đặt, chạy:
 
 ```bash
-m-ui ssl
+unifiedproxy ssl
 ```
 
 Menu có thể cấp chứng chỉ cho tên miền và IP, dùng API DNS của Cloudflare để cấp chứng chỉ tên miền và wildcard khi cổng 80 không dùng được, gia hạn, thu hồi, liệt kê và áp dụng chứng chỉ có sẵn. Nếu tệp chứng chỉ chỉ có chứng chỉ lá, UnifiedProxy sẽ tự bổ sung chuỗi chứng chỉ, vì các client như Mihomo Party và FlClash từ chối loại chứng chỉ này.
@@ -192,13 +192,13 @@ Menu có thể cấp chứng chỉ cho tên miền và IP, dùng API DNS của C
 ## Lệnh quản lý
 
 ```text
-m-ui                  # mở trình đơn tương tác
-m-ui start | stop | restart | status | logs
-m-ui settings | configure | set-port
-m-ui reset-credentials | reset-path
-m-ui update | update-menu | ssl
-m-ui enable | disable | clear-logs | uninstall
-m-ui --lang <code>    ngôn ngữ trình đơn, ví dụ: m-ui --lang vi
+UnifiedProxy                  # mở trình đơn tương tác
+unifiedproxy start | stop | restart | status | logs
+unifiedproxy settings | configure | set-port
+unifiedproxy reset-credentials | reset-path
+unifiedproxy update | update-menu | ssl
+unifiedproxy enable | disable | clear-logs | uninstall
+unifiedproxy --lang <code>    ngôn ngữ trình đơn, ví dụ: unifiedproxy --lang vi
 ```
 
 Menu hỗ trợ 11 ngôn ngữ giống bảng điều khiển và ghi nhớ lựa chọn của bạn. Trình cài đặt vẫn dùng tiếng Anh.
@@ -212,7 +212,7 @@ Menu hỗ trợ 11 ngôn ngữ giống bảng điều khiển và ghi nhớ lự
 * [Chức năng và tương thích](docs/design/legacy-acceptance.md)
 * [Chủ đề và nguồn tham khảo](docs/design/p2-token-map.md)
 * [Đánh giá P5](docs/design/p5-acceptance.md)
-* [Bản phát hành](https://github.com/HlONGlin/UnifiedProxy/releases)
+* [Bản phát hành](https://github.com/HlONGlin/unifiedproxy/releases)
 
 ## Phát triển
 
@@ -225,14 +225,14 @@ go vet ./...
 go test ./...
 ```
 
-`MUI_VERSION` / Git tag → `-X main.version=...`. [Fleet build / deployment](docs/unifiedproxy-migration.md) · [Design tokens](docs/design/p2-token-map.md).
+`UNIFIEDPROXY_VERSION` / Git tag → `-X main.version=...`. [Fleet build / deployment](docs/unifiedproxy-migration.md) · [Design tokens](docs/design/p2-token-map.md).
 
 ## Lời cảm ơn
 
 * [MetaCubeX/mihomo](https://github.com/MetaCubeX/mihomo): lõi proxy và mô hình cấu hình
 * [MHSanaei/3x-ui](https://github.com/MHSanaei/3x-ui): mật độ thông tin và cách thao tác của giao diện
 * [Sub-Store](https://github.com/sub-store-org/Sub-Store): hành vi tham chiếu cho các định dạng đăng ký
-* m-ui (GPL-3.0), UnifiedProxy (MIT): [NOTICE](NOTICE), [MIT notice](licenses/UnifiedProxy-MIT.txt).
+* UnifiedProxy (GPL-3.0), UnifiedProxy (MIT): [NOTICE](NOTICE), [MIT notice](licenses/UnifiedProxy-MIT.txt).
 * [Lucide](https://lucide.dev): ISC; [icon attribution](web/licenses/LICENSE-Lucide.txt).
 * Tham chiếu bảng màu: Vercel / Claude (Anthropic) / Sentry / Supabase / Stripe. Tài liệu do VoltAgent/awesome-design-md tổng hợp theo giấy phép MIT; xem [ghi chú thiết kế giao diện](docs/design/p2-token-map.md).
 

@@ -15,5 +15,5 @@
 Dockerfile text eol=lf
 .dockerignore text eol=lf
 .env.example text eol=lf
-deploy/m-ui.openrc text eol=lf
-deploy/m-ui.service text eol=lf
+deploy/unifiedproxy.openrc text eol=lf
+deploy/unifiedproxy.service text eol=lf

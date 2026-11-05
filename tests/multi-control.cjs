@@ -2,17 +2,17 @@ const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
 const { spawn } = require('node:child_process');
-const { chromium } = require(process.env.MUI_PLAYWRIGHT || 'playwright');
+const { chromium } = require(process.env.UNIFIEDPROXY_PLAYWRIGHT || 'playwright');
 
 const artifacts=path.resolve('.runtime-import');
 fs.mkdirSync(artifacts,{recursive:true});
 const testDir=fs.mkdtempSync(path.join(artifacts,'mesh-ui-'));
-const fixture=path.resolve(process.env.MUI_PEER_FIXTURE||'.runtime-import/mesh-fixture.exe');
+const fixture=path.resolve(process.env.UNIFIEDPROXY_PEER_FIXTURE||'.runtime-import/mesh-fixture.exe');
 const processes=[];
 const ports=[21550,21551,21552];
 function start(i){
   const proc=spawn(fixture,['-test.run=^TestMultiControlBrowserFixture$','-test.timeout=10m'],{
-    cwd:path.resolve('.'),windowsHide:true,env:{...process.env,MUI_PEER_BROWSER_ADDR:'127.0.0.1:'+ports[i],MUI_PEER_BROWSER_DATA:path.join(testDir,String(i)),MUI_PEER_BROWSER_NAME:['Panel A','Panel B','Panel C'][i]},stdio:'ignore'
+    cwd:path.resolve('.'),windowsHide:true,env:{...process.env,UNIFIEDPROXY_PEER_BROWSER_ADDR:'127.0.0.1:'+ports[i],UNIFIEDPROXY_PEER_BROWSER_DATA:path.join(testDir,String(i)),UNIFIEDPROXY_PEER_BROWSER_NAME:['Panel A','Panel B','Panel C'][i]},stdio:'ignore'
   });
   processes[i]=proc;return proc;
 }
@@ -30,7 +30,7 @@ async function ready(i){
   try{
     for(let i=0;i<3;i++)start(i);
     await Promise.all(ports.map((_,i)=>ready(i)));
-    browser=await chromium.launch({headless:true,executablePath:process.env.MUI_CHROMIUM});
+    browser=await chromium.launch({headless:true,executablePath:process.env.UNIFIEDPROXY_CHROMIUM});
     const pages=[],errors=[];
     for(let i=0;i<3;i++){
       const context=await browser.newContext({viewport:{width:1440,height:1000}});

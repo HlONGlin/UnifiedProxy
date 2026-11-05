@@ -8,7 +8,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/RomanovCaesar/m-ui/internal/fleet"
+	"github.com/hlonglin/unifiedproxy/internal/fleet"
 )
 
 func enrollTest(t *testing.T, s *Store) *Node {

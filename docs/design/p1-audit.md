@@ -4,7 +4,7 @@
 机器可读的逐文件 ID、表单、按钮、页签、动态模板 ID、API 路径、变量及资源完整目录见
 [p1-source-inventory.json](p1-source-inventory.json)，不是只列导航栏的抽样清单。
 
-## M-UI 视觉身份与行为清单
+## UnifiedProxy 视觉身份与行为清单
 
 | 文件/身份 | 作用 | 有功能行为 | 后续等价处理 |
 |---|---|---|---|
@@ -25,7 +25,7 @@
 | icons-material.js | 替换 SF sprite 的 Material 形状 | 同名图标 | 移除视觉集，保留图标名称覆盖率 |
 | icons-lucide.js | shadcn 线性 sprite | 同名 sprite | 提取统一图标，保留 Lucide 许可证 |
 | fonts.css/fonts | Geist 与 Roboto 字体 | 文本渲染 | Inter/system 中文、JetBrains Mono；原备份字体路径仍可兼容 |
-| media/m-ui_logo*.png | m-ui 品牌 | 无 | UnifiedProxy 自有 SVG 标识 |
+| media/UnifiedProxy_logo*.png | UnifiedProxy 品牌 | 无 | UnifiedProxy 自有 SVG 标识 |
 | media/glass-wallpaper.svg | 玻璃背景 | 无 | 移除 |
 | mac-traffic-lights、ambient/aurora、Apple 文案 | 视觉身份装饰 | 无 | 移除装饰；真实功能文案保留 |
 | ui_theme.go/main.go Settings.UITheme | 三种外观设置、资源过滤与持久化 | 有；旧数据依赖 | 旧值输入仍接受并迁移，界面仅展示 t0–t4；不影响其他 Settings |
@@ -79,7 +79,7 @@ ID 为后续实际回归记录的主键。除注明外入口均在 index.html。
 |---|---|---|
 | 最早有业务数据的 `aa45551`（其后的 `18224d0` 是修正提交）（2026-10-05） | store.persisted：admin/settings.subToken/nodes；Port 无 proxyType 时为 Mieru | 原始 Node remark/日期与 subToken 未迁移 |
 | 后续 merit / UnifiedProxy 1.x | 上述增加 panelPath、egress、流量/限速/自动禁用、TLS/SNI、ShadowTLS 后端、审计 | 当前转换器只读部分字段；流量与旧订阅丢弃 |
-| m-ui 备份 ZIP | manifest + state.json + peers/cross/templates 等文件 | 原路径保留并测试，不得用旧 JSON 导入覆盖 |
+| UnifiedProxy 备份 ZIP | manifest + state.json + peers/cross/templates 等文件 | 原路径保留并测试，不得用旧 JSON 导入覆盖 |
 | 合并版 Fleet JSON | format=1 / panel / fleet / files / drafts | 现有事务恢复与回滚保留，新增兼容接入不得弱化校验 |
 
 初始 `6bed6a3` 只有 .gitattributes，不是可产生备份的业务版本。迁移夹具以最早实际持久化结构为起点。

@@ -70,7 +70,7 @@ users:
 		t.Fatal(err)
 	}
 	request := httptest.NewRequest(http.MethodPost, "/api/inbounds/import", strings.NewReader(string(encoded)))
-	request.AddCookie(&http.Cookie{Name: "mui_session", Value: "session"})
+	request.AddCookie(&http.Cookie{Name: "up_session", Value: "session"})
 	response := httptest.NewRecorder()
 	a.routes().ServeHTTP(response, request)
 	if response.Code != http.StatusOK {
@@ -117,7 +117,7 @@ func TestInboundYAMLImportEndpointAcceptsRealityListener(t *testing.T) {
 		t.Fatal(err)
 	}
 	request := httptest.NewRequest(http.MethodPost, "/api/inbounds/import", strings.NewReader(string(encoded)))
-	request.AddCookie(&http.Cookie{Name: "mui_session", Value: "session"})
+	request.AddCookie(&http.Cookie{Name: "up_session", Value: "session"})
 	response := httptest.NewRecorder()
 	a.routes().ServeHTTP(response, request)
 	if response.Code != http.StatusOK {

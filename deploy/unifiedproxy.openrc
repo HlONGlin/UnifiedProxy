@@ -1,0 +1,15 @@
+#!/sbin/openrc-run
+
+name="UnifiedProxy"
+description="UnifiedProxy Mihomo Control Panel"
+command="/usr/local/unifiedproxy/unifiedproxy"
+directory="/usr/local/unifiedproxy"
+command_background="yes"
+pidfile="/run/unifiedproxy.pid"
+output_log="/var/log/unifiedproxy.log"
+error_log="/var/log/unifiedproxy.log"
+
+depend() {
+    need net
+    after firewall
+}

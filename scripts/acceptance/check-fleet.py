@@ -117,7 +117,7 @@ def check_proxy(check, curl):
         options["cacert"] = str(Path(check["caFile"]).resolve())
     if check.get("proxyCAFile"):
         options["proxy-cacert"] = str(Path(check["proxyCAFile"]).resolve())
-    with tempfile.TemporaryDirectory(prefix="mui-proxy-check-") as temp:
+    with tempfile.TemporaryDirectory(prefix="up-proxy-check-") as temp:
         path = Path(temp) / "response"
         options["output"] = str(path)
         config = "\n".join(key + " = " + curl_quote(value) for key, value in options.items())

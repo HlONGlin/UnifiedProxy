@@ -15,23 +15,23 @@
     const period = client.trafficReset || 'never';
     const mode = renewMode(client);
     const count = Number(client.renewCount) || 0;
-    let html = `<div class="field"><label>${esc(muiT('sched.trafficReset'))}</label><select data-schedule-field="trafficReset">${periods.map(value => option(value, muiT('common.' + value), value === period)).join('')}</select></div>`;
+    let html = `<div class="field"><label>${esc(upT('sched.trafficReset'))}</label><select data-schedule-field="trafficReset">${periods.map(value => option(value, upT('common.' + value), value === period)).join('')}</select></div>`;
     if (period === 'monthly') {
-      html += `<div class="field"><label>${esc(muiT('sched.resetDay'))}</label><input type="number" min="1" max="31" data-schedule-field="trafficResetDay" value="${Number(client.trafficResetDay) || 1}"></div>`;
+      html += `<div class="field"><label>${esc(upT('sched.resetDay'))}</label><input type="number" min="1" max="31" data-schedule-field="trafficResetDay" value="${Number(client.trafficResetDay) || 1}"></div>`;
     }
-    html += `<div class="field"><label title="${esc(muiT('sched.renewHint'))}">${esc(muiT('sched.renew'))}</label><select data-schedule-field="renewMode">${[
-      ['off', muiT('sched.renewOff')], ['days', muiT('sched.renewDays')], ['monthly', muiT('common.monthly')], ['weekly', muiT('common.weekly')],
+    html += `<div class="field"><label title="${esc(upT('sched.renewHint'))}">${esc(upT('sched.renew'))}</label><select data-schedule-field="renewMode">${[
+      ['off', upT('sched.renewOff')], ['days', upT('sched.renewDays')], ['monthly', upT('common.monthly')], ['weekly', upT('common.weekly')],
     ].map(([value, label]) => option(value, label, value === mode)).join('')}</select></div>`;
     if (mode === 'days') {
-      html += `<div class="field"><label>${esc(muiT('sched.renewEvery'))}</label><input type="number" min="1" max="3650" data-schedule-field="renewDays" value="${Number(client.renewDays) || 30}"></div>`;
+      html += `<div class="field"><label>${esc(upT('sched.renewEvery'))}</label><input type="number" min="1" max="3650" data-schedule-field="renewDays" value="${Number(client.renewDays) || 30}"></div>`;
     } else if (mode === 'monthly') {
-      html += `<div class="field"><label>${esc(muiT('sched.renewDay'))}</label><input type="number" min="1" max="31" data-schedule-field="renewDay" value="${Number(client.renewDay) || 1}"></div>`;
+      html += `<div class="field"><label>${esc(upT('sched.renewDay'))}</label><input type="number" min="1" max="31" data-schedule-field="renewDay" value="${Number(client.renewDay) || 1}"></div>`;
     } else if (mode === 'weekly') {
-      html += `<div class="field"><label>${esc(muiT('sched.renewWeekday'))}</label><select data-schedule-field="renewWeekday">${[1, 2, 3, 4, 5, 6, 7].map(day => option(String(day), muiT('sched.weekday' + day), day === Number(client.renewWeekday))).join('')}</select></div>`;
+      html += `<div class="field"><label>${esc(upT('sched.renewWeekday'))}</label><select data-schedule-field="renewWeekday">${[1, 2, 3, 4, 5, 6, 7].map(day => option(String(day), upT('sched.weekday' + day), day === Number(client.renewWeekday))).join('')}</select></div>`;
     }
     if (mode !== 'off') {
-      const label = muiT('sched.renewMax') + (count ? ` · ${muiT('sched.renewed', {n: count})}` : '');
-      html += `<div class="field"><label>${esc(label)}</label><input type="number" min="0" data-schedule-field="renewMax" value="${Number(client.renewMax) || ''}" placeholder="${esc(muiT('sched.unlimited'))}"></div>`;
+      const label = upT('sched.renewMax') + (count ? ` · ${upT('sched.renewed', {n: count})}` : '');
+      html += `<div class="field"><label>${esc(label)}</label><input type="number" min="0" data-schedule-field="renewMax" value="${Number(client.renewMax) || ''}" placeholder="${esc(upT('sched.unlimited'))}"></div>`;
     }
     return html;
   };

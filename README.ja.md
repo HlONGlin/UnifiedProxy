@@ -19,24 +19,24 @@ UnifiedProxy は Mihomo ネイティブの管理パネルとフリート管理�
 systemd または OpenRC を使う Linux で、`root` として実行します：
 
 ```bash
-bash <(curl -Ls https://raw.githubusercontent.com/HlONGlin/UnifiedProxy/main/install.sh)
+bash <(curl -Ls https://raw.githubusercontent.com/HlONGlin/unifiedproxy/main/install.sh)
 ```
 
 インストーラーは未使用の 5 桁のパネルポートを選び、16 文字のパネルパス、14 文字のユーザー名、16 文字のパスワードを生成します。アクセス URL と認証情報は最後に一度だけ表示されます。明示的に指定することもできます：
 
 ```bash
-bash <(curl -Ls https://raw.githubusercontent.com/HlONGlin/UnifiedProxy/main/install.sh) \
+bash <(curl -Ls https://raw.githubusercontent.com/HlONGlin/unifiedproxy/main/install.sh) \
   --port 34567 \
   --path MyPanelA1b2C3d4 \
   --username AdminUserA1234 \
   --password 'ChangeThisA12345'
 ```
 
-UnifiedProxy は `/usr/local/m-ui` にインストールされ、データは `/usr/local/m-ui/data` に保存されます。インストーラーは現在のアーキテクチャ用の Mihomo コアもダウンロードします。既存のコアは `--update-mihomo` を指定しない限り保持されます。
+UnifiedProxy は `/usr/local/unifiedproxy` にインストールされ、データは `/usr/local/unifiedproxy/data` に保存されます。インストーラーは現在のアーキテクチャ用の Mihomo コアもダウンロードします。既存のコアは `--update-mihomo` を指定しない限り保持されます。
 
-`m-ui update` は設定を保持したまま UnifiedProxy を更新します。更新前にデータディレクトリのスナップショットを `data/backups/` に作成し、最新の 3 つを保持します。
+`unifiedproxy update` は設定を保持したまま UnifiedProxy を更新します。更新前にデータディレクトリのスナップショットを `data/backups/` に作成し、最新の 3 つを保持します。
 
-UnifiedProxy のリリースには `386`、`amd64`、`arm64`、`armv5`、`armv6`、`armv7`、`s390x` 向けの `unifiedproxy-linux-<architecture>.tar.gz` と `unifiedproxy-windows-amd64.zip` が含まれます。サービス名と管理コマンドには互換性のある `m-ui` 名を引き続き使用します。
+UnifiedProxy のリリースには `386`、`amd64`、`arm64`、`armv5`、`armv6`、`armv7`、`s390x` 向けの `unifiedproxy-linux-<architecture>.tar.gz` と `unifiedproxy-windows-amd64.zip` が含まれます。サービス名と管理コマンドは `unifiedproxy` です。
 
 <details>
 <summary>Docker</summary>
@@ -44,14 +44,14 @@ UnifiedProxy のリリースには `386`、`amd64`、`arm64`、`armv5`、`armv6`
 Docker イメージは Linux amd64 向けで、UnifiedProxy と、バージョン固定かつ検証済みの Mihomo コアを含みます。Compose はホストネットワークを使うため、パネルで追加したインバウンドのポートは追加のポートマッピングなしで使えます。
 
 ```bash
-git clone https://github.com/HlONGlin/UnifiedProxy.git
-cd UnifiedProxy
+git clone https://github.com/HlONGlin/unifiedproxy.git
+cd unifiedproxy
 cp .env.example .env
 docker compose up -d --build
-docker compose logs m-ui
+docker compose logs unifiedproxy
 ```
 
-このリポジトリからビルドしてください。タグ付きリリースでは `ghcr.io/hlonglin/unifiedproxy:<tag>` と `latest` を公開できます。対応する UnifiedProxy イメージの公開後に `docker compose pull` を使ってください。空の `MUI_PASSWORD` / `MUI_PATH` は初回に生成されログに一度表示されます。互換性のためサービス名 `m-ui` とボリューム `m-ui-data`、`m-ui-core` を維持し、更新時も保持してください。
+このリポジトリからビルドしてください。タグ付きリリースでは `ghcr.io/hlonglin/unifiedproxy:<tag>` と `latest` を公開できます。対応する UnifiedProxy イメージの公開後に `docker compose pull` を使ってください。空の `UNIFIEDPROXY_PASSWORD` / `UNIFIEDPROXY_PATH` は初回に生成されログに一度表示されます。Compose のサービス名は `unifiedproxy`、ボリューム名は `unifiedproxy-data` と `unifiedproxy-core` です。
 
 </details>
 
@@ -184,7 +184,7 @@ docker compose logs m-ui
 初回の対話型インストールでは、Let's Encrypt のドメイン証明書、短期の Let's Encrypt IPv4 証明書、既存の証明書、または TLS を設定しない、から選べます。インストール後は次を実行します：
 
 ```bash
-m-ui ssl
+unifiedproxy ssl
 ```
 
 メニューでは、ドメイン証明書と IP 証明書の発行、ポート 80 が使えない場合の Cloudflare DNS API によるドメインとワイルドカード証明書の発行、更新、失効、一覧表示、既存の証明書の適用ができます。証明書ファイルにリーフ証明書しかない場合、UnifiedProxy は証明書チェーンを自動で補完します。Mihomo Party や FlClash などのクライアントがそのような証明書を拒否するためです。
@@ -192,13 +192,13 @@ m-ui ssl
 ## 管理コマンド
 
 ```text
-m-ui                  # 対話型メニューを開く
-m-ui start | stop | restart | status | logs
-m-ui settings | configure | set-port
-m-ui reset-credentials | reset-path
-m-ui update | update-menu | ssl
-m-ui enable | disable | clear-logs | uninstall
-m-ui --lang <code>    メニュー言語。例: m-ui --lang ja
+UnifiedProxy                  # 対話型メニューを開く
+unifiedproxy start | stop | restart | status | logs
+unifiedproxy settings | configure | set-port
+unifiedproxy reset-credentials | reset-path
+unifiedproxy update | update-menu | ssl
+unifiedproxy enable | disable | clear-logs | uninstall
+unifiedproxy --lang <code>    メニュー言語。例: unifiedproxy --lang ja
 ```
 
 管理メニューはパネルと同じ 11 言語に対応し、選んだ言語を記憶します。インストーラーは英語のままです。
@@ -212,7 +212,7 @@ m-ui --lang <code>    メニュー言語。例: m-ui --lang ja
 * [機能と互換性](docs/design/legacy-acceptance.md)
 * [テーマと参照元](docs/design/p2-token-map.md)
 * [P5 画面と機能の検証](docs/design/p5-acceptance.md)
-* [リリース](https://github.com/HlONGlin/UnifiedProxy/releases)
+* [リリース](https://github.com/HlONGlin/unifiedproxy/releases)
 
 ## 開発
 
@@ -225,14 +225,14 @@ go vet ./...
 go test ./...
 ```
 
-`MUI_VERSION` / Git tag → `-X main.version=...`. [Fleet build / deployment](docs/unifiedproxy-migration.md) · [Design tokens](docs/design/p2-token-map.md).
+`UNIFIEDPROXY_VERSION` / Git tag → `-X main.version=...`. [Fleet build / deployment](docs/unifiedproxy-migration.md) · [Design tokens](docs/design/p2-token-map.md).
 
 ## 謝辞
 
 * [MetaCubeX/mihomo](https://github.com/MetaCubeX/mihomo)：プロキシコアと設定モデル
 * [MHSanaei/3x-ui](https://github.com/MHSanaei/3x-ui)：画面の情報密度と操作の流れ
 * [Sub-Store](https://github.com/sub-store-org/Sub-Store)：クライアント向けサブスクリプション形式の参考実装
-* m-ui (GPL-3.0), UnifiedProxy (MIT): [NOTICE](NOTICE), [MIT notice](licenses/UnifiedProxy-MIT.txt).
+* UnifiedProxy (GPL-3.0), UnifiedProxy (MIT): [NOTICE](NOTICE), [MIT notice](licenses/UnifiedProxy-MIT.txt).
 * [Lucide](https://lucide.dev): ISC; [icon attribution](web/licenses/LICENSE-Lucide.txt).
 * 配色の参考対象は Vercel / Claude（Anthropic）/ Sentry / Supabase / Stripe です。資料は VoltAgent/awesome-design-md（MIT）に基づきます。詳しくは[テーマ設計記録](docs/design/p2-token-map.md)をご覧ください。
 

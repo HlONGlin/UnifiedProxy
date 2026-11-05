@@ -1,7 +1,7 @@
 /* UnifiedProxy P4 finish. References: Vercel, Claude/Anthropic, Sentry,
- * Supabase and Stripe via awesome-design-md (MIT); m-ui ancestry GPL-3.0.
+ * Supabase and Stripe via awesome-design-md (MIT); UnifiedProxy ancestry GPL-3.0.
  * Uses established tokens only; geometry and palette contract stay shared. */
-html body :is(.general-menu,.inbound-popover,.settings-menu,.client-menu,.swift-picker-menu,.mui-combobox-menu){background:var(--surface-2);border:1px solid var(--hairline-strong);box-shadow:none;backdrop-filter:none;-webkit-backdrop-filter:none}
+html body :is(.general-menu,.inbound-popover,.settings-menu,.client-menu,.swift-picker-menu,.up-combobox-menu){background:var(--surface-2);border:1px solid var(--hairline-strong);box-shadow:none;backdrop-filter:none;-webkit-backdrop-filter:none}
 html body :is(.modal-panel,.drawer,.settings-menu,.client-menu)::before,html body :is(.modal-panel,.drawer,.settings-menu,.client-menu)::after{box-shadow:none;background-image:none}
 html body :is(button,a,input,select,textarea,summary,[role=button],[role=option],.swift-picker-selection,.node,.url){transition:background-color var(--duration-fast) var(--easing-out),border-color var(--duration-fast) var(--easing-out),color var(--duration-fast) var(--easing-out),opacity var(--duration-fast) var(--easing-out)}
 html body :is(button,a,input,select,textarea,summary,[role=button],[tabindex]):focus-visible{outline:2px solid color-mix(in srgb,var(--primary-focus) 50%,transparent)!important;outline-offset:2px;box-shadow:none}

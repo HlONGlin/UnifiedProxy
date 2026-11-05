@@ -27,7 +27,7 @@ import (
 	"time"
 )
 
-const peerWirePath = "/_m-ui/peer/v1"
+const peerWirePath = "/_UnifiedProxy/peer/v1"
 const maxMeshPeers = 128
 const peerHeartbeat = 15 * time.Second
 const peerWireLimit = 256 << 10
@@ -125,7 +125,7 @@ func newPeerNetwork(dataDir string) (*PeerNetwork, error) {
 	}
 	name, _ := os.Hostname()
 	if name == "" {
-		name = "m-ui"
+		name = "UnifiedProxy"
 	}
 	if len(name) > 128 {
 		name = name[:128]
@@ -145,7 +145,7 @@ func peerID(public ed25519.PublicKey) string {
 func peerNodeBytes(node PeerNode) []byte {
 	node.Signature = ""
 	data, _ := json.Marshal(node)
-	return append([]byte("m-ui-peer-node-v1\n"), data...)
+	return append([]byte("UnifiedProxy-peer-node-v1\n"), data...)
 }
 func (p *PeerNetwork) signSelf(disk *peerDisk) {
 	key, _ := base64.StdEncoding.DecodeString(disk.PrivateKey)
@@ -464,7 +464,7 @@ func peerMessageBytes(message peerMessage) []byte {
 	message.Signature = ""
 	message.MAC = ""
 	data, _ := json.Marshal(message)
-	return append([]byte("m-ui-peer-message-v1\n"), data...)
+	return append([]byte("UnifiedProxy-peer-message-v1\n"), data...)
 }
 func peerMAC(message peerMessage, token string) string {
 	mac := hmac.New(sha256.New, []byte(token))

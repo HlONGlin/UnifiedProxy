@@ -1,12 +1,12 @@
 const assert = require('node:assert/strict');
-const { chromium } = require(process.env.MUI_PLAYWRIGHT || 'playwright');
+const { chromium } = require(process.env.UNIFIEDPROXY_PLAYWRIGHT || 'playwright');
 
 (async()=>{
-  const browser=await chromium.launch({headless:true,executablePath:process.env.MUI_CHROMIUM});
+  const browser=await chromium.launch({headless:true,executablePath:process.env.UNIFIEDPROXY_CHROMIUM});
   try {
     const page=await browser.newPage({viewport:{width:1440,height:1050}}),errors=[];
     page.on('pageerror',error=>errors.push(error.message));
-    await page.goto(process.env.MUI_TEST_URL||'http://127.0.0.1:21530/');
+    await page.goto(process.env.UNIFIEDPROXY_TEST_URL||'http://127.0.0.1:21530/');
     await page.locator('#username').fill('admin');await page.locator('#password').fill('admin');await page.locator('#login-button').click();
     await page.locator('[data-view="mihomo"]').click();
     await page.locator('#mihomo-basics-form').waitFor({state:'visible'});
@@ -40,7 +40,7 @@ const { chromium } = require(process.env.MUI_PLAYWRIGHT || 'playwright');
     await page.locator('#mihomo-save').click();
     await page.waitForFunction(()=>document.querySelector('#mihomo-save').disabled);
     const cfg=await page.request.get(new URL('/api/raw-config',page.url()).href);const text=(await cfg.json()).data.config;
-    for(const expected of ['MUI-IPV4','MUI-DIRECT','GEOIP,LAN,REJECT','DOMAIN-SUFFIX,blocked.example.com,REJECT','DOMAIN-SUFFIX,example.net,MUI-IPV4','tcp-concurrent: true','unified-delay: true'])assert.ok(text.includes(expected),expected);
+    for(const expected of ['UP-IPV4','UP-DIRECT','GEOIP,LAN,REJECT','DOMAIN-SUFFIX,blocked.example.com,REJECT','DOMAIN-SUFFIX,example.net,UP-IPV4','tcp-concurrent: true','unified-delay: true'])assert.ok(text.includes(expected),expected);
     await page.reload();await page.locator('[data-view="mihomo"]').click();
     await page.waitForFunction(()=>document.querySelector('#basics-directIpVersion').value==='ipv4-prefer');
     assert.equal(await page.locator('#basics-logLevel').inputValue(),'debug');

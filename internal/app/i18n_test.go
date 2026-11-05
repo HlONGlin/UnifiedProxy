@@ -247,7 +247,7 @@ func TestAPIMessagesFollowThePanelLanguage(t *testing.T) {
 	app := i18nTestApp(t)
 	call := func() string {
 		request := httptest.NewRequest(http.MethodPost, "/api/inbounds", strings.NewReader(`{"name":"bad","type":"vless","listen":"0.0.0.0","port":0}`))
-		request.AddCookie(&http.Cookie{Name: "mui_session", Value: "test-session"})
+		request.AddCookie(&http.Cookie{Name: "up_session", Value: "test-session"})
 		recorder := httptest.NewRecorder()
 		app.handleInbounds(recorder, request)
 		if recorder.Code == http.StatusOK {
@@ -298,7 +298,7 @@ func TestIndexPageCarriesThePanelLanguage(t *testing.T) {
 	app := i18nTestApp(t)
 	i18nSetLanguage(app, "en")
 	request := httptest.NewRequest(http.MethodGet, "/", nil)
-	request.AddCookie(&http.Cookie{Name: "mui_session", Value: "test-session"})
+	request.AddCookie(&http.Cookie{Name: "up_session", Value: "test-session"})
 	recorder := httptest.NewRecorder()
 	app.handleIndex(recorder, request)
 	if recorder.Code != http.StatusOK {
@@ -324,7 +324,7 @@ func TestLanguageUpdateRequiresSession(t *testing.T) {
 		request := httptest.NewRequest(http.MethodPost, path, strings.NewReader(`{"language":"`+language+`"}`))
 		request.Header.Set("Content-Type", "application/json")
 		if signedIn {
-			request.AddCookie(&http.Cookie{Name: "mui_session", Value: "admin-session"})
+			request.AddCookie(&http.Cookie{Name: "up_session", Value: "admin-session"})
 		}
 		response := httptest.NewRecorder()
 		handler.ServeHTTP(response, request)
@@ -497,7 +497,7 @@ func TestTranslatableAttributesAreReachable(t *testing.T) {
 	}
 	attributes, text := strings.Index(source, "SOURCE_PH[ph]"), strings.Index(source, "SKIP_TAGS[node2.tagName]")
 	if attributes < 0 || text < 0 {
-		t.Fatal("muiApply's second pass no longer looks like this guard expects")
+		t.Fatal("upApply's second pass no longer looks like this guard expects")
 	}
 	if attributes > text {
 		t.Fatal("the SKIP_TAGS bail-out must come after the placeholder lookup, or textarea hints stop being translated")

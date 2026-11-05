@@ -119,7 +119,7 @@ func downloadVPNGateList(ctx context.Context) ([]VPNGateNode, error) {
 	if err != nil {
 		return nil, err
 	}
-	request.Header.Set("User-Agent", "m-ui/"+appVersion)
+	request.Header.Set("User-Agent", "UnifiedProxy/"+appVersion)
 	response, err := (&http.Client{Timeout: vpnGateListTimeout}).Do(request)
 	if err != nil {
 		return nil, err
@@ -189,7 +189,7 @@ func parseVPNGateList(body string) []VPNGateNode {
 }
 
 // vpnGateRemotePort pulls the port out of the OpenVPN config's `remote` line.
-// The rest of the profile is discarded: m-ui dials with SoftEther, never with
+// The rest of the profile is discarded: UnifiedProxy dials with SoftEther, never with
 // OpenVPN, so no directive from a volunteer can turn into a local command.
 func vpnGateRemotePort(encoded string) int {
 	value := strings.TrimSpace(encoded)
@@ -468,7 +468,7 @@ func (r *vpnGateASNResolver) lookupIPInfo(ctx context.Context, ip, token string)
 		return VPNGateASN{}, false, 0, err
 	}
 	request.Header.Set("Accept", "application/json")
-	request.Header.Set("User-Agent", "m-ui/"+appVersion)
+	request.Header.Set("User-Agent", "UnifiedProxy/"+appVersion)
 	if token != "" {
 		request.Header.Set("Authorization", "Bearer "+token)
 	}
@@ -540,7 +540,7 @@ func (r *vpnGateASNResolver) lookupIPAPI(ctx context.Context, ip string) (VPNGat
 		return VPNGateASN{}, 0, err
 	}
 	request.Header.Set("Accept", "application/json")
-	request.Header.Set("User-Agent", "m-ui/"+appVersion)
+	request.Header.Set("User-Agent", "UnifiedProxy/"+appVersion)
 	response, err := r.client.Do(request)
 	if err != nil {
 		return VPNGateASN{}, 0, err

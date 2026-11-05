@@ -82,7 +82,7 @@ func buildBackup(t *testing.T, entries map[string][]byte) []byte {
 
 func backupManifest(t *testing.T, format int) []byte {
 	t.Helper()
-	data, err := json.Marshal(map[string]any{"format": format, "app": "m-ui"})
+	data, err := json.Marshal(map[string]any{"format": format, "app": "UnifiedProxy"})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -275,8 +275,8 @@ func TestBackupRejectsForgedIdentityBeforeTouchingState(t *testing.T) {
 // 必须有一条提示，否则用户以为 HTTPS 还在。
 func TestBackupWarnsAboutMissingTLSCertificate(t *testing.T) {
 	source, _ := backupPanel(t, "Panel Source")
-	source.manager.state.Settings.PanelCertFile = "/nonexistent/m-ui/fullchain.pem"
-	source.manager.state.Settings.PanelKeyFile = "/nonexistent/m-ui/privkey.pem"
+	source.manager.state.Settings.PanelCertFile = "/nonexistent/unifiedproxy/fullchain.pem"
+	source.manager.state.Settings.PanelKeyFile = "/nonexistent/unifiedproxy/privkey.pem"
 	archive := exportBackupBytes(t, source)
 
 	target, _ := backupPanel(t, "Panel Target")

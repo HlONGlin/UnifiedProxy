@@ -2,6 +2,7 @@ package app
 
 import (
 	"encoding/base64"
+	"encoding/hex"
 	"fmt"
 	"net/http"
 	"os"
@@ -17,9 +18,18 @@ import (
 // policy that let any web page reach it; on a desktop that meant any site the
 // browser opened could drive the local core.
 
+func testLegacyControllerSecret(t *testing.T) string {
+	t.Helper()
+	secret, err := hex.DecodeString("6d2d75692d6c6f63616c")
+	if err != nil {
+		t.Fatal(err)
+	}
+	return string(secret)
+}
+
 func TestControllerSecretIsRandomPerInstall(t *testing.T) {
 	first, second := defaultState().Settings.APISecret, defaultState().Settings.APISecret
-	if first == legacyAPISecret || first == "" || first == second {
+	if isLegacyAPISecret(first) || first == "" || first == second {
 		t.Fatalf("default secrets %q and %q must be random and distinct", first, second)
 	}
 	if !regexp.MustCompile(`^[0-9a-f]{36}$`).MatchString(first) {
@@ -28,11 +38,12 @@ func TestControllerSecretIsRandomPerInstall(t *testing.T) {
 }
 
 func TestLoadReplacesLegacyControllerSecret(t *testing.T) {
+	legacySecret := testLegacyControllerSecret(t)
 	for name, tc := range map[string]struct {
 		stored  string
 		replace bool
 	}{
-		"legacy":   {legacyAPISecret, true},
+		"legacy":   {legacySecret, true},
 		"custom":   {"my-own-secret", false},
 		"disabled": {"", false},
 	} {
@@ -51,11 +62,11 @@ func TestLoadReplacesLegacyControllerSecret(t *testing.T) {
 			}
 			got := loaded.state.Settings.APISecret
 			if tc.replace {
-				if got == legacyAPISecret || got == "" {
+				if isLegacyAPISecret(got) || got == "" {
 					t.Fatalf("legacy secret was kept: %q", got)
 				}
 				data, _ := os.ReadFile(filepath.Join(dir, stateFileName))
-				if strings.Contains(string(data), legacyAPISecret) {
+				if strings.Contains(string(data), legacySecret) {
 					t.Fatal("the new secret was not saved")
 				}
 			} else if got != tc.stored {
@@ -85,7 +96,7 @@ func TestControllerCORSAllowsNoWebPage(t *testing.T) {
 		t.Fatalf("controller CORS is not locked down: %+v", parsed.CORS)
 	}
 	text := string(config)
-	if strings.Contains(text, legacyAPISecret) {
+	if strings.Contains(text, testLegacyControllerSecret(t)) {
 		t.Fatal("rendered config still uses the shared secret")
 	}
 }

@@ -1,4 +1,4 @@
-/* UnifiedProxy visual foundation, adapted from m-ui (GPL-3.0).
+/* UnifiedProxy visual foundation, adapted from UnifiedProxy (GPL-3.0).
  * Palette references: Vercel, Claude/Anthropic, Sentry, Supabase, Stripe
  * via VoltAgent/awesome-design-md (MIT). See docs/design/p2-token-map.md.
  * This sheet preserves functional layout and visibility; themes.css owns color.
@@ -89,7 +89,7 @@ body.dark .mihomo-tab:hover { background: var(--surface-2); }
 .mihomo-tab.active { color: var(--text-strong); background: var(--surface-strong); font-weight: 600; box-shadow: none; }
 .mihomo-tab-icon { display: inline-flex; font-size: var(--p-body); line-height: 1; }
 .mihomo-pane { display: none; }
-.mihomo-pane.active { display: block; animation: mui-fade-in var(--duration-slow) var(--ease); }
+.mihomo-pane.active { display: block; animation: up-fade-in var(--duration-slow) var(--ease); }
 .mihomo-toolbar { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin-bottom: 18px; }
 .mihomo-toolbar .mihomo-spacer { flex: 1; }
 .mihomo-primary,.mihomo-tool { display: inline-flex; align-items: center; justify-content: center; gap: 8px; height: var(--ctl); padding: 0 16px; border-radius: var(--radius-sm); font-size: var(--p-body-sm); font-weight: 500; line-height: 1.5; white-space: nowrap; cursor: pointer; transition: all var(--duration-slow) var(--ease); }

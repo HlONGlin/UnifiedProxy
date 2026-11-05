@@ -1,7 +1,7 @@
 # 验收记录与发布门槛
 
 日期：2026-11-03，以下为视觉改造前的验收存档。后续成果由 P6 收尾到
-[main](https://github.com/HlONGlin/UnifiedProxy/tree/main)，详见 [P6 记录](design/p6-completion.md)。
+[main](https://github.com/HlONGlin/unifiedproxy/tree/main)，详见 [P6 记录](design/p6-completion.md)。
 此记录不表示已发布公开合并 Release、归档旧远端或切换生产服务。
 本地测试不等于公网多机生产验收。
 
@@ -37,7 +37,7 @@ go vet ./...
 node --check web/fleet.js
 bash scripts/acceptance/run-local.sh
 # Linux，安装 tar/xz，会下载固定上游资产：
-MUI_FLEET_INTEGRATION=1 go test ./internal/app -run TestFleetRealSidecarProcesses -count=1 -v
+UNIFIEDPROXY_FLEET_INTEGRATION=1 go test ./internal/app -run TestFleetRealSidecarProcesses -count=1 -v
 # Python playwright + 已安装 Chromium/Edge：
 python scripts/acceptance/browser-smoke.py --binary dist/control.exe --browser /path/to/chromium
 # Linux，预先构建对应角色并提供 Mihomo，需 openssl/curl/python3/tar/xz：
@@ -55,7 +55,7 @@ Dockerfile.systemd 可构建具备所需工具的一次性验收镜像，
 
 | 阶段 | 已实现 | 现场仍需确认 |
 | --- | --- | --- |
-| P0 | m-ui 基座、GPL/MIT NOTICE、模型规格、迁移公告 | 正式仓库/名称、公开公告、旧版本冻结与归档时机 |
+| P0 | UnifiedProxy 基座、GPL/MIT NOTICE、模型规格、迁移公告 | 正式仓库/名称、公开公告、旧版本冻结与归档时机 |
 | P1 | 三模式、身份接入、舰队/流量视图、签名任务；三节点断控制端重启仍转发 | 三台公网服务器、生产 HTTPS/时钟、真实链路断网恢复 |
 | P2 | 原生编辑、配额/到期、单写者、批量和回滚；三节点 hy2/AnyTLS/Mieru 订阅转发 | 全部原有 listener 的现场客户端兼容 |
 | P3 | Sidecar、自动 SS 后端、中央证书与订阅注入；三节点 ShadowTLS 真实客户端转发 | 公网 Naive 专用客户端、公共 CA/DNS 与目标架构 |

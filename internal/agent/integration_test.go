@@ -10,8 +10,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/RomanovCaesar/m-ui/internal/control"
-	"github.com/RomanovCaesar/m-ui/internal/fleet"
+	"github.com/hlonglin/unifiedproxy/internal/control"
+	"github.com/hlonglin/unifiedproxy/internal/fleet"
 )
 
 type testRuntime struct {

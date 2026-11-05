@@ -55,7 +55,7 @@ def main():
   OUT=OUT/'operations';OUT.mkdir(parents=True,exist_ok=True)
  env=os.environ.copy();env.update(GOROOT='/root/go',GOPATH='/root/unifiedproxy-gopath');env['PATH']='/root/go/bin:'+env['PATH']
  with tempfile.TemporaryDirectory(prefix='up-p5-') as data,(OUT/'server.log').open('w') as log:
-  p=port();url=f'http://127.0.0.1:{p}';env.update(UP_DESIGN_ADDRESS=f'127.0.0.1:{p}',UP_DESIGN_DATA=data,UP_DESIGN_CORE='/workspace/dist/design-audit/fixture-core',UP_DESIGN_CORE_API=f'127.0.0.1:{port()}');env['UP_DESIGN_ROLE']='control' if args.fleet else ''
+  p=port();url=f'http://127.0.0.1:{p}';env.update(UNIFIEDPROXY_DESIGN_ADDRESS=f'127.0.0.1:{p}',UNIFIEDPROXY_DESIGN_DATA=data,UNIFIEDPROXY_DESIGN_CORE='/workspace/dist/design-audit/fixture-core',UNIFIEDPROXY_DESIGN_CORE_API=f'127.0.0.1:{port()}');env['UNIFIEDPROXY_DESIGN_ROLE']='control' if args.fleet else ''
   subprocess.run(['dist/design-audit/control','configure','--data-dir',data,'--username','fixture','--password-stdin'],input='fixture-password',text=True,check=True,stdout=subprocess.DEVNULL)
   server=subprocess.Popen(['dist/design-audit/app-tests','-test.run','^TestDesignAcceptanceServer$','-test.v'],env=env,stdout=log,stderr=log,start_new_session=True)
   try:
@@ -68,8 +68,8 @@ def main():
     page.goto(url+'/login',wait_until='networkidle');page.locator('#username').fill('fixture');page.locator('#password').fill('wrong-password');page.locator('#login-button').click();page.wait_for_timeout(400);check('F01 invalid credentials rejected',page.locator('.error').inner_text().strip()!='')
     page.locator('#password').fill('fixture-password');page.locator('#login-button').click();page.wait_for_url(url+'/');page.wait_for_load_state('networkidle');check('F01 real login',page.locator('#nav').is_visible())
     for locale in ['zh-CN','zh-TW','en','ja','ru','fa','vi','es','tr','uk','pt-BR']:
-     page.evaluate('(v)=>muiSetLang(v)',locale);check('F01/F02 locale '+locale,page.get_attribute('html','lang')==locale)
-    page.evaluate("muiSetLang('zh-CN')");page.evaluate("UPTheme.setColor('t4');UPTheme.setMode('dark')");page.reload(wait_until='networkidle');check('F02 palette persists after reload',page.get_attribute('html','data-color-theme')=='t4' and page.get_attribute('html','data-theme')=='dark')
+     page.evaluate('(v)=>upSetLang(v)',locale);check('F01/F02 locale '+locale,page.get_attribute('html','lang')==locale)
+    page.evaluate("upSetLang('zh-CN')");page.evaluate("UPTheme.setColor('t4');UPTheme.setMode('dark')");page.reload(wait_until='networkidle');check('F02 palette persists after reload',page.get_attribute('html','data-color-theme')=='t4' and page.get_attribute('html','data-theme')=='dark')
     page.evaluate("UPTheme.setColor('t0');UPTheme.setMode('light')")
     seed={'id':'p5-mieru','name':'Acceptance Mieru','type':'mieru','listen':'127.0.0.1','port':31234,'enabled':True,'clients':[{'id':'alice','name':'Alice','username':'alice','password':'fixture-password','enabled':True,'total':1073741824}],'mieru':{'transport':'TCP'}}
     if args.fleet:
@@ -149,12 +149,12 @@ def extended_operations(page,ctx,url):
  page.locator('#inbounds-auto-toggle').click();page.locator('label.switch:has(#inbounds-auto-enabled)').click();check('F06 periodic refresh starts',page.evaluate('app.inboundAutoTimer!==null'));page.locator('label.switch:has(#inbounds-auto-enabled)').click();check('F06 periodic refresh stops',page.evaluate('app.inboundAutoTimer===null'));page.locator('#inbounds-auto-toggle').click()
  page.evaluate("app.state.state.settings.pageSize=1;app.state.state.inbounds.push({...app.state.state.inbounds[0],id:'pagination-only',name:'pagination-only'});renderInboundTable()");page.locator('[data-page="2"]').last.click();check('F06 pagination selects second inbound',page.locator('[data-toggle-inbound=pagination-only]').count()==1);page.evaluate('refresh()')
  for action in ['reset-inbounds','reset-clients']:
-  page.locator('#general-actions').click();page.locator('[data-general='+action+']').click();page.locator('.mui-dialog.open').wait_for()
-  with page.expect_response(lambda r:'/api/traffic/reset' in r.url and r.request.method=='POST') as response:page.locator('.mui-dialog .danger-btn').click()
-  check('F09 confirmed bulk '+action,response.value.ok);page.locator('.mui-dialog.open').wait_for(state='hidden');page.wait_for_timeout(150)
- page.evaluate("setView('connections')");page.locator('#close-all-connections').click();page.locator('.mui-dialog.open').wait_for()
- with page.expect_response(lambda r:'/api/core/connections' in r.url and r.request.method=='DELETE') as response:page.locator('.mui-dialog .danger-btn').click()
- check('F19 confirmed close all uses DELETE handler',response.value.ok);page.locator('.mui-dialog.open').wait_for(state='hidden')
+  page.locator('#general-actions').click();page.locator('[data-general='+action+']').click();page.locator('.up-dialog.open').wait_for()
+  with page.expect_response(lambda r:'/api/traffic/reset' in r.url and r.request.method=='POST') as response:page.locator('.up-dialog .danger-btn').click()
+  check('F09 confirmed bulk '+action,response.value.ok);page.locator('.up-dialog.open').wait_for(state='hidden');page.wait_for_timeout(150)
+ page.evaluate("setView('connections')");page.locator('#close-all-connections').click();page.locator('.up-dialog.open').wait_for()
+ with page.expect_response(lambda r:'/api/core/connections' in r.url and r.request.method=='DELETE') as response:page.locator('.up-dialog .danger-btn').click()
+ check('F19 confirmed close all uses DELETE handler',response.value.ok);page.locator('.up-dialog.open').wait_for(state='hidden')
  for action in ['stop','start','restart','test']:api(ctx,url,'/api/core/'+action,'POST',{})
  check('F04 core controls and config test use real handlers',True)
  for path in ['/api/state','/api/core/logs','/api/server/cpuHistory/2','/api/cross-subscriptions','/api/inbound-sync']:
@@ -177,7 +177,7 @@ def screenshots_dialogs(page,folder):
  close_all(page);page.evaluate("setView('subtemplates')");page.locator('#subtpl-import').click();shot(page,folder,'subtpl-import-modal');close_all(page);page.evaluate("setView('settings')");page.locator('[data-settings-tab=multi-control]').click()
  for trigger,target in [('#mc-token-open','#mc-token-modal'),('#mc-connections-open','#mc-connections-modal'),('#mc-devices-open','#mc-devices-modal')]:
   close_all(page);page.locator(trigger).click();page.locator(target+'.open').wait_for();shot(page,folder,target[1:])
- close_all(page);page.evaluate("void(window.acceptanceDialog=muiConfirm('Acceptance confirmation / 确认操作'))");shot(page,folder,'confirmation');page.keyboard.press('Escape');close_all(page)
+ close_all(page);page.evaluate("void(window.acceptanceDialog=upConfirm('Acceptance confirmation / 确认操作'))");shot(page,folder,'confirmation');page.keyboard.press('Escape');close_all(page)
  page.evaluate("setView('inbounds')")
  for key,target in [('sync-inbound','sync-inbound-modal'),('cross-subscriptions','cross-subscriptions-modal')]:
   close_all(page);page.locator('#general-actions').click();page.locator('[data-general='+key+']').click();page.locator('#'+target+'.open').wait_for();shot(page,folder,target)

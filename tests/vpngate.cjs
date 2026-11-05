@@ -1,7 +1,7 @@
 const assert = require('node:assert/strict');
 
-const base = process.env.MUI_VPNGATE_TEST_URL || 'http://127.0.0.1:21540';
-const cdpPort = process.env.MUI_CDP_PORT || '9227';
+const base = process.env.UNIFIEDPROXY_VPNGATE_TEST_URL || 'http://127.0.0.1:21540';
+const cdpPort = process.env.UNIFIEDPROXY_CDP_PORT || '9227';
 
 async function connectCDP() {
   const response = await fetch(`http://127.0.0.1:${cdpPort}/json/new?${encodeURIComponent(base + '/')}`, { method: 'PUT' });

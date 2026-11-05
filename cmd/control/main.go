@@ -1,6 +1,6 @@
 package main
 
-import "github.com/RomanovCaesar/m-ui/internal/app"
+import "github.com/hlonglin/unifiedproxy/internal/app"
 
 var version = "dev"
 

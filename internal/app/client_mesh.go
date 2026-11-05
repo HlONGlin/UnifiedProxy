@@ -26,7 +26,7 @@ import (
 	"time"
 )
 
-// 客户端接入联机网络（m-ui-client/1）。
+// 客户端接入联机网络（UnifiedProxy-client/1）。
 //
 // 用户设备（如 Clash Caesar）用面板管理员账号在浏览器里登录一次，得到签发面板签名的设备证书。
 // 之后设备每个请求都带上证书并用自己的 Ed25519 私钥签名；任何一个信任签发面板的面板
@@ -38,9 +38,9 @@ import (
 // 的 Clash 订阅。所有管理操作都不对设备开放。
 
 const (
-	clientSpec           = "m-ui-client/1"
-	clientWireBase       = "/_m-ui/client/v1/"
-	clientDeviceWirePath = "/_m-ui/peer/device/v1"
+	clientSpec           = "UnifiedProxy-client/1"
+	clientWireBase       = "/_UnifiedProxy/client/v1/"
+	clientDeviceWirePath = "/_UnifiedProxy/peer/device/v1"
 	clientDevicesFile    = "client-devices.json"
 	clientCertTTL        = 30 * 24 * time.Hour
 	clientClockSkew      = 5 * time.Minute
@@ -48,13 +48,13 @@ const (
 	clientWireLimit      = 64 << 10
 	clientMaxDevices     = 512
 	clientGossipInterval = 10 * time.Minute
-	clientFileMagic      = "MUIN"
+	clientFileMagic      = "UPN"
 
-	clientDomainNetwork     = "m-ui-client-network-v1"
-	clientDomainCert        = "m-ui-device-cert-v1"
-	clientDomainRequest     = "m-ui-device-request-v1"
-	clientDomainConfig      = "m-ui-client-config-v1"
-	clientDomainRevocations = "m-ui-device-revocations-v1"
+	clientDomainNetwork     = "UnifiedProxy-client-network-v1"
+	clientDomainCert        = "UnifiedProxy-device-cert-v1"
+	clientDomainRequest     = "UnifiedProxy-device-request-v1"
+	clientDomainConfig      = "UnifiedProxy-client-config-v1"
+	clientDomainRevocations = "UnifiedProxy-device-revocations-v1"
 )
 
 var (
@@ -387,11 +387,11 @@ func clientRequestBytes(method, requestURI, timestamp, nonce string, body []byte
 // authenticate 校验设备请求：证书由受信任面板签发且未过期、未吊销；请求由证书里的设备公钥签名；
 // 时间在允许偏差内；nonce 没有用过。返回证书和本次请求的 nonce（响应签名要绑定它）。
 func (c *ClientMesh) authenticate(r *http.Request, body []byte) (clientDeviceCert, string, error) {
-	cert, err := c.verifyCert(r.Header.Get("X-MUI-Cert"))
+	cert, err := c.verifyCert(r.Header.Get("X-UP-Cert"))
 	if err != nil {
 		return cert, "", err
 	}
-	timestamp, nonce := r.Header.Get("X-MUI-Time"), r.Header.Get("X-MUI-Nonce")
+	timestamp, nonce := r.Header.Get("X-UP-Time"), r.Header.Get("X-UP-Nonce")
 	if !clientNoncePattern.MatchString(nonce) {
 		return cert, "", fmt.Errorf("请求格式无效")
 	}
@@ -402,7 +402,7 @@ func (c *ClientMesh) authenticate(r *http.Request, body []byte) (clientDeviceCer
 	if delta := time.Since(time.UnixMilli(ms)); delta > clientClockSkew || delta < -clientClockSkew {
 		return cert, "", fmt.Errorf("请求时间无效，请校准设备时间")
 	}
-	sig, err := base64.StdEncoding.DecodeString(r.Header.Get("X-MUI-Sig"))
+	sig, err := base64.StdEncoding.DecodeString(r.Header.Get("X-UP-Sig"))
 	key, _ := base64.StdEncoding.DecodeString(cert.PublicKey)
 	signed := append([]byte(clientDomainRequest+"\x00"), clientRequestBytes(r.Method, r.URL.RequestURI(), timestamp, nonce, body)...)
 	if err != nil || !ed25519.Verify(ed25519.PublicKey(key), signed, sig) {
@@ -682,8 +682,8 @@ func (a *App) clientConfig(w http.ResponseWriter, r *http.Request, nonce string)
 	// 响应签名绑定请求 nonce：面板走 http 时也能防篡改，旧响应也无法冒充新请求的结果。
 	sig := ed25519.Sign(a.peers.privateKey(), []byte(clientDomainConfig+"\x00"+nonce+"\x00"+sha256Hex(data)))
 	setSubscriptionHeaders(w, snapshot)
-	w.Header().Set("X-MUI-Signer", a.peers.selfNode().ID)
-	w.Header().Set("X-MUI-Signature", base64.StdEncoding.EncodeToString(sig))
+	w.Header().Set("X-UP-Signer", a.peers.selfNode().ID)
+	w.Header().Set("X-UP-Signature", base64.StdEncoding.EncodeToString(sig))
 	w.Header().Set("Content-Type", "application/yaml; charset=utf-8")
 	_, _ = w.Write(data)
 }
@@ -692,9 +692,9 @@ func (a *App) clientConfig(w http.ResponseWriter, r *http.Request, nonce string)
 
 var clientAuthorizeTemplate = template.Must(template.New("authorize").Parse(`<!doctype html>
 <html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>m-ui</title>
+<title>UnifiedProxy</title>
 <style>
-body{font-family:system-ui,-apple-system,"Segoe UI",sans-serif;background:#0f1220;color:#e8eaf2;display:flex;min-height:100vh;align-items:center;justify-content:center;margin:0}
+body{font-family:systeUnifiedProxy,-apple-system,"Segoe UI",sans-serif;background:#0f1220;color:#e8eaf2;display:flex;min-height:100vh;align-items:center;justify-content:center;margin:0}
 .card{width:min(380px,92vw);background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);border-radius:18px;padding:28px;box-shadow:0 20px 60px rgba(0,0,0,.35)}
 h1{font-size:18px;margin:0 0 6px}p{color:#aab0c4;font-size:14px;line-height:1.5;margin:0 0 18px}
 input{width:100%;box-sizing:border-box;margin:0 0 12px;padding:11px 12px;border-radius:10px;border:1px solid rgba(255,255,255,.18);background:rgba(0,0,0,.25);color:inherit;font-size:14px}
@@ -1016,7 +1016,7 @@ func (c *ClientMesh) devicesView() []clientDeviceView {
 //
 //	GET  /api/client-mesh/devices          设备列表
 //	POST /api/client-mesh/devices/revoke   {id} 吊销设备（同步到所有 Peer）
-//	GET  /api/client-mesh/file             下载客户端插件文件（.muinet）
+//	GET  /api/client-mesh/file             下载客户端插件文件（.upnet）
 func (a *App) handleClientMesh(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Cache-Control", "no-store")
 	if a.peers == nil || a.clients == nil {
@@ -1052,7 +1052,7 @@ func (a *App) handleClientMesh(w http.ResponseWriter, r *http.Request) {
 		}
 		data, _ := json.MarshalIndent(clientNetworkFile{Magic: clientFileMagic, V: 1, Spec: clientSpec, Network: envelope}, "", "  ")
 		w.Header().Set("Content-Type", "application/json; charset=utf-8")
-		w.Header().Set("Content-Disposition", `attachment; filename="m-ui-network.muinet"`)
+		w.Header().Set("Content-Disposition", `attachment; filename="UnifiedProxy-network.upnet"`)
 		_, _ = w.Write(data)
 	default:
 		writeJSON(w, http.StatusMethodNotAllowed, apiResponse{Message: "method not allowed"})

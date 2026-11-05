@@ -51,22 +51,22 @@
   }
   function outboundRows(){
     const fixed=[
-      {name:'DIRECT',kind:'builtin',type:'direct',address:muiT('mh.directConnection')},
-      {name:'REJECT',kind:'builtin',type:'reject',address:muiT('mh.rejectConnection')},
-      {name:'REJECT-DROP',kind:'builtin',type:'reject-drop',address:muiT('mh.silentDrop')},
+      {name:'DIRECT',kind:'builtin',type:'direct',address:upT('mh.directConnection')},
+      {name:'REJECT',kind:'builtin',type:'reject',address:upT('mh.rejectConnection')},
+      {name:'REJECT-DROP',kind:'builtin',type:'reject-drop',address:upT('mh.silentDrop')},
     ];
-    if(draft.basics.directIpVersion!=='dual')fixed.push({name:'MUI-DIRECT',kind:'builtin',type:'direct',address:'Basics / '+draft.basics.directIpVersion});
-    if(draft.basics.ipv4Domains.length)fixed.push({name:'MUI-IPV4',kind:'builtin',type:'direct',address:'Basics / IPv4'});
+    if(draft.basics.directIpVersion!=='dual')fixed.push({name:'UP-DIRECT',kind:'builtin',type:'direct',address:'Basics / '+draft.basics.directIpVersion});
+    if(draft.basics.ipv4Domains.length)fixed.push({name:'UP-IPV4',kind:'builtin',type:'direct',address:'Basics / IPv4'});
     return fixed.concat(draft.outbounds.map(item=>({...item,address:outboundAddress(item)})));
   }
-  function delayLabel(name){const value=delayResults.get(name);return value==='Testing'?muiT('mh.testing'):value||'';}
+  function delayLabel(name){const value=delayResults.get(name);return value==='Testing'?upT('mh.testing'):value||'';}
   function outboundSupportsDelay(item){return !['reject','reject-drop'].includes(String(item.type||'').toLowerCase());}
   function renderOutbounds(){
     const box=$('#mihomo-outbound-table');
     const rows=outboundRows(),showTraffic=draft.basics.outboundUploadStatistics||draft.basics.outboundDownloadStatistics;
-    box.innerHTML=`<div class="mihomo-table-wrap"><table class="mihomo-table"><thead><tr><th>#</th><th>${muiT('mh.colName')}</th><th>${muiT('mh.colKind')}</th><th>${muiT('mh.colStrategy')}</th><th>${muiT('mh.colMembers')}</th><th>Dialer Proxy</th>${showTraffic?`<th>${muiT('mh.colUpDown')}</th>`:''}<th>${muiT('mh.colTestResult')}</th><th>${muiT('mh.colTest')}</th><th>${muiT('mh.colActions')}</th></tr></thead><tbody>${rows.map((item,index)=>{
-      const custom=item.kind!=='builtin',position=draft.outbounds.findIndex(entry=>entry.id===item.id),kind=item.vpngate?muiT('mh.vpngate'):item.kind==='group'?muiT('mh.kindGroup'):item.kind==='proxy'?muiT('mh.kindProxy'):muiT('mh.kindBuiltin'),type=item.vpngate?'VPNGate':item.type;
-      return `<tr><td>${index+1}</td><td class="mihomo-name">${esc(item.name)}</td><td><span class="mihomo-pill ${item.kind==='group'?'group':''}">${esc(kind)}</span></td><td>${esc(type)}</td><td><div class="mihomo-member-summary" title="${esc(item.address||'')}">${esc(item.address||'—')}</div>${vpnGateStatusHTML(item)}</td><td>${esc(item.dialerProxy||'—')}</td>${showTraffic?'<td>'+fmt(app.state?.state?.outboundTraffic?.[item.name]?.up||0)+' / '+fmt(app.state?.state?.outboundTraffic?.[item.name]?.down||0)+'</td>':''}<td><span class="mihomo-delay-result" title="${esc(delayLabel(item.name))}">${esc(delayLabel(item.name)||'—')}</span></td><td><button type="button" class="mihomo-icon" data-test-outbound="${esc(item.name)}" title="${muiT('mh.testOutbound')}" ${dirty||delayResults.get(item.name)==='Testing'||!outboundSupportsDelay(item)||(!custom&&item.name!=='DIRECT')?'disabled':''}>${SF('thunderbolt')}</button></td><td><div class="mihomo-actions">${custom?`<button class="mihomo-icon" data-outbound-up="${esc(item.id)}" title="${muiT('mh.moveUp')}" ${position===0?'disabled':''}>${SF('arrow-up')}</button><button class="mihomo-icon" data-outbound-down="${esc(item.id)}" title="${muiT('mh.moveDown')}" ${position===draft.outbounds.length-1?'disabled':''}>${SF('arrow-down')}</button><button class="mihomo-icon" data-outbound-edit="${esc(item.id)}" title="${muiT('action.edit')}">${SF('edit')}</button><button class="mihomo-icon danger" data-outbound-delete="${esc(item.id)}" title="${muiT('common.delete')}">${SF('delete')}</button>`:'—'}</div></td></tr>`;
+    box.innerHTML=`<div class="mihomo-table-wrap"><table class="mihomo-table"><thead><tr><th>#</th><th>${upT('mh.colName')}</th><th>${upT('mh.colKind')}</th><th>${upT('mh.colStrategy')}</th><th>${upT('mh.colMembers')}</th><th>Dialer Proxy</th>${showTraffic?`<th>${upT('mh.colUpDown')}</th>`:''}<th>${upT('mh.colTestResult')}</th><th>${upT('mh.colTest')}</th><th>${upT('mh.colActions')}</th></tr></thead><tbody>${rows.map((item,index)=>{
+      const custom=item.kind!=='builtin',position=draft.outbounds.findIndex(entry=>entry.id===item.id),kind=item.vpngate?upT('mh.vpngate'):item.kind==='group'?upT('mh.kindGroup'):item.kind==='proxy'?upT('mh.kindProxy'):upT('mh.kindBuiltin'),type=item.vpngate?'VPNGate':item.type;
+      return `<tr><td>${index+1}</td><td class="mihomo-name">${esc(item.name)}</td><td><span class="mihomo-pill ${item.kind==='group'?'group':''}">${esc(kind)}</span></td><td>${esc(type)}</td><td><div class="mihomo-member-summary" title="${esc(item.address||'')}">${esc(item.address||'—')}</div>${vpnGateStatusHTML(item)}</td><td>${esc(item.dialerProxy||'—')}</td>${showTraffic?'<td>'+fmt(app.state?.state?.outboundTraffic?.[item.name]?.up||0)+' / '+fmt(app.state?.state?.outboundTraffic?.[item.name]?.down||0)+'</td>':''}<td><span class="mihomo-delay-result" title="${esc(delayLabel(item.name))}">${esc(delayLabel(item.name)||'—')}</span></td><td><button type="button" class="mihomo-icon" data-test-outbound="${esc(item.name)}" title="${upT('mh.testOutbound')}" ${dirty||delayResults.get(item.name)==='Testing'||!outboundSupportsDelay(item)||(!custom&&item.name!=='DIRECT')?'disabled':''}>${SF('thunderbolt')}</button></td><td><div class="mihomo-actions">${custom?`<button class="mihomo-icon" data-outbound-up="${esc(item.id)}" title="${upT('mh.moveUp')}" ${position===0?'disabled':''}>${SF('arrow-up')}</button><button class="mihomo-icon" data-outbound-down="${esc(item.id)}" title="${upT('mh.moveDown')}" ${position===draft.outbounds.length-1?'disabled':''}>${SF('arrow-down')}</button><button class="mihomo-icon" data-outbound-edit="${esc(item.id)}" title="${upT('action.edit')}">${SF('edit')}</button><button class="mihomo-icon danger" data-outbound-delete="${esc(item.id)}" title="${upT('common.delete')}">${SF('delete')}</button>`:'—'}</div></td></tr>`;
     }).join('')}</tbody></table></div>`;
     bindOutboundTable();
     $$('[data-test-outbound]',root).forEach(button=>button.onclick=()=>testOutbound(button));
@@ -86,18 +86,18 @@
   function outboundDependencies(name){
     const result=[];
     for(const item of draft.outbounds){
-      if(item.kind==='group'&&(item.proxies||[]).includes(name))result.push(muiT('mh.depGroup',{name:item.name}));
+      if(item.kind==='group'&&(item.proxies||[]).includes(name))result.push(upT('mh.depGroup',{name:item.name}));
       if(item.kind==='proxy'&&item.dialerProxy===name)result.push(`Dialer Proxy ${item.name}`);
     }
-    for(const rule of draft.routingRules)if(rule.target===name)result.push(muiT('mh.depRule',{type:rule.type}));
+    for(const rule of draft.routingRules)if(rule.target===name)result.push(upT('mh.depRule',{type:rule.type}));
     if(currentWarpOutbound()?.name===name&&(draft.basics.warpDomains||[]).length)result.push('Basics / WARP Routing');
     return result;
   }
   async function deleteOutbound(id){
     const item=draft.outbounds.find(candidate=>candidate.id===id);if(!item)return;
     const dependencies=outboundDependencies(item.name);
-    if(dependencies.length){toast(muiT('mh.cannotDelete',{deps:dependencies.join(muiT('common.listSep')),name:item.name}),true);return;}
-    if(!await muiConfirm(muiT('mh.confirmDeleteOutbound',{name:item.name}),{danger:true}))return;
+    if(dependencies.length){toast(upT('mh.cannotDelete',{deps:dependencies.join(upT('common.listSep')),name:item.name}),true);return;}
+    if(!await upConfirm(upT('mh.confirmDeleteOutbound',{name:item.name}),{danger:true}))return;
     draft.outbounds=draft.outbounds.filter(candidate=>candidate.id!==id);markDirty();
   }
 
@@ -106,7 +106,7 @@
     const domain=(value,target)=>{const colon=value.indexOf(':'),prefix=colon<0?'domain':value.slice(0,colon),payload=colon<0?value:value.slice(colon+1);return {type:({geosite:'GEOSITE',domain:'DOMAIN-SUFFIX',full:'DOMAIN',keyword:'DOMAIN-KEYWORD'})[prefix]||'DOMAIN-SUFFIX',payload,target};};
     for(const value of b.blockIps||[])rows.push({type:value==='private'||value.startsWith('geoip:')?'GEOIP':'IP-CIDR',payload:value==='private'?'LAN':value.replace(/^geoip:/,''),target:'REJECT'});
     for(const value of b.blockDomains||[])rows.push(domain(value,'REJECT'));
-    for(const value of b.ipv4Domains||[])rows.push(domain(value,'MUI-IPV4'));
+    for(const value of b.ipv4Domains||[])rows.push(domain(value,'UP-IPV4'));
     const warp=currentWarpOutbound();for(const value of b.warpDomains||[])rows.push(domain(value,warp?.name||'warp'));
     return rows;
   }
@@ -115,7 +115,7 @@
     ensureFinalMatch();
     const managed=basicsRuleRows();
     const managedHTML=managed.map((rule,index)=>'<tr><td>'+(index+1)+'</td><td><span class="mihomo-pill">'+esc(rule.type)+'</span></td><td>'+esc(rule.payload)+'</td><td>'+esc(rule.target)+'</td><td>—</td><td><span class="mihomo-pill group">Basics</span></td></tr>').join('');
-    box.innerHTML=`<div class="mihomo-table-wrap"><table class="mihomo-table"><thead><tr><th>#</th><th>${muiT('mh.colRuleType')}</th><th>${muiT('mh.colPayload')}</th><th>${muiT('mh.colOutbound')}</th><th>${muiT('mh.colOptions')}</th><th>${muiT('mh.colActions')}</th></tr></thead><tbody>${managedHTML}${draft.routingRules.map((rule,index)=>`<tr><td>${managed.length+index+1}</td><td><span class="mihomo-pill">${esc(rule.type)}</span></td><td><div class="mihomo-rule-payload" title="${esc(rule.payload||'')}">${esc(rule.type==='MATCH'?muiT('mh.matchAll'):rule.payload||'—')}</div></td><td class="mihomo-name">${esc(rule.target)}</td><td>${rule.noResolve?'<span class="mihomo-pill group">no-resolve</span>':'—'}</td><td><div class="mihomo-actions"><button class="mihomo-icon" data-rule-up="${esc(rule.id)}" title="${muiT('mh.moveUp')}" ${index===0||rule.type==='MATCH'?'disabled':''}>${SF('arrow-up')}</button><button class="mihomo-icon" data-rule-down="${esc(rule.id)}" title="${muiT('mh.moveDown')}" ${index===draft.routingRules.length-1||draft.routingRules[index+1]?.type==='MATCH'?'disabled':''}>${SF('arrow-down')}</button><button class="mihomo-icon" data-rule-edit="${esc(rule.id)}" title="${muiT('action.edit')}">${SF('edit')}</button><button class="mihomo-icon danger" data-rule-delete="${esc(rule.id)}" title="${muiT('common.delete')}">${SF('delete')}</button></div></td></tr>`).join('')}</tbody></table></div>`;
+    box.innerHTML=`<div class="mihomo-table-wrap"><table class="mihomo-table"><thead><tr><th>#</th><th>${upT('mh.colRuleType')}</th><th>${upT('mh.colPayload')}</th><th>${upT('mh.colOutbound')}</th><th>${upT('mh.colOptions')}</th><th>${upT('mh.colActions')}</th></tr></thead><tbody>${managedHTML}${draft.routingRules.map((rule,index)=>`<tr><td>${managed.length+index+1}</td><td><span class="mihomo-pill">${esc(rule.type)}</span></td><td><div class="mihomo-rule-payload" title="${esc(rule.payload||'')}">${esc(rule.type==='MATCH'?upT('mh.matchAll'):rule.payload||'—')}</div></td><td class="mihomo-name">${esc(rule.target)}</td><td>${rule.noResolve?'<span class="mihomo-pill group">no-resolve</span>':'—'}</td><td><div class="mihomo-actions"><button class="mihomo-icon" data-rule-up="${esc(rule.id)}" title="${upT('mh.moveUp')}" ${index===0||rule.type==='MATCH'?'disabled':''}>${SF('arrow-up')}</button><button class="mihomo-icon" data-rule-down="${esc(rule.id)}" title="${upT('mh.moveDown')}" ${index===draft.routingRules.length-1||draft.routingRules[index+1]?.type==='MATCH'?'disabled':''}>${SF('arrow-down')}</button><button class="mihomo-icon" data-rule-edit="${esc(rule.id)}" title="${upT('action.edit')}">${SF('edit')}</button><button class="mihomo-icon danger" data-rule-delete="${esc(rule.id)}" title="${upT('common.delete')}">${SF('delete')}</button></div></td></tr>`).join('')}</tbody></table></div>`;
     $$('[data-rule-edit]',root).forEach(button=>button.onclick=()=>openRuleModal(button.dataset.ruleEdit));
     $$('[data-rule-delete]',root).forEach(button=>button.onclick=()=>deleteRule(button.dataset.ruleDelete));
     $$('[data-rule-up]',root).forEach(button=>button.onclick=()=>moveRule(button.dataset.ruleUp,-1));
@@ -128,8 +128,8 @@
   }
   async function deleteRule(id){
     const rule=draft.routingRules.find(item=>item.id===id);if(!rule)return;
-    if(rule.type==='MATCH'){toast(muiT('mh.matchUndeletable'),true);return;}
-    if(!await muiConfirm(muiT('mh.confirmDeleteRule',{type:rule.type}),{danger:true}))return;
+    if(rule.type==='MATCH'){toast(upT('mh.matchUndeletable'),true);return;}
+    if(!await upConfirm(upT('mh.confirmDeleteRule',{type:rule.type}),{danger:true}))return;
     draft.routingRules=draft.routingRules.filter(item=>item.id!==id);markDirty();
   }
 
@@ -212,7 +212,7 @@
     editingOriginal=clone(draft.outbounds.find(candidate=>candidate.id===id)||{kind:'proxy',type:'ss',port:443,cipher:'aes-256-gcm',network:'tcp',udp:true,testUrl:draft.basics.outboundTestUrl||defaultTestURL,interval:300,strategy:'consistent-hashing'});
     fillOutboundForm(editingOriginal);showImportError('');$('#outbound-share-link').value='';setYAML('');
     outboundFormChanged=false;outboundYAMLCached=false;
-    setOutboundMode('form');$('#mihomo-outbound-title').textContent=muiT(id?'mh.editOutbound':'mihomo.addOutbound');openModal('mihomo-outbound-modal');
+    setOutboundMode('form');$('#mihomo-outbound-title').textContent=upT(id?'mh.editOutbound':'mihomo.addOutbound');openModal('mihomo-outbound-modal');
     requestAnimationFrame(()=>{if(typeof syncInkBars==='function')syncInkBars();});
     if(editingOriginal.native){await switchOutboundMode('yaml',editingOriginal);}else $('#mihomo-outbound-form').elements.name.focus();
   }
@@ -223,7 +223,7 @@
   }
   function syncOutboundTargets(item={}){
     const form=$('#mihomo-outbound-form'),name=item.name||'',selectedDialer=item.dialerProxy||'';
-    form.elements.dialerProxy.innerHTML=`<option value="">${muiT('inbounds.statusNone')}</option>${targetOptions(selectedDialer,false,name)}`;
+    form.elements.dialerProxy.innerHTML=`<option value="">${upT('inbounds.statusNone')}</option>${targetOptions(selectedDialer,false,name)}`;
     form.elements.proxies.innerHTML=targetOptions('',true,name);
     for(const member of item.proxies||[])if(!Array.from(form.elements.proxies.options).some(option=>option.value===member))form.elements.proxies.add(new Option(member,member));
     if(selectedDialer&&!Array.from(form.elements.dialerProxy.options).some(option=>option.value===selectedDialer))form.elements.dialerProxy.add(new Option(selectedDialer,selectedDialer,true,true));
@@ -252,7 +252,7 @@
   }
   function syncGroupDefaultOptions(selected){
     const form=$('#mihomo-outbound-form'),members=Array.from(form.elements.proxies.selectedOptions).map(option=>option.value),current=selected??form.elements.defaultSelected.value;
-    form.elements.defaultSelected.innerHTML=`<option value="">${muiT('mh.firstMember')}</option>${members.map(name=>`<option value="${esc(name)}">${esc(name)}</option>`).join('')}`;
+    form.elements.defaultSelected.innerHTML=`<option value="">${upT('mh.firstMember')}</option>${members.map(name=>`<option value="${esc(name)}">${esc(name)}</option>`).join('')}`;
     if(members.includes(current))form.elements.defaultSelected.value=current;
   }
   function orderedMembers(form){
@@ -339,23 +339,23 @@
   }
 
   function rulePayloadHint(type){
-    if(type==='AND')return muiT('mh.hintAnd');
-    if(type.startsWith('DOMAIN'))return muiT(type==='DOMAIN'?'mh.hintDomainFull':'mh.hintDomain');
-    if(type==='GEOSITE')return muiT('mh.hintGeosite');
-    if(type.includes('CIDR'))return muiT('mh.hintCidr');
-    if(type.includes('PORT'))return muiT('mh.hintPort');
-    if(type==='NETWORK')return muiT('mh.hintNetwork');
-    if(type==='IN-NAME')return muiT('mh.hintInName');
-    if(type==='IN-USER')return muiT('mh.hintInUser');
-    if(type.includes('PROCESS'))return muiT('mh.hintProcess');
-    if(type==='GEOIP'||type==='SRC-GEOIP')return muiT('mh.hintGeoip');
-    return muiT('mh.hintDefault');
+    if(type==='AND')return upT('mh.hintAnd');
+    if(type.startsWith('DOMAIN'))return upT(type==='DOMAIN'?'mh.hintDomainFull':'mh.hintDomain');
+    if(type==='GEOSITE')return upT('mh.hintGeosite');
+    if(type.includes('CIDR'))return upT('mh.hintCidr');
+    if(type.includes('PORT'))return upT('mh.hintPort');
+    if(type==='NETWORK')return upT('mh.hintNetwork');
+    if(type==='IN-NAME')return upT('mh.hintInName');
+    if(type==='IN-USER')return upT('mh.hintInUser');
+    if(type.includes('PROCESS'))return upT('mh.hintProcess');
+    if(type==='GEOIP'||type==='SRC-GEOIP')return upT('mh.hintGeoip');
+    return upT('mh.hintDefault');
   }
   function openRuleModal(id=''){
     ensureModals();editingRule=id;
     const form=$('#mihomo-rule-form'),item=draft.routingRules.find(rule=>rule.id===id)||{id:'',type:'DOMAIN-SUFFIX',payload:'',target:'DIRECT',noResolve:false};
     form.reset();form.elements.id.value=item.id||'';form.elements.type.value=item.type;form.elements.payload.value=item.payload||'';form.elements.target.innerHTML=targetOptions(item.target||'DIRECT');form.elements.target.value=item.target||'DIRECT';form.elements.noResolve.checked=!!item.noResolve;syncRuleForm();
-    $('#mihomo-rule-title').textContent=muiT(id?'mh.editRule':'mh.addRule');openModal('mihomo-rule-modal');(item.type==='MATCH'?form.elements.target:form.elements.payload).focus();
+    $('#mihomo-rule-title').textContent=upT(id?'mh.editRule':'mh.addRule');openModal('mihomo-rule-modal');(item.type==='MATCH'?form.elements.target:form.elements.payload).focus();
   }
   function syncRuleForm(){
     const form=$('#mihomo-rule-form'),type=form.elements.type.value,isMatch=type==='MATCH',noResolve=['GEOIP','IP-ASN','IP-CIDR','IP-CIDR6','IP-SUFFIX'].includes(type);
@@ -363,8 +363,8 @@
   }
   function saveRuleDraft(event){
     event.preventDefault();const form=event.currentTarget,type=form.elements.type.value,item={id:form.elements.id.value||freshID('rule'),type,payload:type==='MATCH'?'':form.elements.payload.value.trim(),target:form.elements.target.value,noResolve:type==='MATCH'?false:form.elements.noResolve.checked};
-    if(type!=='MATCH'&&!item.payload){toast(muiT('mh.payloadRequired',{type}),true);return;}
-    const duplicateMatch=draft.routingRules.some(rule=>rule.type==='MATCH'&&rule.id!==item.id);if(type==='MATCH'&&duplicateMatch){toast(muiT('mh.singleMatch'),true);return;}
+    if(type!=='MATCH'&&!item.payload){toast(upT('mh.payloadRequired',{type}),true);return;}
+    const duplicateMatch=draft.routingRules.some(rule=>rule.type==='MATCH'&&rule.id!==item.id);if(type==='MATCH'&&duplicateMatch){toast(upT('mh.singleMatch'),true);return;}
     const index=draft.routingRules.findIndex(rule=>rule.id===item.id);
     if(index>=0)draft.routingRules[index]=item;else{const matchIndex=draft.routingRules.findIndex(rule=>rule.type==='MATCH');draft.routingRules.splice(matchIndex<0?draft.routingRules.length:matchIndex,0,item);}
     const match=draft.routingRules.find(rule=>rule.type==='MATCH');draft.routingRules=draft.routingRules.filter(rule=>rule.type!=='MATCH');if(match)draft.routingRules.push(match);else ensureFinalMatch();
@@ -387,7 +387,7 @@
   }
   function renderBasicsTags(name){
     const box=$('[data-basics-tags="'+name+'"] [data-tag-items]');
-    box.innerHTML=(draft.basics[name]||[]).map((value,index)=>'<span class="basics-tag">'+esc(value)+'<button type="button" data-remove-tag="'+index+'" aria-label="'+esc(muiT('mh.removeTag',{value:value}))+'">'+SF('close')+'</button></span>').join('');
+    box.innerHTML=(draft.basics[name]||[]).map((value,index)=>'<span class="basics-tag">'+esc(value)+'<button type="button" data-remove-tag="'+index+'" aria-label="'+esc(upT('mh.removeTag',{value:value}))+'">'+SF('close')+'</button></span>').join('');
     $$('[data-remove-tag]',box).forEach(button=>button.onclick=()=>{draft.basics[name].splice(Number(button.dataset.removeTag),1);renderBasicsTags(name);markDirty();});
   }
   function commitBasicsTags(input){
@@ -412,7 +412,7 @@
       field.onblur=()=>commitBasicsTags(field);
     }
     $('#basics-reset').onclick=async()=>{
-      if(!await muiConfirm(muiT('mh.confirmResetBasics'),{danger:true}))return;
+      if(!await upConfirm(upT('mh.confirmResetBasics'),{danger:true}))return;
       draft.basics=defaultBasics();for(const field of $$('[data-basics-list]'))field.value='';fillBasicsForm();markDirty();
     };
   }
@@ -496,13 +496,13 @@
   function vpnGateCountryInfo(code){return (vpngateData?.presets||[]).find(item=>item.code===code)||null;}
   function validVPNGateCountry(code){return /^[A-Z]{2}$/.test(String(code||''));}
   function vpnGateStatusForSlot(slot){return (vpngateData?.statuses||[]).find(item=>Number(item.slot)===Number(slot))||null;}
-  function vpnGateStateLabel(state){return muiT({'starting':'mh.vpngateStarting','searching':'mh.vpngateSearching','connecting':'mh.vpngateConnecting','connected':'mh.vpngateConnected','reconnecting':'mh.vpngateReconnecting','error':'mh.vpngateError','pending':'mh.vpngatePending'}[state]||'mh.vpngateUnknown');}
+  function vpnGateStateLabel(state){return upT({'starting':'mh.vpngateStarting','searching':'mh.vpngateSearching','connecting':'mh.vpngateConnecting','connected':'mh.vpngateConnected','reconnecting':'mh.vpngateReconnecting','error':'mh.vpngateError','pending':'mh.vpngatePending'}[state]||'mh.vpngateUnknown');}
   function vpnGateStatusHTML(item){
     if(!item?.vpngate)return '';
     const status=vpnGatePending(item)?null:vpnGateStatusForSlot(item.vpngate.slot);
-    if(!status)return `<div class="vpngate-row-status"><span class="mihomo-pill">${esc(muiT(vpnGatePending(item)?'mh.vpngatePending':'mh.vpngateWaiting'))}</span></div>`;
+    if(!status)return `<div class="vpngate-row-status"><span class="mihomo-pill">${esc(upT(vpnGatePending(item)?'mh.vpngatePending':'mh.vpngateWaiting'))}</span></div>`;
     const details=[status.node,status.isp||status.asn].filter(Boolean).join(' · ');
-    return `<div class="vpngate-row-status"><span class="mihomo-pill ${status.connected?'group':''}">${esc(vpnGateStateLabel(status.state))}</span>${status.fallback?`<span class="mihomo-pill fallback">${esc(muiT('mh.vpngateFallback'))}</span>`:''}<span class="vpngate-row-detail">${esc(details||status.lastError||'—')}</span></div>`;
+    return `<div class="vpngate-row-status"><span class="mihomo-pill ${status.connected?'group':''}">${esc(vpnGateStateLabel(status.state))}</span>${status.fallback?`<span class="mihomo-pill fallback">${esc(upT('mh.vpngateFallback'))}</span>`:''}<span class="vpngate-row-detail">${esc(details||status.lastError||'—')}</span></div>`;
   }
   function scheduleVPNGatePoll(delay=1500){
     clearTimeout(vpngateTimer);vpngateTimer=setTimeout(async()=>{vpngateTimer=null;if(!$('#vpngate-modal')?.classList.contains('open'))return;try{vpngateData=await api('/api/mihomo/vpngate');renderVPNGateModal();if(vpngateData?.install?.running)scheduleVPNGatePoll(1000);else if(vpngateData?.statuses?.length)scheduleVPNGatePoll(5000);}catch(error){showVPNGateError(error.message);}},delay);
@@ -516,10 +516,10 @@
 	form.dataset.country=country;
     const valid=validVPNGateCountry(country),info=vpnGateCountryInfo(country),isp=form.elements.isp;
     isp.disabled=!valid;
-    const note=$('#vpngate-isp-note');if(note)note.textContent=!valid?muiT('mh.vpngateChooseCountry'):country==='KR'?muiT('mh.vpngateKoreaOnly'):info?.keyword?muiT('mh.vpngateKeywordHint'):muiT('mh.vpngateKeywordOnly');
+    const note=$('#vpngate-isp-note');if(note)note.textContent=!valid?upT('mh.vpngateChooseCountry'):country==='KR'?upT('mh.vpngateKoreaOnly'):info?.keyword?upT('mh.vpngateKeywordHint'):upT('mh.vpngateKeywordOnly');
     const slot=Number(form.elements.slot.value)||0,used=vpnGateUsedSlots();
     for(const option of form.elements.slot.options)option.disabled=used.has(Number(option.value));
-    const preview=$('#vpngate-slot-preview');if(preview)preview.textContent=muiT('mh.vpngateSlotPreview',{iface:`vpn_vpn${slot}`,table:100+slot});
+    const preview=$('#vpngate-slot-preview');if(preview)preview.textContent=upT('mh.vpngateSlotPreview',{iface:`vpn_vpn${slot}`,table:100+slot});
 	const raw=isp.value.trim(),preset=(info?.isps||[]).find(item=>item.label.toLowerCase()===raw.toLowerCase()||item.id.toLowerCase()===raw.toLowerCase()),add=$('#vpngate-add');
 	if(add)add.disabled=vpngateBusy||!valid||used.has(slot)||!raw||(country==='KR'&&!preset);
   }
@@ -537,8 +537,8 @@
     const saved=(draft.outbounds||[]).filter(item=>item.vpngate),bySlot=new Map(saved.map(item=>[Number(item.vpngate.slot),item])),statuses=vpngateData?.statuses||[];
     for(const status of statuses)if(!bySlot.has(Number(status.slot)))bySlot.set(Number(status.slot),{name:status.outbound||'VPNGate',vpngate:{slot:Number(status.slot),country:status.country||'',ispKeyword:status.target||''}});
     const rows=[...bySlot.entries()].sort((a,b)=>a[0]-b[0]);
-    if(!rows.length){box.innerHTML=`<div class="mihomo-empty"><strong>${esc(muiT('mh.vpngateNoSaved'))}</strong><span>${esc(muiT('mh.vpngateNoSavedNote'))}</span></div>`;return;}
-    box.innerHTML=rows.map(([slot,item])=>{const status=vpnGateStatusForSlot(slot),config=item.vpngate;return `<div class="vpngate-status-row"><div class="vpngate-status-main"><strong>${esc(item.name)}</strong><span>${esc(config.country)} · ${esc(vpnGateISPLabelForUI(config))} · vpn_vpn${slot} · table ${100+slot}</span></div><div class="vpngate-status-state"><span class="mihomo-pill ${status?.connected?'group':''}">${esc(vpnGateStateLabel(status?.state||'pending'))}</span>${status?.fallback?`<span class="mihomo-pill fallback">${esc(muiT('mh.vpngateFallback'))}</span>`:''}${status?.node?`<span class="vpngate-row-detail">${esc(status.node)}${status.isp?` · ${esc(status.isp)}`:''}</span>`:''}${status?.lastError?`<small class="vpngate-status-error">${esc(status.lastError)}</small>`:''}</div><div class="mihomo-actions"><button type="button" class="mihomo-icon" data-vpngate-edit="${esc(String(slot))}" title="${esc(muiT('action.edit'))}">${SF('edit')}</button><button type="button" class="outline-btn" data-vpngate-reconnect="${esc(String(slot))}" ${status?'':'disabled'}>${esc(muiT('mh.vpngateReconnect'))}</button>${item.id?`<button type="button" class="danger-btn" data-vpngate-uninstall="${esc(item.id)}">${esc(muiT('mh.vpngateUninstall'))}</button>`:''}</div></div>`;}).join('');
+    if(!rows.length){box.innerHTML=`<div class="mihomo-empty"><strong>${esc(upT('mh.vpngateNoSaved'))}</strong><span>${esc(upT('mh.vpngateNoSavedNote'))}</span></div>`;return;}
+    box.innerHTML=rows.map(([slot,item])=>{const status=vpnGateStatusForSlot(slot),config=item.vpngate;return `<div class="vpngate-status-row"><div class="vpngate-status-main"><strong>${esc(item.name)}</strong><span>${esc(config.country)} · ${esc(vpnGateISPLabelForUI(config))} · vpn_vpn${slot} · table ${100+slot}</span></div><div class="vpngate-status-state"><span class="mihomo-pill ${status?.connected?'group':''}">${esc(vpnGateStateLabel(status?.state||'pending'))}</span>${status?.fallback?`<span class="mihomo-pill fallback">${esc(upT('mh.vpngateFallback'))}</span>`:''}${status?.node?`<span class="vpngate-row-detail">${esc(status.node)}${status.isp?` · ${esc(status.isp)}`:''}</span>`:''}${status?.lastError?`<small class="vpngate-status-error">${esc(status.lastError)}</small>`:''}</div><div class="mihomo-actions"><button type="button" class="mihomo-icon" data-vpngate-edit="${esc(String(slot))}" title="${esc(upT('action.edit'))}">${SF('edit')}</button><button type="button" class="outline-btn" data-vpngate-reconnect="${esc(String(slot))}" ${status?'':'disabled'}>${esc(upT('mh.vpngateReconnect'))}</button>${item.id?`<button type="button" class="danger-btn" data-vpngate-uninstall="${esc(item.id)}">${esc(upT('mh.vpngateUninstall'))}</button>`:''}</div></div>`;}).join('');
     $$('[data-vpngate-edit]',box).forEach(button=>button.onclick=()=>editVPNGateSlot(Number(button.dataset.vpngateEdit)));
     $$('[data-vpngate-reconnect]',box).forEach(button=>button.onclick=()=>reconnectVPNGate(Number(button.dataset.vpngateReconnect)));
 	$$('[data-vpngate-uninstall]',box).forEach(button=>button.onclick=()=>stageVPNGateUninstall(button.dataset.vpngateUninstall));
@@ -547,13 +547,13 @@
   function renderVPNGateModal(){
     const modal=$('#vpngate-modal');if(!modal)return;
     const install=vpngateData?.install||{},installBox=$('#vpngate-install'),form=$('#vpngate-form'),button=$('#vpngate-install-button'),message=$('#vpngate-install-message'),error=$('#vpngate-install-error');
-    if(message)message.textContent=install.installed?muiT('mh.vpngateInstalled',{version:install.version||''}):install.running?`${muiT('mh.vpngateInstalling')} ${install.message||''}`:install.reason||muiT('mh.vpngateNotInstalled');
+    if(message)message.textContent=install.installed?upT('mh.vpngateInstalled',{version:install.version||''}):install.running?`${upT('mh.vpngateInstalling')} ${install.message||''}`:install.reason||upT('mh.vpngateNotInstalled');
     if(error){error.textContent=install.error||'';error.hidden=!install.error;}
-    if(button){button.hidden=!!install.installed||!install.supported;button.disabled=vpngateBusy||!!install.running;button.textContent=install.running?muiT('mh.vpngateInstalling'):muiT('mh.vpngateInstall');}
+    if(button){button.hidden=!!install.installed||!install.supported;button.disabled=vpngateBusy||!!install.running;button.textContent=install.running?upT('mh.vpngateInstalling'):upT('mh.vpngateInstall');}
     if(installBox)installBox.classList.toggle('installed',!!install.installed);
     if(form){form.hidden=!install.installed;syncVPNGateForm();}
     renderVPNGateStatuses();
-    if(typeof muiApply==='function')muiApply(modal);
+    if(typeof upApply==='function')upApply(modal);
     if(vpngateData?.install?.running)scheduleVPNGatePoll(1000);
     if(currentTab==='outbounds')renderOutbounds();
   }
@@ -562,8 +562,8 @@
     const modal=document.createElement('div');modal.id='vpngate-modal';modal.className='modal-backdrop';
     modal.innerHTML=`<section class="modal-panel vpngate-modal" role="dialog" aria-modal="true" aria-labelledby="vpngate-title"><header class="modal-titlebar"><span id="vpngate-title" data-i18n="mh.vpngateTitle">VPNGate</span><button type="button" class="modal-close" id="vpngate-close" data-i18n-aria="common.close" aria-label="Close">${SF('close')}</button></header><div class="modal-content"><div id="vpngate-error" role="alert" hidden></div><div id="vpngate-install" class="vpngate-install-card"><div><strong data-i18n="mh.vpngateClient">VPNGate Client</strong><p id="vpngate-install-message"></p><p data-i18n="mh.vpngateInstallNote">Installs the pinned official SoftEther VPN Client after checking Linux dependencies. Read and accept the included SoftEther licence before use.</p></div><button type="button" class="primary-btn" id="vpngate-install-button">Install</button><div id="vpngate-install-error" class="vpngate-status-error" role="alert" hidden></div></div><form id="vpngate-form" hidden><div class="mihomo-form-grid"><label class="mihomo-field"><span data-i18n="mh.vpngateCountry">Country</span><input name="country" maxlength="2" minlength="2" pattern="[A-Z]{2}" autocomplete="off" spellcheck="false" style="text-transform:uppercase" placeholder="JP" required></label><label class="mihomo-field"><span data-i18n="mh.vpngateISP">ISP / ASN keyword</span><input name="isp" autocomplete="off" spellcheck="false" disabled required><small id="vpngate-isp-note"></small></label><label class="mihomo-field"><span data-i18n="mh.vpngateName">Outbound name</span><input name="name" maxlength="128" placeholder="vpngate-jp-0"></label><label class="mihomo-field"><span data-i18n="mh.vpngateSlot">VPNGate NIC index</span><select name="slot">${Array.from({length:10},(_,index)=>`<option value="${index}">${index}</option>`).join('')}</select><small id="vpngate-slot-preview"></small></label></div><footer class="modal-footer"><button type="button" class="outline-btn" id="vpngate-cancel" data-i18n="common.cancel">Cancel</button><button type="submit" class="primary-btn" id="vpngate-add" data-i18n="mh.vpngateAdd">Add to Draft</button></footer></form><h3 class="warp-divider" data-i18n="mh.vpngateStatus">Saved VPNGate Outbounds</h3><div id="vpngate-status-list"></div></div></section>`;
     document.body.appendChild(modal);
-    if(typeof window.muiUpgradeCombobox==='function'){
-      window.muiUpgradeCombobox(modal.querySelector('[name="country"]'),function(){
+    if(typeof window.upUpgradeCombobox==='function'){
+      window.upUpgradeCombobox(modal.querySelector('[name="country"]'),function(){
         const presets=vpngateData?.presets;
         if(presets&&presets.length){
           return presets.map(item=>{
@@ -576,16 +576,16 @@
           {value:'KR',label:'Korea',sublabel:'Korea'}
         ];
       });
-      window.muiUpgradeCombobox(modal.querySelector('[name="isp"]'),function(){
+      window.upUpgradeCombobox(modal.querySelector('[name="isp"]'),function(){
         const form=$('#vpngate-form');if(!form)return [];
         const country=form.elements.country.value.trim().toUpperCase();
         const info=vpnGateCountryInfo(country);
         return (info?.isps||[]).map(item=>({value:item.label,label:item.label}));
       });
     }
-    $('#vpngate-close').onclick=()=>{if(!vpngateBusy){if(window.muiCloseSelects)window.muiCloseSelects();clearTimeout(vpngateTimer);closeModal(modal);}};
-    $('#vpngate-cancel').onclick=()=>{if(!vpngateBusy){if(window.muiCloseSelects)window.muiCloseSelects();vpngateEditingId='';closeModal(modal);}};
-    modal.onclick=event=>{if(event.target===modal&&!vpngateBusy){if(window.muiCloseSelects)window.muiCloseSelects();clearTimeout(vpngateTimer);closeModal(modal);}};
+    $('#vpngate-close').onclick=()=>{if(!vpngateBusy){if(window.upCloseSelects)window.upCloseSelects();clearTimeout(vpngateTimer);closeModal(modal);}};
+    $('#vpngate-cancel').onclick=()=>{if(!vpngateBusy){if(window.upCloseSelects)window.upCloseSelects();vpngateEditingId='';closeModal(modal);}};
+    modal.onclick=event=>{if(event.target===modal&&!vpngateBusy){if(window.upCloseSelects)window.upCloseSelects();clearTimeout(vpngateTimer);closeModal(modal);}};
     $('#vpngate-install-button').onclick=installVPNGate;
     $('#vpngate-form').onsubmit=saveVPNGateDraft;
     $('#vpngate-form').elements.country.oninput=syncVPNGateForm;
@@ -614,20 +614,20 @@
 	  const item=draft.outbounds.find(candidate=>candidate.id===id&&candidate.vpngate);if(!item)return;
 	  const dependencies=outboundDependencies(item.name);
 	  for(const inbound of app.state?.state?.inbounds||[])if(inbound.proxy===item.name)dependencies.push('Inbound '+inbound.name);
-	  if(dependencies.length){const message=muiT('mh.cannotDelete',{deps:dependencies.join(muiT('common.listSep')),name:item.name});showVPNGateError(message);toast(message,true);return;}
-	  if(!await muiConfirm(muiT('mh.vpngateConfirmUninstall',{name:item.name}),{danger:true}))return;
+	  if(dependencies.length){const message=upT('mh.cannotDelete',{deps:dependencies.join(upT('common.listSep')),name:item.name});showVPNGateError(message);toast(message,true);return;}
+	  if(!await upConfirm(upT('mh.vpngateConfirmUninstall',{name:item.name}),{danger:true}))return;
 	  draft.outbounds=draft.outbounds.filter(candidate=>candidate.id!==id);vpngateEditingId='';markDirty();
-	  clearTimeout(vpngateTimer);closeModal($('#vpngate-modal'));toast(muiT('mh.vpngateUninstallDrafted'));
+	  clearTimeout(vpngateTimer);closeModal($('#vpngate-modal'));toast(upT('mh.vpngateUninstallDrafted'));
 	}
   async function saveVPNGateDraft(event){
     event.preventDefault();if(vpngateBusy)return;
     const form=event.currentTarget,config=vpnGateFormConfig();
-    if(!validVPNGateCountry(config.country)){showVPNGateError(muiT('mh.vpngateCountryInvalid'));return;}
+    if(!validVPNGateCountry(config.country)){showVPNGateError(upT('mh.vpngateCountryInvalid'));return;}
     const info=vpnGateCountryInfo(config.country),preset=(info?.isps||[]).find(item=>item.id===config.isp);
-    if(config.country==='KR'&&!preset){showVPNGateError(muiT('mh.vpngateKoreaOnly'));return;}
-    if(!config.isp&&!config.ispKeyword){showVPNGateError(muiT('mh.vpngateISPRequired'));return;}
-    if(config.name&&draft.outbounds.some(item=>item.id!==vpngateEditingId&&item.name===config.name)){showVPNGateError(muiT('mh.vpngateNameTaken'));return;}
-    const used=vpnGateUsedSlots();if(used.has(config.slot)){showVPNGateError(muiT('mh.vpngateSlotUsed'));return;}
+    if(config.country==='KR'&&!preset){showVPNGateError(upT('mh.vpngateKoreaOnly'));return;}
+    if(!config.isp&&!config.ispKeyword){showVPNGateError(upT('mh.vpngateISPRequired'));return;}
+    if(config.name&&draft.outbounds.some(item=>item.id!==vpngateEditingId&&item.name===config.name)){showVPNGateError(upT('mh.vpngateNameTaken'));return;}
+    const used=vpnGateUsedSlots();if(used.has(config.slot)){showVPNGateError(upT('mh.vpngateSlotUsed'));return;}
     vpngateBusy=true;showVPNGateError('');
     try{
       const item=clone(await api('/api/mihomo/vpngate/outbound',{method:'POST',body:JSON.stringify(config)})),next=clone(draft),editing=vpngateEditingId?next.outbounds.findIndex(candidate=>candidate.id===vpngateEditingId):-1;
@@ -650,9 +650,9 @@
     $('#warp-empty').hidden=!!account;$('#warp-details').hidden=!account;
     const values={'access-token':account?.accessToken,'device-id':account?.deviceId,'license-value':account?.licenseKey,'private-key':account?.privateKey,'device-name':device.name,'device-model':device.model,'device-enabled':device.enabled,'account-type':info.account_type,'account-role':info.role,premium:fmt(info.premium_data||0),quota:fmt(info.quota||0),usage:fmt(info.usage||0)};
     for(const [id,value] of Object.entries(values))$('#warp-'+id).textContent=value===undefined||value===null||value===''?'—':String(value);
-    $('#warp-outbound-status').textContent=muiT(item?'common.enabled':'inbounds.statusDisabled');
+    $('#warp-outbound-status').textContent=upT(item?'common.enabled':'inbounds.statusDisabled');
     $('#warp-outbound-status').classList.toggle('group',!!item);
-    $('#warp-add').textContent=muiT(item?'mh.resetOutbound':'mihomo.addOutbound');
+    $('#warp-add').textContent=upT(item?'mh.resetOutbound':'mihomo.addOutbound');
     $('#warp-pending').hidden=!dirty;
     $('#warp-config-error').textContent=warpData?.configError||'';$('#warp-config-error').hidden=!warpData?.configError;
     syncWarpButtons();
@@ -672,7 +672,7 @@
   function addWarpOutbound(){
     if(warpBusy||!warpData?.outbound)return;
     const existing=currentWarpOutbound(),item=clone(warpData.outbound);
-    if(!existing&&draft.outbounds.some(candidate=>candidate.name===item.name)){showWarpError(muiT('mh.warpNameTaken'));return;}
+    if(!existing&&draft.outbounds.some(candidate=>candidate.name===item.name)){showWarpError(upT('mh.warpNameTaken'));return;}
     if(existing){
       item.id=existing.id;item.name=existing.name;item.native.name=existing.name;
       draft.outbounds[draft.outbounds.findIndex(candidate=>candidate.id===existing.id)]=item;
@@ -685,9 +685,9 @@
     if(existing){
       const dependencies=outboundDependencies(existing.name).filter(value=>value!=='Basics / WARP Routing');
       for(const inbound of app.state?.state?.inbounds||[])if(inbound.proxy===existing.name)dependencies.push('Inbound '+inbound.name);
-      if(dependencies.length){showWarpError(muiT('mh.warpRemoveRefs',{deps:dependencies.join(muiT('common.listSep'))}));return;}
+      if(dependencies.length){showWarpError(upT('mh.warpRemoveRefs',{deps:dependencies.join(upT('common.listSep'))}));return;}
     }
-    if(!await muiConfirm(muiT('mh.confirmDeleteWarp'),{danger:true}))return;
+    if(!await upConfirm(upT('mh.confirmDeleteWarp'),{danger:true}))return;
     warpBusy=true;showWarpError('');syncWarpButtons();
     try{
       warpData=await api('/api/mihomo/warp',{method:'DELETE'});
@@ -703,7 +703,7 @@
       const response=await api('/api/mihomo/settings',{method:'PUT',body:JSON.stringify(draft)});
       dirty=false;root.classList.remove('mihomo-dirty');
       if(app.state?.state){app.state.state.outbounds=clone(draft.outbounds);app.state.state.routingRules=clone(draft.routingRules);app.state.state.mihomoBasics=clone(draft.basics);app.state.state.settings.mode=draft.basics.mode;app.state.state.settings.logLevel=draft.basics.logLevel;}
-      toast(response.message||muiT('mh.settingsSaved'));await refresh();
+      toast(response.message||upT('mh.settingsSaved'));await refresh();
     }catch(error){toast(error.message,true);}finally{syncButtons();}
   }
 
@@ -715,17 +715,17 @@
   $('#mihomo-vpngate').onclick=()=>openVPNGateModal();
   $('#basics-warp').onclick=openWarpModal;
   $('#mihomo-save').onclick=saveSettings;
-  $('#mihomo-restart').onclick=()=>{if(dirty){toast(muiT('mh.saveFirst'),true);return;}coreAction('restart');};
+  $('#mihomo-restart').onclick=()=>{if(dirty){toast(upT('mh.saveFirst'),true);return;}coreAction('restart');};
 
   const baseRenderState=renderState;
   renderState=function(){baseRenderState();syncFromState();if(app.currentView==='mihomo'&&currentTab==='outbounds'&&draft.outbounds.some(item=>item.vpngate))refreshVPNGateData();};
   const baseSetView=setView;
   setView=function(name){baseSetView(name);if(name==='mihomo'){render();if(draft.outbounds.some(item=>item.vpngate))refreshVPNGateData();}};
-  window.addEventListener('mui-langchange',()=>{
+  window.addEventListener('up-langchange',()=>{
     render();
     for(const field of $$('[data-basics-list]'))renderBasicsTags(field.dataset.basicsList);
-    if($('#mihomo-outbound-modal')?.classList.contains('open'))$('#mihomo-outbound-title').textContent=muiT(editingOutbound?'mh.editOutbound':'mihomo.addOutbound');
-    if($('#mihomo-rule-modal')?.classList.contains('open')){$('#mihomo-rule-title').textContent=muiT(editingRule?'mh.editRule':'mh.addRule');syncRuleForm();}
+    if($('#mihomo-outbound-modal')?.classList.contains('open'))$('#mihomo-outbound-title').textContent=upT(editingOutbound?'mh.editOutbound':'mihomo.addOutbound');
+    if($('#mihomo-rule-modal')?.classList.contains('open')){$('#mihomo-rule-title').textContent=upT(editingRule?'mh.editRule':'mh.addRule');syncRuleForm();}
     if($('#warp-modal')?.classList.contains('open'))renderWarpModal();
     if($('#vpngate-modal')?.classList.contains('open'))renderVPNGateModal();
   });

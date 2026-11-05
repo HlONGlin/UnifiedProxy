@@ -136,7 +136,7 @@ func (a *App) importJSONBackup(w http.ResponseWriter, r *http.Request, source io
 		}
 		return
 	}
-	writeJSON(w, 400, apiResponse{Message: "unrecognized JSON backup; use a legacy nodes store, fleet backup or m-ui ZIP v1/v2"})
+	writeJSON(w, 400, apiResponse{Message: "unrecognized JSON backup; use a legacy nodes store, fleet backup or UnifiedProxy ZIP v1/v2"})
 }
 
 // Only a new listener receives the historical seed. Existing listeners keep

@@ -32,15 +32,15 @@ func runCLI(args []string) (bool, error) {
 		printCLIUsage(os.Stdout)
 		return true, nil
 	default:
-		return true, fmt.Errorf("unknown command %q; run m-ui help", args[0])
+		return true, fmt.Errorf("unknown command %q; run unifiedproxy help", args[0])
 	}
 }
 
 func printCLIUsage(w io.Writer) {
-	fmt.Fprintln(w, "m-ui commands:")
-	fmt.Fprintln(w, "  m-ui version")
-	fmt.Fprintln(w, "  m-ui settings [--data-dir PATH]")
-	fmt.Fprintln(w, "  m-ui configure [--data-dir PATH] [--listen-ip IP] [--port PORT] [--path PATH]")
+	fmt.Fprintln(w, "UnifiedProxy commands:")
+	fmt.Fprintln(w, "  unifiedproxy version")
+	fmt.Fprintln(w, "  unifiedproxy settings [--data-dir PATH]")
+	fmt.Fprintln(w, "  unifiedproxy configure [--data-dir PATH] [--listen-ip IP] [--port PORT] [--path PATH]")
 	fmt.Fprintln(w, "                 [--username NAME] [--password VALUE | --password-stdin] [--core-path PATH]")
 	fmt.Fprintln(w, "                 [--domain DOMAIN] [--cert CERT_FILE --key KEY_FILE]")
 }

@@ -56,8 +56,8 @@ func vpnGateTestDHCPHook(t *testing.T, environment []string) (string, string, er
 func TestVPNGateDHCPHookAppliesLeaseWithSanitizedEnvironment(t *testing.T) {
 	// Poison the parent environment to catch any reliance on inherited slot
 	// parameters. The explicit -e values must select the correct slot instead.
-	t.Setenv("MUI_VPNGATE_TABLE", "999")
-	t.Setenv("MUI_VPNGATE_MARK", "999")
+	t.Setenv("UNIFIEDPROXY_VPNGATE_TABLE", "999")
+	t.Setenv("UNIFIEDPROXY_VPNGATE_MARK", "999")
 	for _, slot := range []int{0, 9} {
 		for _, reason := range []string{"BOUND", "RENEW", "REBIND", "REBOOT"} {
 			t.Run(fmt.Sprintf("slot%d/%s", slot, reason), func(t *testing.T) {
@@ -91,7 +91,7 @@ route replace default via 10.211.254.254 dev vpn_vpn%d onlink table %d proto 242
 }
 
 func TestVPNGateDHCPHookRejectsMissingRoutingParameters(t *testing.T) {
-	for _, missing := range []string{"MUI_VPNGATE_TABLE", "MUI_VPNGATE_MARK", "MUI_VPNGATE_MARK_PRIORITY", "MUI_VPNGATE_SOURCE_PRIORITY"} {
+	for _, missing := range []string{"UNIFIEDPROXY_VPNGATE_TABLE", "UNIFIEDPROXY_VPNGATE_MARK", "UNIFIEDPROXY_VPNGATE_MARK_PRIORITY", "UNIFIEDPROXY_VPNGATE_SOURCE_PRIORITY"} {
 		t.Run(missing, func(t *testing.T) {
 			var environment []string
 			for _, entry := range vpnGateTestDHCPEnvironment(t, 0) {

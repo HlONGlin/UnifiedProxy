@@ -34,7 +34,7 @@ func TestDockerAssetsStayWiredForRelease(t *testing.T) {
 		"GOOS=linux GOARCH=amd64",
 		"mihomo-linux-amd64-compatible-v${MIHOMO_VERSION}.gz",
 		"sha256sum --check --strict",
-		"ENTRYPOINT [\"/usr/local/bin/m-ui-entrypoint\"]",
+		"ENTRYPOINT [\"/usr/local/bin/unifiedproxy-entrypoint\"]",
 	)
 
 	entrypoint := read("docker/entrypoint.sh")
@@ -44,7 +44,7 @@ func TestDockerAssetsStayWiredForRelease(t *testing.T) {
 	requireText("docker/entrypoint.sh", entrypoint,
 		"--password-stdin",
 		"--listen-ip \"$LISTEN_IP\"",
-		"exec \"$MUI_BIN\"",
+		"exec \"$UNIFIEDPROXY_BIN\"",
 	)
 
 	var compose struct {
@@ -58,11 +58,11 @@ func TestDockerAssetsStayWiredForRelease(t *testing.T) {
 	if err := yaml.Unmarshal([]byte(read("docker-compose.yml")), &compose); err != nil {
 		t.Fatalf("docker-compose.yml is invalid YAML: %v", err)
 	}
-	service, ok := compose.Services["m-ui"]
-	if !ok || service.Image != "ghcr.io/hlonglin/unifiedproxy:${MUI_IMAGE_TAG:-latest}" || service.Platform != "linux/amd64" || service.NetworkMode != "host" {
-		t.Fatalf("unexpected m-ui Compose service: %#v", service)
+	service, ok := compose.Services["unifiedproxy"]
+	if !ok || service.Image != "ghcr.io/hlonglin/unifiedproxy:${UNIFIEDPROXY_IMAGE_TAG:-latest}" || service.Platform != "linux/amd64" || service.NetworkMode != "host" {
+		t.Fatalf("unexpected UnifiedProxy Compose service: %#v", service)
 	}
-	for _, volume := range []string{"m-ui-data:/opt/m-ui/data", "m-ui-core:/opt/m-ui/core"} {
+	for _, volume := range []string{"unifiedproxy-data:/opt/unifiedproxy/data", "unifiedproxy-core:/opt/unifiedproxy/core"} {
 		if !containsString(service.Volumes, volume) {
 			t.Fatalf("docker-compose.yml is missing volume %q", volume)
 		}

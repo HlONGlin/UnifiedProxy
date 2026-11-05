@@ -178,9 +178,9 @@ func TestOutboundFormSnellRoundTripAndValidation(t *testing.T) {
 }
 
 func TestOutboundFormSnellWithMihomo(t *testing.T) {
-	core := os.Getenv("MUI_TEST_CORE")
+	core := os.Getenv("UNIFIEDPROXY_TEST_CORE")
 	if core == "" {
-		t.Skip("MUI_TEST_CORE is not set")
+		t.Skip("UNIFIEDPROXY_TEST_CORE is not set")
 	}
 	state := defaultState()
 	state.Inbounds = nil
@@ -423,7 +423,7 @@ func TestOutboundImportAPIAuthAndNoMutation(t *testing.T) {
 	for _, authorized := range []bool{false, true} {
 		req := httptest.NewRequest(http.MethodPost, "/api/mihomo/outbound/parse", strings.NewReader(string(data)))
 		if authorized {
-			req.AddCookie(&http.Cookie{Name: "mui_session", Value: "test-session"})
+			req.AddCookie(&http.Cookie{Name: "up_session", Value: "test-session"})
 		}
 		response := httptest.NewRecorder()
 		app.routes().ServeHTTP(response, req)
@@ -441,9 +441,9 @@ func TestOutboundImportAPIAuthAndNoMutation(t *testing.T) {
 }
 
 func TestImportedOutboundConfigWithMihomo(t *testing.T) {
-	core := os.Getenv("MUI_TEST_CORE")
+	core := os.Getenv("UNIFIEDPROXY_TEST_CORE")
 	if core == "" {
-		t.Skip("MUI_TEST_CORE is not set")
+		t.Skip("UNIFIEDPROXY_TEST_CORE is not set")
 	}
 	items, _, err := convertOutboundInput(mihomoYAMLParseRequest{Link: "vless://00000000-0000-0000-0000-000000000001@example.com:443?security=reality&pbk=AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA&sid=1234&support-x25519mlkem768=true&sni=example.com&type=tcp#Native"})
 	if err != nil {

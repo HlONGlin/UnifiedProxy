@@ -21,7 +21,7 @@ import (
 // policy routing that keeps that slot's traffic on its own interface.
 //
 // Everything it touches is namespaced by slot: the adapter vpnN, the interface
-// vpn_vpnN, the account mui-vpngate-N, the routing table 100+N and the DHCP
+// vpn_vpnN, the account up-vpngate-N, the routing table 100+N and the DHCP
 // files under <dataDir>/vpngate/run/N. It never edits the main routing table,
 // the default route or /etc/resolv.conf, and it never flushes a table or drops
 // rules it did not create.
@@ -56,7 +56,7 @@ func (l vpnGateLinuxLink) sourceAddressPath(slot int) string {
 
 func (l vpnGateLinuxLink) slotOwned(slot int) bool {
 	raw, err := os.ReadFile(l.slotOwnerPath(slot))
-	return err == nil && strings.TrimSpace(string(raw)) == fmt.Sprintf("m-ui-vpngate-slot:%d", slot)
+	return err == nil && strings.TrimSpace(string(raw)) == fmt.Sprintf("UnifiedProxy-vpngate-slot:%d", slot)
 }
 
 func (l vpnGateLinuxLink) recordSlotOwner(slot int) error {
@@ -64,7 +64,7 @@ func (l vpnGateLinuxLink) recordSlotOwner(slot int) error {
 		return err
 	}
 	temporary := l.slotOwnerPath(slot) + ".tmp"
-	if err := os.WriteFile(temporary, []byte(fmt.Sprintf("m-ui-vpngate-slot:%d\n", slot)), 0600); err != nil {
+	if err := os.WriteFile(temporary, []byte(fmt.Sprintf("UnifiedProxy-vpngate-slot:%d\n", slot)), 0600); err != nil {
 		return err
 	}
 	return os.Rename(temporary, l.slotOwnerPath(slot))
@@ -85,7 +85,7 @@ func (l vpnGateLinuxLink) vpncmd(ctx context.Context, arguments ...string) (stri
 	if err == nil {
 		return output, nil
 	}
-	// Compatibility for a service secured by an earlier m-ui build which
+	// Compatibility for a service secured by an earlier UnifiedProxy build which
 	// required its password even from localhost. secureControl migrates it to
 	// remote-only authentication after the next successful connection.
 	if raw, readErr := os.ReadFile(l.controlSecretPath()); readErr == nil {
@@ -141,7 +141,7 @@ func (l vpnGateLinuxLink) ensureService(ctx context.Context) error {
 			return ownerErr
 		}
 		if !owned {
-			return fmt.Errorf("检测到非 m-ui 管理的 VPN Client 服务，拒绝接管")
+			return fmt.Errorf("检测到非 UnifiedProxy 管理的 VPN Client 服务，拒绝接管")
 		}
 		return l.secureControl(ctx)
 	}
@@ -154,7 +154,7 @@ func (l vpnGateLinuxLink) ensureService(ctx context.Context) error {
 		if _, err := l.vpncmdWithPassword(ctx, "", "AccountList"); err == nil {
 			return l.secureControl(ctx)
 		}
-		return fmt.Errorf("m-ui 管理的 VPN Client 服务存在但控制端未就绪")
+		return fmt.Errorf("UnifiedProxy 管理的 VPN Client 服务存在但控制端未就绪")
 	}
 	binary := l.manager.vpnGateBinary("vpnclient")
 	if _, err := os.Stat(binary); err != nil {
@@ -282,7 +282,7 @@ func (l vpnGateLinuxLink) serviceOwned() (bool, error) {
 		return false, err
 	}
 	if !strings.Contains(strings.ReplaceAll(string(cmdline), "\x00", " "), "execsvc") {
-		return false, fmt.Errorf("VPN Client PID %d 不是 m-ui 前台服务", pid)
+		return false, fmt.Errorf("VPN Client PID %d 不是 UnifiedProxy 前台服务", pid)
 	}
 	return true, nil
 }
@@ -396,7 +396,7 @@ func (l vpnGateLinuxLink) ensureAdapter(ctx context.Context, slot int, adapter, 
 	}
 	if vpnGateOutputMentions(list, adapter) {
 		if !l.slotOwned(slot) {
-			return fmt.Errorf("SoftEther 网卡 %s 没有 m-ui 所有权记录，拒绝接管", adapter)
+			return fmt.Errorf("SoftEther 网卡 %s 没有 UnifiedProxy 所有权记录，拒绝接管", adapter)
 		}
 		_, _ = l.vpncmd(ctx, "NicEnable", adapter)
 		return nil
@@ -429,9 +429,9 @@ func (l vpnGateLinuxLink) ensureAccount(ctx context.Context, account, adapter st
 		return err
 	}
 	if vpnGateOutputMentions(existing, account) {
-		slot, parseErr := strconv.Atoi(strings.TrimPrefix(account, "mui-vpngate-"))
+		slot, parseErr := strconv.Atoi(strings.TrimPrefix(account, "up-vpngate-"))
 		if parseErr != nil || !l.slotOwned(slot) {
-			return fmt.Errorf("SoftEther 账户 %s 没有 m-ui 所有权记录，拒绝接管", account)
+			return fmt.Errorf("SoftEther 账户 %s 没有 UnifiedProxy 所有权记录，拒绝接管", account)
 		}
 		if _, err := l.vpncmd(ctx, "AccountDisconnect", account); err == nil {
 			time.Sleep(time.Second)
@@ -574,10 +574,10 @@ func vpnGateDHCPCommand(ctx context.Context, slot int, iface, config, lease, pid
 	// initial lease and subsequent renewals to receive the slot's routing data.
 	command := exec.CommandContext(ctx, "dhclient",
 		"-4", "-1", "-v", "-cf", config, "-lf", lease, "-pf", pid, "-sf", script,
-		"-e", "MUI_VPNGATE_TABLE="+strconv.Itoa(vpnGateRouteTable(slot)),
-		"-e", "MUI_VPNGATE_MARK="+strconv.Itoa(vpnGateRoutingMark(slot)),
-		"-e", "MUI_VPNGATE_MARK_PRIORITY="+strconv.Itoa(vpnGateRulePriority+slot),
-		"-e", "MUI_VPNGATE_SOURCE_PRIORITY="+strconv.Itoa(vpnGateRulePriority+100+slot), iface)
+		"-e", "UNIFIEDPROXY_VPNGATE_TABLE="+strconv.Itoa(vpnGateRouteTable(slot)),
+		"-e", "UNIFIEDPROXY_VPNGATE_MARK="+strconv.Itoa(vpnGateRoutingMark(slot)),
+		"-e", "UNIFIEDPROXY_VPNGATE_MARK_PRIORITY="+strconv.Itoa(vpnGateRulePriority+slot),
+		"-e", "UNIFIEDPROXY_VPNGATE_SOURCE_PRIORITY="+strconv.Itoa(vpnGateRulePriority+100+slot), iface)
 	command.Env = append(os.Environ(), "LANG=C", "LC_ALL=C")
 	return command
 }
@@ -857,7 +857,7 @@ func (l vpnGateLinuxLink) Verify(ctx context.Context, slot int) error {
 	if err != nil {
 		return err
 	}
-	request.Header.Set("User-Agent", "m-ui/"+appVersion)
+	request.Header.Set("User-Agent", "UnifiedProxy/"+appVersion)
 	response, err := client.Do(request)
 	if err != nil {
 		return fmt.Errorf("%s 无法访问外网：%w", iface, err)
@@ -977,7 +977,7 @@ func (l vpnGateLinuxLink) releaseLease(ctx context.Context, slot int, iface stri
 
 // vpnGateDHCPConfig asks for the bare minimum. Notably it does not request
 // domain-name-servers, because this feature must not rewrite the server's DNS.
-const vpnGateDHCPConfig = `# Managed by m-ui. Do not edit: rewritten on every VPNGate connect.
+const vpnGateDHCPConfig = `# Managed by UnifiedProxy. Do not edit: rewritten on every VPNGate connect.
 request subnet-mask, broadcast-address, interface-mtu, routers;
 timeout 20;
 retry 30;
@@ -987,7 +987,7 @@ retry 30;
 // It only configures the interface it was called for and deliberately does
 // nothing that could reach the main table, the default route or resolv.conf.
 const vpnGateDHCPHook = `#!/bin/sh
-# Managed by m-ui. Applies a VPNGate lease to one interface and nothing else.
+# Managed by UnifiedProxy. Applies a VPNGate lease to one interface and nothing else.
 set -u
 [ -n "${interface:-}" ] || exit 0
 case "$interface" in
@@ -995,14 +995,14 @@ case "$interface" in
     *) exit 0 ;;
 esac
 fail() {
-    printf 'm-ui VPNGate DHCP hook: %s\n' "$*" >&2
+    printf 'UnifiedProxy VPNGate DHCP hook: %s\n' "$*" >&2
     exit 1
 }
-[ -n "${MUI_VPNGATE_TABLE:-}" ] &&
-[ -n "${MUI_VPNGATE_MARK:-}" ] &&
-[ -n "${MUI_VPNGATE_MARK_PRIORITY:-}" ] &&
-[ -n "${MUI_VPNGATE_SOURCE_PRIORITY:-}" ] || fail "missing slot routing parameters for $interface"
-case "$MUI_VPNGATE_TABLE:$MUI_VPNGATE_MARK:$MUI_VPNGATE_MARK_PRIORITY:$MUI_VPNGATE_SOURCE_PRIORITY" in
+[ -n "${UNIFIEDPROXY_VPNGATE_TABLE:-}" ] &&
+[ -n "${UNIFIEDPROXY_VPNGATE_MARK:-}" ] &&
+[ -n "${UNIFIEDPROXY_VPNGATE_MARK_PRIORITY:-}" ] &&
+[ -n "${UNIFIEDPROXY_VPNGATE_SOURCE_PRIORITY:-}" ] || fail "missing slot routing parameters for $interface"
+case "$UNIFIEDPROXY_VPNGATE_TABLE:$UNIFIEDPROXY_VPNGATE_MARK:$UNIFIEDPROXY_VPNGATE_MARK_PRIORITY:$UNIFIEDPROXY_VPNGATE_SOURCE_PRIORITY" in
     *[!0-9:]*) fail "invalid slot routing parameters for $interface" ;;
 esac
 
@@ -1038,19 +1038,19 @@ apply_address() {
         [ "$new_interface_mtu" -ge 576 ] 2>/dev/null && [ "$new_interface_mtu" -le 9000 ] 2>/dev/null || return 1
         ip link set dev "$interface" mtu "$new_interface_mtu" 2>/dev/null || return 1
     fi
-    ip route replace unreachable default table "$MUI_VPNGATE_TABLE" proto 242 metric 42760 2>/dev/null || return 1
-    mark_hex=$(printf '0x%x' "$MUI_VPNGATE_MARK") || return 1
-    mark_rule=$(ip rule show | awk -v p="$MUI_VPNGATE_MARK_PRIORITY:" '$1 == p {print}')
+    ip route replace unreachable default table "$UNIFIEDPROXY_VPNGATE_TABLE" proto 242 metric 42760 2>/dev/null || return 1
+    mark_hex=$(printf '0x%x' "$UNIFIEDPROXY_VPNGATE_MARK") || return 1
+    mark_rule=$(ip rule show | awk -v p="$UNIFIEDPROXY_VPNGATE_MARK_PRIORITY:" '$1 == p {print}')
     if [ -n "$mark_rule" ]; then
-        case "$mark_rule" in *"fwmark $mark_hex"*"lookup $MUI_VPNGATE_TABLE"*) ip rule del priority "$MUI_VPNGATE_MARK_PRIORITY" 2>/dev/null || return 1;; *) return 1;; esac
+        case "$mark_rule" in *"fwmark $mark_hex"*"lookup $UNIFIEDPROXY_VPNGATE_TABLE"*) ip rule del priority "$UNIFIEDPROXY_VPNGATE_MARK_PRIORITY" 2>/dev/null || return 1;; *) return 1;; esac
     fi
-    ip rule add fwmark "$MUI_VPNGATE_MARK" table "$MUI_VPNGATE_TABLE" priority "$MUI_VPNGATE_MARK_PRIORITY" 2>/dev/null || return 1
-    source_rule=$(ip rule show | awk -v p="$MUI_VPNGATE_SOURCE_PRIORITY:" '$1 == p {print}')
+    ip rule add fwmark "$UNIFIEDPROXY_VPNGATE_MARK" table "$UNIFIEDPROXY_VPNGATE_TABLE" priority "$UNIFIEDPROXY_VPNGATE_MARK_PRIORITY" 2>/dev/null || return 1
+    source_rule=$(ip rule show | awk -v p="$UNIFIEDPROXY_VPNGATE_SOURCE_PRIORITY:" '$1 == p {print}')
     if [ -n "$source_rule" ]; then
-        case "$source_rule" in *"from $new_ip_address"*"lookup $MUI_VPNGATE_TABLE"*) ip rule del priority "$MUI_VPNGATE_SOURCE_PRIORITY" 2>/dev/null || return 1;; *) return 1;; esac
+        case "$source_rule" in *"from $new_ip_address"*"lookup $UNIFIEDPROXY_VPNGATE_TABLE"*) ip rule del priority "$UNIFIEDPROXY_VPNGATE_SOURCE_PRIORITY" 2>/dev/null || return 1;; *) return 1;; esac
     fi
-    ip rule add from "$new_ip_address" table "$MUI_VPNGATE_TABLE" priority "$MUI_VPNGATE_SOURCE_PRIORITY" 2>/dev/null || return 1
-    ip route replace default via "$gateway" dev "$interface" onlink table "$MUI_VPNGATE_TABLE" proto 242 metric 10 2>/dev/null || return 1
+    ip rule add from "$new_ip_address" table "$UNIFIEDPROXY_VPNGATE_TABLE" priority "$UNIFIEDPROXY_VPNGATE_SOURCE_PRIORITY" 2>/dev/null || return 1
+    ip route replace default via "$gateway" dev "$interface" onlink table "$UNIFIEDPROXY_VPNGATE_TABLE" proto 242 metric 10 2>/dev/null || return 1
 }
 
 case "$reason" in
@@ -1061,9 +1061,9 @@ case "$reason" in
         # Only this interface is cleared; the panel reinstalls its routes on the
         # next connect, and the slot fails closed until then.
         ip -4 addr flush dev "$interface" 2>/dev/null
-        source_rule=$(ip rule show | awk -v p="$MUI_VPNGATE_SOURCE_PRIORITY:" '$1 == p {print}')
-        case "$source_rule" in *"from "*"lookup $MUI_VPNGATE_TABLE"*) ip rule del priority "$MUI_VPNGATE_SOURCE_PRIORITY" 2>/dev/null;; esac
-        ip route del default dev "$interface" table "$MUI_VPNGATE_TABLE" proto 242 2>/dev/null
+        source_rule=$(ip rule show | awk -v p="$UNIFIEDPROXY_VPNGATE_SOURCE_PRIORITY:" '$1 == p {print}')
+        case "$source_rule" in *"from "*"lookup $UNIFIEDPROXY_VPNGATE_TABLE"*) ip rule del priority "$UNIFIEDPROXY_VPNGATE_SOURCE_PRIORITY" 2>/dev/null;; esac
+        ip route del default dev "$interface" table "$UNIFIEDPROXY_VPNGATE_TABLE" proto 242 2>/dev/null
         ;;
 esac
 exit 0

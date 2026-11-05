@@ -60,7 +60,7 @@ A internal/store/store.go
    保留 GPL/NOTICE、兼容 CLI、服务/数据目录、模块导入路径及真实客户端依赖的归属。
 2. 安全快进 main，推送后核对远程 main 的提交与树；不强推。
 3. main 目前占用在 `E:/脚本编写存放/git/MieruPilot`，该工作树有未提交 README、
-   docs/MERGER_NOTICE.md、m-ui/ 和 .opencode/ 会话目录。禁止 reset/clean/覆盖它们。
+   docs/MERGER_NOTICE.md、UnifiedProxy/ 和 .opencode/ 会话目录。禁止 reset/clean/覆盖它们。
    实施前先无损保存并核对这些变更，或采用用户确认的独立工作树交接。
 4. 在 orca-linux 的 `/workspace` 对 main 复跑 build/vet/test 和关键浏览器/迁移验收。
 5. 合并成功并确认保留标签后，删除本次约定的 HlONGlin/main、master、

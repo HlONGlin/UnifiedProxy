@@ -2,11 +2,11 @@
 set -Eeuo pipefail
 umask 077
 
-INSTALL_DIR="${MUI_INSTALL_DIR:-/usr/local/m-ui}"
-BIN="${INSTALL_DIR}/m-ui"
+INSTALL_DIR="${UNIFIEDPROXY_INSTALL_DIR:-/usr/local/unifiedproxy}"
+BIN="${INSTALL_DIR}/unifiedproxy"
 DATA_DIR="${INSTALL_DIR}/data"
-INSTALL_URL="https://raw.githubusercontent.com/HlONGlin/UnifiedProxy/main/install.sh"
-# 菜单语言和面板界面语言保持同一套；m-ui --lang <code> 选好后记在这个文件里。
+INSTALL_URL="https://raw.githubusercontent.com/HlONGlin/unifiedproxy/main/install.sh"
+# 菜单语言和面板界面语言保持同一套；unifiedproxy --lang <code> 选好后记在这个文件里。
 MENU_LANG_FILE="${INSTALL_DIR}/menu-lang"
 MENU_LANGS=(en zh-CN zh-TW ja ru fa vi es tr uk pt-BR)
 MENU_LANG="en"
@@ -19,23 +19,23 @@ t() { printf '%s' "${MSG[$1]:-$1}"; }
 # shellcheck disable=SC2059
 tf() { local format="${MSG[$1]:-$1}"; shift; printf "$format" "$@"; }
 
-info() { echo -e "${green}[m-ui]${plain} $*"; }
-warn() { echo -e "${yellow}[m-ui]${plain} $*"; }
-die() { echo -e "${red}[m-ui] $(t err_prefix)${plain} $*" >&2; exit 1; }
+info() { echo -e "${green}[UnifiedProxy]${plain} $*"; }
+warn() { echo -e "${yellow}[UnifiedProxy]${plain} $*"; }
+die() { echo -e "${red}[UnifiedProxy] $(t err_prefix)${plain} $*" >&2; exit 1; }
 require_root() { [[ ${EUID} -eq 0 ]] || die "$(t need_root)"; }
 
 has_systemd() { command -v systemctl >/dev/null 2>&1 && [[ -d /run/systemd/system ]]; }
-service_do() { if has_systemd; then systemctl "$1" m-ui; else rc-service m-ui "$1"; fi; }
+service_do() { if has_systemd; then systemctl "$1" unifiedproxy; else rc-service unifiedproxy "$1"; fi; }
 start() { require_root; service_do start; }
 stop() { require_root; service_do stop; }
 restart() { require_root; service_do restart; }
-status() { if has_systemd; then systemctl status m-ui --no-pager; else rc-service m-ui status; fi; }
-logs() { if has_systemd; then journalctl -u m-ui -e --no-pager -n 200; else tail -n 200 /var/log/m-ui.log; fi; }
-enable() { require_root; if has_systemd; then systemctl enable m-ui; else rc-update add m-ui default; fi; }
-disable() { require_root; if has_systemd; then systemctl disable m-ui; else rc-update del m-ui default; fi; }
+status() { if has_systemd; then systemctl status unifiedproxy --no-pager; else rc-service unifiedproxy status; fi; }
+logs() { if has_systemd; then journalctl -u unifiedproxy -e --no-pager -n 200; else tail -n 200 /var/log/unifiedproxy.log; fi; }
+enable() { require_root; if has_systemd; then systemctl enable unifiedproxy; else rc-update add unifiedproxy default; fi; }
+disable() { require_root; if has_systemd; then systemctl disable unifiedproxy; else rc-update del unifiedproxy default; fi; }
 settings() { "$BIN" settings --data-dir "$DATA_DIR"; }
 
-# run_configure stops the panel while `m-ui configure` rewrites state.json and
+# run_configure stops the panel while `unifiedproxy configure` rewrites state.json and
 # starts it again afterwards. A running panel saves state.json every few seconds
 # and when it stops, and versions before v0.3.1 wrote their old settings back,
 # so a new port, path, password or certificate never took effect.
@@ -58,7 +58,7 @@ random_alnum() {
 
 update() {
     require_root
-    local script; script="$(mktemp /tmp/m-ui-update.XXXXXX.sh)"
+    local script; script="$(mktemp /tmp/unifiedproxy-update.XXXXXX.sh)"
     if ! curl -fsSL --retry 3 "$INSTALL_URL" -o "$script"; then
         rm -f -- "$script"
         die "$(t dl_installer_fail)"
@@ -72,7 +72,7 @@ update() {
 
 install_cmd() {
     require_root
-    local script; script="$(mktemp /tmp/m-ui-install.XXXXXX.sh)"
+    local script; script="$(mktemp /tmp/unifiedproxy-install.XXXXXX.sh)"
     if ! curl -fsSL --retry 3 "$INSTALL_URL" -o "$script"; then
         rm -f -- "$script"
         die "$(t dl_installer_fail)"
@@ -86,20 +86,20 @@ install_cmd() {
 
 update_menu() {
     require_root
-    local menu; menu="$(mktemp /tmp/m-ui-menu.XXXXXX)"
-    if ! curl -fsSL --retry 3 "https://raw.githubusercontent.com/HlONGlin/UnifiedProxy/main/scripts/m-ui.sh" -o "$menu"; then
+    local menu; menu="$(mktemp /tmp/unifiedproxy-menu.XXXXXX)"
+    if ! curl -fsSL --retry 3 "https://raw.githubusercontent.com/HlONGlin/unifiedproxy/main/scripts/unifiedproxy.sh" -o "$menu"; then
         rm -f -- "$menu"
         die "$(t dl_menu_fail)"
     fi
-    install -m 0755 "$menu" "${INSTALL_DIR}/m-ui.sh"
-    ln -sfn "${INSTALL_DIR}/m-ui.sh" /usr/local/bin/m-ui
+    install -m 0755 "$menu" "${INSTALL_DIR}/unifiedproxy.sh"
+    ln -sfn "${INSTALL_DIR}/unifiedproxy.sh" /usr/local/bin/unifiedproxy
     rm -f -- "$menu"
     info "$(t menu_updated)"
 }
 
 run_ssl_installer() {
     require_root
-    local script; script="$(mktemp /tmp/m-ui-ssl.XXXXXX.sh)"
+    local script; script="$(mktemp /tmp/unifiedproxy-ssl.XXXXXX.sh)"
     if ! curl -fsSL --retry 3 "$INSTALL_URL" -o "$script"; then
         rm -f -- "$script"
         die "$(t dl_installer_fail)"
@@ -247,7 +247,7 @@ ssl_cloudflare() {
     unset CF_Token CF_Key CF_Email
     cert_dir="/root/cert/${domain}"; cert="${cert_dir}/fullchain.pem"; key="${cert_dir}/privkey.pem"
     mkdir -p "$cert_dir"; chmod 0700 "$cert_dir"
-    "$acme" --installcert -d "$domain" --key-file "$key" --fullchain-file "$cert" --reloadcmd "systemctl restart m-ui 2>/dev/null || rc-service m-ui restart 2>/dev/null || true" || true
+    "$acme" --installcert -d "$domain" --key-file "$key" --fullchain-file "$cert" --reloadcmd "systemctl restart unifiedproxy 2>/dev/null || rc-service unifiedproxy restart 2>/dev/null || true" || true
     [[ -s "$cert" && -s "$key" ]] || die "$(t acme_no_files)"
     ensure_full_chain "$domain" "$cert" || true
     chmod 0644 "$cert"; chmod 0600 "$key"
@@ -292,8 +292,8 @@ clear_logs() {
     if has_systemd; then
         journalctl --rotate >/dev/null 2>&1 || true
         journalctl --vacuum-time=1s >/dev/null 2>&1 || true
-    elif [[ -f /var/log/m-ui.log ]]; then
-        : > /var/log/m-ui.log
+    elif [[ -f /var/log/unifiedproxy.log ]]; then
+        : > /var/log/unifiedproxy.log
     fi
     info "$(t logs_cleared)"
 }
@@ -340,23 +340,23 @@ uninstall() {
     read -rp "$(t p_uninstall)" answer
     [[ "$answer" =~ ^[Yy]$ ]] || { warn "$(t cancelled)"; return; }
     if has_systemd; then
-        systemctl disable --now m-ui >/dev/null 2>&1 || true
-        rm -f /etc/systemd/system/m-ui.service
+        systemctl disable --now unifiedproxy >/dev/null 2>&1 || true
+        rm -f /etc/systemd/system/unifiedproxy.service
         systemctl daemon-reload
         systemctl reset-failed >/dev/null 2>&1 || true
     else
-        rc-service m-ui stop >/dev/null 2>&1 || true
-        rc-update del m-ui default >/dev/null 2>&1 || true
-        rm -f /etc/init.d/m-ui
+        rc-service unifiedproxy stop >/dev/null 2>&1 || true
+        rc-update del unifiedproxy default >/dev/null 2>&1 || true
+        rm -f /etc/init.d/unifiedproxy
     fi
-    rm -f /usr/local/bin/m-ui
+    rm -f /usr/local/bin/unifiedproxy
     read -rp "$(tf p_purge "$DATA_DIR")" purge
     if [[ "$purge" =~ ^[Yy]$ ]]; then
-        [[ "$INSTALL_DIR" == "/usr/local/m-ui" ]] || die "$(t purge_refuse)"
+        [[ "$INSTALL_DIR" == "/usr/local/unifiedproxy" ]] || die "$(t purge_refuse)"
         rm -rf -- "$INSTALL_DIR"
         info "$(t removed_all)"
     else
-        rm -f -- "$BIN" "${INSTALL_DIR}/mihomo" "${INSTALL_DIR}/m-ui.sh" "$MENU_LANG_FILE"
+        rm -f -- "$BIN" "${INSTALL_DIR}/mihomo" "${INSTALL_DIR}/unifiedproxy.sh" "$MENU_LANG_FILE"
         info "$(tf removed_keep "$DATA_DIR")"
     fi
 }
@@ -364,17 +364,17 @@ uninstall() {
 show_usage() {
     t usage_title; echo
     printf '  %-34s %s\n' \
-        "m-ui" "$(t u_menu)" \
-        "m-ui start|stop|restart|status" "$(t u_service)" \
-        "m-ui logs|clear-logs" "$(t u_logs)" \
-        "m-ui settings|configure|set-port" "$(t u_settings)" \
-        "m-ui reset-credentials|reset-path" "$(t u_reset)" \
-        "m-ui enable|disable" "$(t u_boot)" \
-        "m-ui install|update|update-menu" "$(t u_update)" \
-        "m-ui ssl <subcommand>" "$(t u_ssl)" \
+        "unifiedproxy" "$(t u_menu)" \
+        "unifiedproxy start|stop|restart|status" "$(t u_service)" \
+        "unifiedproxy logs|clear-logs" "$(t u_logs)" \
+        "unifiedproxy settings|configure|set-port" "$(t u_settings)" \
+        "unifiedproxy reset-credentials|reset-path" "$(t u_reset)" \
+        "unifiedproxy enable|disable" "$(t u_boot)" \
+        "unifiedproxy install|update|update-menu" "$(t u_update)" \
+        "unifiedproxy ssl <subcommand>" "$(t u_ssl)" \
         "" "domain | ip | cloudflare | renew | revoke | list | set" \
-        "m-ui version|uninstall" "$(t u_misc)" \
-        "m-ui --lang <code>" "$(tf u_lang "${MENU_LANGS[*]}")"
+        "unifiedproxy version|uninstall" "$(t u_misc)" \
+        "unifiedproxy --lang <code>" "$(tf u_lang "${MENU_LANGS[*]}")"
 }
 
 show_menu() {
@@ -452,10 +452,10 @@ save_lang() {
 lang_en() {
     M err_prefix "ERROR:"
     M need_root "this command must run as root"
-    M dl_installer_fail "could not download the m-ui installer"
+    M dl_installer_fail "could not download the unifiedproxy installer"
     M dl_menu_fail "could not download the latest management script"
     M menu_updated "Management script updated"
-    M installer_syntax "downloaded m-ui installer has invalid shell syntax"
+    M installer_syntax "downloaded unifiedproxy installer has invalid shell syntax"
     M acme_missing "acme.sh is not installed; issue a certificate first"
     M acme_not_installed "acme.sh is not installed"
     M p_domain "Domain: "
@@ -497,12 +497,12 @@ lang_en() {
     M tls_4 "Force-renew a certificate"
     M tls_5 "Revoke a certificate"
     M tls_6 "Show existing certificates"
-    M tls_7 "Apply existing certificate paths to m-ui"
+    M tls_7 "Apply existing certificate paths to UnifiedProxy"
     M back "Back"
     M p_choose_07 "Choose [0-7]: "
     M p_port "Panel port [1-65535]: "
     M port_invalid "panel port must be between 1 and 65535"
-    M logs_cleared "m-ui logs cleared"
+    M logs_cleared "unifiedproxy logs cleared"
     M p_keep_port "Panel port (blank keeps current): "
     M p_keep_path "Panel URI path (blank keeps current): "
     M p_keep_user "Username (blank keeps current): "
@@ -512,24 +512,24 @@ lang_en() {
     M show_user "Username: %s"
     M show_pass "Password: %s"
     M show_path "Panel path: %s"
-    M p_uninstall "Uninstall m-ui? [y/N]: "
+    M p_uninstall "Uninstall UnifiedProxy? [y/N]: "
     M cancelled "Cancelled"
     M p_purge "Also permanently delete %s? [y/N]: "
     M purge_refuse "refusing to purge unexpected install directory"
-    M removed_all "m-ui and its data were removed"
-    M removed_keep "m-ui was removed; data remains in %s"
-    M usage_title "m-ui management commands:"
+    M removed_all "UnifiedProxy and its data were removed"
+    M removed_keep "UnifiedProxy was removed; data remains in %s"
+    M usage_title "UnifiedProxy management commands:"
     M u_menu "Open the interactive management menu"
-    M u_service "Control the m-ui service"
+    M u_service "Control the UnifiedProxy service"
     M u_logs "Show or clear logs"
     M u_settings "Show or change panel settings"
     M u_reset "Reset login credentials or the panel path"
     M u_boot "Enable or disable autostart"
-    M u_update "Install or update m-ui, or update this script"
+    M u_update "Install or update UnifiedProxy, or update this script"
     M u_ssl "Manage TLS certificates"
     M u_misc "Show the version or uninstall"
     M u_lang "Set the menu language (%s)"
-    M menu_title "m-ui management"
+    M menu_title "UnifiedProxy management"
     M m_1 "Start"
     M m_2 "Stop"
     M m_3 "Restart"
@@ -557,10 +557,10 @@ lang_en() {
 lang_zh_CN() {
     M err_prefix "错误："
     M need_root "此命令需要以 root 身份运行"
-    M dl_installer_fail "无法下载 m-ui 安装脚本"
+    M dl_installer_fail "无法下载 UnifiedProxy 安装脚本"
     M dl_menu_fail "无法下载最新的管理脚本"
     M menu_updated "管理脚本已更新"
-    M installer_syntax "下载的 m-ui 安装脚本有语法错误"
+    M installer_syntax "下载的 UnifiedProxy 安装脚本有语法错误"
     M acme_missing "尚未安装 acme.sh，请先申请证书"
     M acme_not_installed "尚未安装 acme.sh"
     M p_domain "域名："
@@ -602,12 +602,12 @@ lang_zh_CN() {
     M tls_4 "强制续期证书"
     M tls_5 "吊销证书"
     M tls_6 "查看现有证书"
-    M tls_7 "把已有证书路径应用到 m-ui"
+    M tls_7 "把已有证书路径应用到 UnifiedProxy"
     M back "返回"
     M p_choose_07 "请选择 [0-7]："
     M p_port "面板端口 [1-65535]："
     M port_invalid "面板端口必须在 1 到 65535 之间"
-    M logs_cleared "m-ui 日志已清除"
+    M logs_cleared "UnifiedProxy 日志已清除"
     M p_keep_port "面板端口（留空保持不变）："
     M p_keep_path "面板 URI 路径（留空保持不变）："
     M p_keep_user "用户名（留空保持不变）："
@@ -617,24 +617,24 @@ lang_zh_CN() {
     M show_user "用户名：%s"
     M show_pass "密码：%s"
     M show_path "面板路径：%s"
-    M p_uninstall "确定卸载 m-ui？[y/N]："
+    M p_uninstall "确定卸载 UnifiedProxy？[y/N]："
     M cancelled "已取消"
     M p_purge "同时永久删除 %s？[y/N]："
     M purge_refuse "安装目录不是预期位置，拒绝删除"
-    M removed_all "m-ui 及其数据已删除"
-    M removed_keep "m-ui 已卸载，数据保留在 %s"
-    M usage_title "m-ui 管理命令："
+    M removed_all "UnifiedProxy 及其数据已删除"
+    M removed_keep "UnifiedProxy 已卸载，数据保留在 %s"
+    M usage_title "UnifiedProxy 管理命令："
     M u_menu "打开交互式管理菜单"
-    M u_service "控制 m-ui 服务"
+    M u_service "控制 UnifiedProxy 服务"
     M u_logs "查看或清除日志"
     M u_settings "查看或修改面板设置"
     M u_reset "重置登录凭据或面板路径"
     M u_boot "开启或关闭开机自启"
-    M u_update "安装、更新 m-ui，或更新本脚本"
+    M u_update "安装、更新 UnifiedProxy，或更新本脚本"
     M u_ssl "管理 TLS 证书"
     M u_misc "查看版本或卸载"
     M u_lang "设置菜单语言（%s）"
-    M menu_title "m-ui 管理菜单"
+    M menu_title "UnifiedProxy 管理菜单"
     M m_1 "启动"
     M m_2 "停止"
     M m_3 "重启"
@@ -662,10 +662,10 @@ lang_zh_CN() {
 lang_zh_TW() {
     M err_prefix "錯誤："
     M need_root "此指令需要以 root 身分執行"
-    M dl_installer_fail "無法下載 m-ui 安裝腳本"
+    M dl_installer_fail "無法下載 UnifiedProxy 安裝腳本"
     M dl_menu_fail "無法下載最新的管理腳本"
     M menu_updated "管理腳本已更新"
-    M installer_syntax "下載的 m-ui 安裝腳本有語法錯誤"
+    M installer_syntax "下載的 UnifiedProxy 安裝腳本有語法錯誤"
     M acme_missing "尚未安裝 acme.sh，請先申請憑證"
     M acme_not_installed "尚未安裝 acme.sh"
     M p_domain "網域："
@@ -707,12 +707,12 @@ lang_zh_TW() {
     M tls_4 "強制續期憑證"
     M tls_5 "撤銷憑證"
     M tls_6 "檢視現有憑證"
-    M tls_7 "將現有憑證路徑套用到 m-ui"
+    M tls_7 "將現有憑證路徑套用到 UnifiedProxy"
     M back "返回"
     M p_choose_07 "請選擇 [0-7]："
     M p_port "面板連接埠 [1-65535]："
     M port_invalid "面板連接埠必須介於 1 到 65535 之間"
-    M logs_cleared "已清除 m-ui 日誌"
+    M logs_cleared "已清除 UnifiedProxy 日誌"
     M p_keep_port "面板連接埠（留空維持不變）："
     M p_keep_path "面板 URI 路徑（留空維持不變）："
     M p_keep_user "使用者名稱（留空維持不變）："
@@ -722,24 +722,24 @@ lang_zh_TW() {
     M show_user "使用者名稱：%s"
     M show_pass "密碼：%s"
     M show_path "面板路徑：%s"
-    M p_uninstall "確定解除安裝 m-ui？[y/N]："
+    M p_uninstall "確定解除安裝 UnifiedProxy？[y/N]："
     M cancelled "已取消"
     M p_purge "同時永久刪除 %s？[y/N]："
     M purge_refuse "安裝目錄不是預期位置，拒絕刪除"
-    M removed_all "已移除 m-ui 及其資料"
-    M removed_keep "已移除 m-ui，資料保留在 %s"
-    M usage_title "m-ui 管理指令："
+    M removed_all "已移除 UnifiedProxy 及其資料"
+    M removed_keep "已移除 UnifiedProxy，資料保留在 %s"
+    M usage_title "UnifiedProxy 管理指令："
     M u_menu "開啟互動式管理選單"
-    M u_service "控制 m-ui 服務"
+    M u_service "控制 UnifiedProxy 服務"
     M u_logs "檢視或清除日誌"
     M u_settings "檢視或修改面板設定"
     M u_reset "重設登入憑據或面板路徑"
     M u_boot "開啟或關閉開機自動啟動"
-    M u_update "安裝、更新 m-ui，或更新本腳本"
+    M u_update "安裝、更新 UnifiedProxy，或更新本腳本"
     M u_ssl "管理 TLS 憑證"
     M u_misc "檢視版本或解除安裝"
     M u_lang "設定選單語言（%s）"
-    M menu_title "m-ui 管理選單"
+    M menu_title "UnifiedProxy 管理選單"
     M m_1 "啟動"
     M m_2 "停止"
     M m_3 "重新啟動"
@@ -767,10 +767,10 @@ lang_zh_TW() {
 lang_ja() {
     M err_prefix "エラー:"
     M need_root "このコマンドは root で実行する必要があります"
-    M dl_installer_fail "m-ui インストーラーをダウンロードできませんでした"
+    M dl_installer_fail "UnifiedProxy インストーラーをダウンロードできませんでした"
     M dl_menu_fail "最新の管理スクリプトをダウンロードできませんでした"
     M menu_updated "管理スクリプトを更新しました"
-    M installer_syntax "ダウンロードした m-ui インストーラーに構文エラーがあります"
+    M installer_syntax "ダウンロードした UnifiedProxy インストーラーに構文エラーがあります"
     M acme_missing "acme.sh がインストールされていません。先に証明書を発行してください"
     M acme_not_installed "acme.sh がインストールされていません"
     M p_domain "ドメイン: "
@@ -812,12 +812,12 @@ lang_ja() {
     M tls_4 "証明書を強制更新"
     M tls_5 "証明書を失効"
     M tls_6 "既存の証明書を表示"
-    M tls_7 "既存の証明書パスを m-ui に適用"
+    M tls_7 "既存の証明書パスを UnifiedProxy に適用"
     M back "戻る"
     M p_choose_07 "選択 [0-7]: "
     M p_port "パネルのポート [1-65535]: "
     M port_invalid "パネルのポートは 1〜65535 の範囲で指定してください"
-    M logs_cleared "m-ui のログを消去しました"
+    M logs_cleared "UnifiedProxy のログを消去しました"
     M p_keep_port "パネルのポート（空欄で変更なし）: "
     M p_keep_path "パネルの URI パス（空欄で変更なし）: "
     M p_keep_user "ユーザー名（空欄で変更なし）: "
@@ -827,24 +827,24 @@ lang_ja() {
     M show_user "ユーザー名: %s"
     M show_pass "パスワード: %s"
     M show_path "パネルのパス: %s"
-    M p_uninstall "m-ui をアンインストールしますか？ [y/N]: "
+    M p_uninstall "UnifiedProxy をアンインストールしますか？ [y/N]: "
     M cancelled "キャンセルしました"
     M p_purge "%s も完全に削除しますか？ [y/N]: "
     M purge_refuse "想定外のインストール先のため、削除を中止しました"
-    M removed_all "m-ui とそのデータを削除しました"
-    M removed_keep "m-ui を削除しました。データは %s に残っています"
-    M usage_title "m-ui 管理コマンド:"
+    M removed_all "UnifiedProxy とそのデータを削除しました"
+    M removed_keep "UnifiedProxy を削除しました。データは %s に残っています"
+    M usage_title "UnifiedProxy 管理コマンド:"
     M u_menu "対話式の管理メニューを開く"
-    M u_service "m-ui サービスを操作"
+    M u_service "UnifiedProxy サービスを操作"
     M u_logs "ログを表示または消去"
     M u_settings "パネル設定を表示または変更"
     M u_reset "ログイン情報またはパネルのパスをリセット"
     M u_boot "自動起動を有効化または無効化"
-    M u_update "m-ui のインストール・更新、またはこのスクリプトの更新"
+    M u_update "UnifiedProxy のインストール・更新、またはこのスクリプトの更新"
     M u_ssl "TLS 証明書を管理"
     M u_misc "バージョンを表示、またはアンインストール"
     M u_lang "メニューの言語を設定（%s）"
-    M menu_title "m-ui 管理メニュー"
+    M menu_title "UnifiedProxy 管理メニュー"
     M m_1 "起動"
     M m_2 "停止"
     M m_3 "再起動"
@@ -872,10 +872,10 @@ lang_ja() {
 lang_ru() {
     M err_prefix "ОШИБКА:"
     M need_root "эту команду нужно запускать от имени root"
-    M dl_installer_fail "не удалось загрузить установщик m-ui"
+    M dl_installer_fail "не удалось загрузить установщик UnifiedProxy"
     M dl_menu_fail "не удалось загрузить последнюю версию скрипта управления"
     M menu_updated "Скрипт управления обновлён"
-    M installer_syntax "в загруженном установщике m-ui есть синтаксические ошибки"
+    M installer_syntax "в загруженном установщике UnifiedProxy есть синтаксические ошибки"
     M acme_missing "acme.sh не установлен; сначала выпустите сертификат"
     M acme_not_installed "acme.sh не установлен"
     M p_domain "Домен: "
@@ -917,12 +917,12 @@ lang_ru() {
     M tls_4 "Принудительно продлить сертификат"
     M tls_5 "Отозвать сертификат"
     M tls_6 "Показать имеющиеся сертификаты"
-    M tls_7 "Применить в m-ui пути к имеющемуся сертификату"
+    M tls_7 "Применить в UnifiedProxy пути к имеющемуся сертификату"
     M back "Назад"
     M p_choose_07 "Выберите [0-7]: "
     M p_port "Порт панели [1-65535]: "
     M port_invalid "порт панели должен быть от 1 до 65535"
-    M logs_cleared "Журналы m-ui очищены"
+    M logs_cleared "Журналы UnifiedProxy очищены"
     M p_keep_port "Порт панели (пусто — оставить текущий): "
     M p_keep_path "URI-путь панели (пусто — оставить текущий): "
     M p_keep_user "Имя пользователя (пусто — оставить текущее): "
@@ -932,24 +932,24 @@ lang_ru() {
     M show_user "Имя пользователя: %s"
     M show_pass "Пароль: %s"
     M show_path "Путь панели: %s"
-    M p_uninstall "Удалить m-ui? [y/N]: "
+    M p_uninstall "Удалить UnifiedProxy? [y/N]: "
     M cancelled "Отменено"
     M p_purge "Также безвозвратно удалить %s? [y/N]: "
     M purge_refuse "неожиданный каталог установки, удаление отменено"
-    M removed_all "m-ui и его данные удалены"
-    M removed_keep "m-ui удалён; данные остались в %s"
-    M usage_title "Команды управления m-ui:"
+    M removed_all "UnifiedProxy и его данные удалены"
+    M removed_keep "UnifiedProxy удалён; данные остались в %s"
+    M usage_title "Команды управления UnifiedProxy:"
     M u_menu "Открыть интерактивное меню управления"
-    M u_service "Управлять службой m-ui"
+    M u_service "Управлять службой UnifiedProxy"
     M u_logs "Показать или очистить журналы"
     M u_settings "Показать или изменить настройки панели"
     M u_reset "Сбросить учётные данные или путь панели"
     M u_boot "Включить или отключить автозапуск"
-    M u_update "Установить или обновить m-ui, обновить этот скрипт"
+    M u_update "Установить или обновить UnifiedProxy, обновить этот скрипт"
     M u_ssl "Управлять TLS-сертификатами"
     M u_misc "Показать версию или удалить"
     M u_lang "Выбрать язык меню (%s)"
-    M menu_title "Управление m-ui"
+    M menu_title "Управление UnifiedProxy"
     M m_1 "Запустить"
     M m_2 "Остановить"
     M m_3 "Перезапустить"
@@ -977,10 +977,10 @@ lang_ru() {
 lang_uk() {
     M err_prefix "ПОМИЛКА:"
     M need_root "цю команду потрібно запускати від імені root"
-    M dl_installer_fail "не вдалося завантажити інсталятор m-ui"
+    M dl_installer_fail "не вдалося завантажити інсталятор UnifiedProxy"
     M dl_menu_fail "не вдалося завантажити останню версію скрипта керування"
     M menu_updated "Скрипт керування оновлено"
-    M installer_syntax "завантажений інсталятор m-ui містить синтаксичні помилки"
+    M installer_syntax "завантажений інсталятор UnifiedProxy містить синтаксичні помилки"
     M acme_missing "acme.sh не встановлено; спочатку випустіть сертифікат"
     M acme_not_installed "acme.sh не встановлено"
     M p_domain "Домен: "
@@ -1022,12 +1022,12 @@ lang_uk() {
     M tls_4 "Примусово поновити сертифікат"
     M tls_5 "Відкликати сертифікат"
     M tls_6 "Показати наявні сертифікати"
-    M tls_7 "Застосувати в m-ui шляхи до наявного сертифіката"
+    M tls_7 "Застосувати в UnifiedProxy шляхи до наявного сертифіката"
     M back "Назад"
     M p_choose_07 "Виберіть [0-7]: "
     M p_port "Порт панелі [1-65535]: "
     M port_invalid "порт панелі має бути від 1 до 65535"
-    M logs_cleared "Журнали m-ui очищено"
+    M logs_cleared "Журнали UnifiedProxy очищено"
     M p_keep_port "Порт панелі (порожньо — залишити поточний): "
     M p_keep_path "URI-шлях панелі (порожньо — залишити поточний): "
     M p_keep_user "Ім'я користувача (порожньо — залишити поточне): "
@@ -1037,24 +1037,24 @@ lang_uk() {
     M show_user "Ім'я користувача: %s"
     M show_pass "Пароль: %s"
     M show_path "Шлях панелі: %s"
-    M p_uninstall "Видалити m-ui? [y/N]: "
+    M p_uninstall "Видалити UnifiedProxy? [y/N]: "
     M cancelled "Скасовано"
     M p_purge "Також остаточно видалити %s? [y/N]: "
     M purge_refuse "неочікуваний каталог встановлення, видалення скасовано"
-    M removed_all "m-ui та його дані видалено"
-    M removed_keep "m-ui видалено; дані залишилися в %s"
-    M usage_title "Команди керування m-ui:"
+    M removed_all "UnifiedProxy та його дані видалено"
+    M removed_keep "UnifiedProxy видалено; дані залишилися в %s"
+    M usage_title "Команди керування UnifiedProxy:"
     M u_menu "Відкрити інтерактивне меню керування"
-    M u_service "Керувати службою m-ui"
+    M u_service "Керувати службою UnifiedProxy"
     M u_logs "Показати або очистити журнали"
     M u_settings "Показати або змінити налаштування панелі"
     M u_reset "Скинути облікові дані або шлях панелі"
     M u_boot "Увімкнути або вимкнути автозапуск"
-    M u_update "Встановити або оновити m-ui, оновити цей скрипт"
+    M u_update "Встановити або оновити UnifiedProxy, оновити цей скрипт"
     M u_ssl "Керувати TLS-сертифікатами"
     M u_misc "Показати версію або видалити"
     M u_lang "Вибрати мову меню (%s)"
-    M menu_title "Керування m-ui"
+    M menu_title "Керування UnifiedProxy"
     M m_1 "Запустити"
     M m_2 "Зупинити"
     M m_3 "Перезапустити"
@@ -1082,10 +1082,10 @@ lang_uk() {
 lang_es() {
     M err_prefix "ERROR:"
     M need_root "este comando debe ejecutarse como root"
-    M dl_installer_fail "no se pudo descargar el instalador de m-ui"
+    M dl_installer_fail "no se pudo descargar el instalador de UnifiedProxy"
     M dl_menu_fail "no se pudo descargar el script de gestión más reciente"
     M menu_updated "Script de gestión actualizado"
-    M installer_syntax "el instalador de m-ui descargado tiene errores de sintaxis"
+    M installer_syntax "el instalador de UnifiedProxy descargado tiene errores de sintaxis"
     M acme_missing "acme.sh no está instalado; primero emite un certificado"
     M acme_not_installed "acme.sh no está instalado"
     M p_domain "Dominio: "
@@ -1127,12 +1127,12 @@ lang_es() {
     M tls_4 "Forzar la renovación de un certificado"
     M tls_5 "Revocar un certificado"
     M tls_6 "Mostrar los certificados existentes"
-    M tls_7 "Aplicar a m-ui las rutas de un certificado existente"
+    M tls_7 "Aplicar a UnifiedProxy las rutas de un certificado existente"
     M back "Volver"
     M p_choose_07 "Elige [0-7]: "
     M p_port "Puerto del panel [1-65535]: "
     M port_invalid "el puerto del panel debe estar entre 1 y 65535"
-    M logs_cleared "Registros de m-ui borrados"
+    M logs_cleared "Registros de UnifiedProxy borrados"
     M p_keep_port "Puerto del panel (vacío mantiene el actual): "
     M p_keep_path "Ruta URI del panel (vacío mantiene la actual): "
     M p_keep_user "Usuario (vacío mantiene el actual): "
@@ -1142,24 +1142,24 @@ lang_es() {
     M show_user "Usuario: %s"
     M show_pass "Contraseña: %s"
     M show_path "Ruta del panel: %s"
-    M p_uninstall "¿Desinstalar m-ui? [y/N]: "
+    M p_uninstall "¿Desinstalar UnifiedProxy? [y/N]: "
     M cancelled "Cancelado"
     M p_purge "¿Eliminar también %s de forma permanente? [y/N]: "
     M purge_refuse "directorio de instalación inesperado; no se eliminará"
-    M removed_all "m-ui y sus datos se eliminaron"
-    M removed_keep "m-ui se eliminó; los datos siguen en %s"
-    M usage_title "Comandos de gestión de m-ui:"
+    M removed_all "UnifiedProxy y sus datos se eliminaron"
+    M removed_keep "UnifiedProxy se eliminó; los datos siguen en %s"
+    M usage_title "Comandos de gestión de UnifiedProxy:"
     M u_menu "Abrir el menú de gestión interactivo"
-    M u_service "Controlar el servicio m-ui"
+    M u_service "Controlar el servicio UnifiedProxy"
     M u_logs "Ver o borrar los registros"
     M u_settings "Ver o cambiar la configuración del panel"
     M u_reset "Restablecer las credenciales o la ruta del panel"
     M u_boot "Activar o desactivar el inicio automático"
-    M u_update "Instalar o actualizar m-ui, o actualizar este script"
+    M u_update "Instalar o actualizar UnifiedProxy, o actualizar este script"
     M u_ssl "Gestionar los certificados TLS"
     M u_misc "Ver la versión o desinstalar"
     M u_lang "Elegir el idioma del menú (%s)"
-    M menu_title "Gestión de m-ui"
+    M menu_title "Gestión de UnifiedProxy"
     M m_1 "Iniciar"
     M m_2 "Detener"
     M m_3 "Reiniciar"
@@ -1187,10 +1187,10 @@ lang_es() {
 lang_pt_BR() {
     M err_prefix "ERRO:"
     M need_root "este comando precisa ser executado como root"
-    M dl_installer_fail "não foi possível baixar o instalador do m-ui"
+    M dl_installer_fail "não foi possível baixar o instalador do UnifiedProxy"
     M dl_menu_fail "não foi possível baixar o script de gerenciamento mais recente"
     M menu_updated "Script de gerenciamento atualizado"
-    M installer_syntax "o instalador do m-ui baixado tem erros de sintaxe"
+    M installer_syntax "o instalador do UnifiedProxy baixado tem erros de sintaxe"
     M acme_missing "o acme.sh não está instalado; emita um certificado primeiro"
     M acme_not_installed "o acme.sh não está instalado"
     M p_domain "Domínio: "
@@ -1232,12 +1232,12 @@ lang_pt_BR() {
     M tls_4 "Forçar a renovação de um certificado"
     M tls_5 "Revogar um certificado"
     M tls_6 "Mostrar os certificados existentes"
-    M tls_7 "Aplicar ao m-ui os caminhos de um certificado existente"
+    M tls_7 "Aplicar ao UnifiedProxy os caminhos de um certificado existente"
     M back "Voltar"
     M p_choose_07 "Escolha [0-7]: "
     M p_port "Porta do painel [1-65535]: "
     M port_invalid "a porta do painel deve estar entre 1 e 65535"
-    M logs_cleared "Logs do m-ui apagados"
+    M logs_cleared "Logs do UnifiedProxy apagados"
     M p_keep_port "Porta do painel (vazio mantém a atual): "
     M p_keep_path "Caminho URI do painel (vazio mantém o atual): "
     M p_keep_user "Usuário (vazio mantém o atual): "
@@ -1247,24 +1247,24 @@ lang_pt_BR() {
     M show_user "Usuário: %s"
     M show_pass "Senha: %s"
     M show_path "Caminho do painel: %s"
-    M p_uninstall "Desinstalar o m-ui? [y/N]: "
+    M p_uninstall "Desinstalar o UnifiedProxy? [y/N]: "
     M cancelled "Cancelado"
     M p_purge "Excluir também %s permanentemente? [y/N]: "
     M purge_refuse "diretório de instalação inesperado; exclusão recusada"
-    M removed_all "O m-ui e seus dados foram removidos"
-    M removed_keep "O m-ui foi removido; os dados continuam em %s"
-    M usage_title "Comandos de gerenciamento do m-ui:"
+    M removed_all "O UnifiedProxy e seus dados foram removidos"
+    M removed_keep "O UnifiedProxy foi removido; os dados continuam em %s"
+    M usage_title "Comandos de gerenciamento do UnifiedProxy:"
     M u_menu "Abrir o menu de gerenciamento interativo"
-    M u_service "Controlar o serviço m-ui"
+    M u_service "Controlar o serviço UnifiedProxy"
     M u_logs "Ver ou apagar os logs"
     M u_settings "Ver ou alterar as configurações do painel"
     M u_reset "Redefinir as credenciais ou o caminho do painel"
     M u_boot "Ativar ou desativar a inicialização automática"
-    M u_update "Instalar ou atualizar o m-ui, ou atualizar este script"
+    M u_update "Instalar ou atualizar o UnifiedProxy, ou atualizar este script"
     M u_ssl "Gerenciar certificados TLS"
     M u_misc "Ver a versão ou desinstalar"
     M u_lang "Definir o idioma do menu (%s)"
-    M menu_title "Gerenciamento do m-ui"
+    M menu_title "Gerenciamento do UnifiedProxy"
     M m_1 "Iniciar"
     M m_2 "Parar"
     M m_3 "Reiniciar"
@@ -1292,10 +1292,10 @@ lang_pt_BR() {
 lang_vi() {
     M err_prefix "LỖI:"
     M need_root "lệnh này phải chạy với quyền root"
-    M dl_installer_fail "không tải được trình cài đặt m-ui"
+    M dl_installer_fail "không tải được trình cài đặt UnifiedProxy"
     M dl_menu_fail "không tải được script quản lý mới nhất"
     M menu_updated "Đã cập nhật script quản lý"
-    M installer_syntax "trình cài đặt m-ui vừa tải về có lỗi cú pháp"
+    M installer_syntax "trình cài đặt UnifiedProxy vừa tải về có lỗi cú pháp"
     M acme_missing "chưa cài acme.sh; hãy cấp chứng chỉ trước"
     M acme_not_installed "chưa cài acme.sh"
     M p_domain "Tên miền: "
@@ -1337,12 +1337,12 @@ lang_vi() {
     M tls_4 "Gia hạn bắt buộc một chứng chỉ"
     M tls_5 "Thu hồi một chứng chỉ"
     M tls_6 "Xem các chứng chỉ hiện có"
-    M tls_7 "Áp dụng đường dẫn chứng chỉ có sẵn cho m-ui"
+    M tls_7 "Áp dụng đường dẫn chứng chỉ có sẵn cho UnifiedProxy"
     M back "Quay lại"
     M p_choose_07 "Chọn [0-7]: "
     M p_port "Cổng bảng điều khiển [1-65535]: "
     M port_invalid "cổng bảng điều khiển phải nằm trong khoảng 1 đến 65535"
-    M logs_cleared "Đã xóa nhật ký m-ui"
+    M logs_cleared "Đã xóa nhật ký UnifiedProxy"
     M p_keep_port "Cổng bảng điều khiển (để trống giữ nguyên): "
     M p_keep_path "Đường dẫn URI bảng điều khiển (để trống giữ nguyên): "
     M p_keep_user "Tên người dùng (để trống giữ nguyên): "
@@ -1352,24 +1352,24 @@ lang_vi() {
     M show_user "Tên người dùng: %s"
     M show_pass "Mật khẩu: %s"
     M show_path "Đường dẫn bảng điều khiển: %s"
-    M p_uninstall "Gỡ cài đặt m-ui? [y/N]: "
+    M p_uninstall "Gỡ cài đặt UnifiedProxy? [y/N]: "
     M cancelled "Đã hủy"
     M p_purge "Xóa vĩnh viễn cả %s? [y/N]: "
     M purge_refuse "thư mục cài đặt không như dự kiến; từ chối xóa"
-    M removed_all "Đã gỡ m-ui cùng dữ liệu"
-    M removed_keep "Đã gỡ m-ui; dữ liệu vẫn còn trong %s"
-    M usage_title "Lệnh quản lý m-ui:"
+    M removed_all "Đã gỡ UnifiedProxy cùng dữ liệu"
+    M removed_keep "Đã gỡ UnifiedProxy; dữ liệu vẫn còn trong %s"
+    M usage_title "Lệnh quản lý UnifiedProxy:"
     M u_menu "Mở menu quản lý tương tác"
-    M u_service "Điều khiển dịch vụ m-ui"
+    M u_service "Điều khiển dịch vụ UnifiedProxy"
     M u_logs "Xem hoặc xóa nhật ký"
     M u_settings "Xem hoặc thay đổi cài đặt bảng điều khiển"
     M u_reset "Đặt lại thông tin đăng nhập hoặc đường dẫn bảng điều khiển"
     M u_boot "Bật hoặc tắt tự khởi động"
-    M u_update "Cài đặt, cập nhật m-ui hoặc cập nhật script này"
+    M u_update "Cài đặt, cập nhật UnifiedProxy hoặc cập nhật script này"
     M u_ssl "Quản lý chứng chỉ TLS"
     M u_misc "Xem phiên bản hoặc gỡ cài đặt"
     M u_lang "Chọn ngôn ngữ menu (%s)"
-    M menu_title "Quản lý m-ui"
+    M menu_title "Quản lý UnifiedProxy"
     M m_1 "Khởi động"
     M m_2 "Dừng"
     M m_3 "Khởi động lại"
@@ -1397,10 +1397,10 @@ lang_vi() {
 lang_tr() {
     M err_prefix "HATA:"
     M need_root "bu komut root olarak çalıştırılmalıdır"
-    M dl_installer_fail "m-ui yükleyicisi indirilemedi"
+    M dl_installer_fail "UnifiedProxy yükleyicisi indirilemedi"
     M dl_menu_fail "en güncel yönetim betiği indirilemedi"
     M menu_updated "Yönetim betiği güncellendi"
-    M installer_syntax "indirilen m-ui yükleyicisinde sözdizimi hatası var"
+    M installer_syntax "indirilen UnifiedProxy yükleyicisinde sözdizimi hatası var"
     M acme_missing "acme.sh kurulu değil; önce bir sertifika alın"
     M acme_not_installed "acme.sh kurulu değil"
     M p_domain "Alan adı: "
@@ -1442,12 +1442,12 @@ lang_tr() {
     M tls_4 "Bir sertifikayı zorla yenile"
     M tls_5 "Bir sertifikayı iptal et"
     M tls_6 "Mevcut sertifikaları göster"
-    M tls_7 "Mevcut sertifika yollarını m-ui'ye uygula"
+    M tls_7 "Mevcut sertifika yollarını UnifiedProxy'ye uygula"
     M back "Geri"
     M p_choose_07 "Seçin [0-7]: "
     M p_port "Panel portu [1-65535]: "
     M port_invalid "panel portu 1 ile 65535 arasında olmalıdır"
-    M logs_cleared "m-ui günlükleri temizlendi"
+    M logs_cleared "UnifiedProxy günlükleri temizlendi"
     M p_keep_port "Panel portu (boş bırakılırsa değişmez): "
     M p_keep_path "Panel URI yolu (boş bırakılırsa değişmez): "
     M p_keep_user "Kullanıcı adı (boş bırakılırsa değişmez): "
@@ -1457,24 +1457,24 @@ lang_tr() {
     M show_user "Kullanıcı adı: %s"
     M show_pass "Parola: %s"
     M show_path "Panel yolu: %s"
-    M p_uninstall "m-ui kaldırılsın mı? [y/N]: "
+    M p_uninstall "UnifiedProxy kaldırılsın mı? [y/N]: "
     M cancelled "İptal edildi"
     M p_purge "%s de kalıcı olarak silinsin mi? [y/N]: "
     M purge_refuse "beklenmeyen kurulum dizini; silme reddedildi"
-    M removed_all "m-ui ve verileri kaldırıldı"
-    M removed_keep "m-ui kaldırıldı; veriler %s içinde duruyor"
-    M usage_title "m-ui yönetim komutları:"
+    M removed_all "UnifiedProxy ve verileri kaldırıldı"
+    M removed_keep "UnifiedProxy kaldırıldı; veriler %s içinde duruyor"
+    M usage_title "UnifiedProxy yönetim komutları:"
     M u_menu "Etkileşimli yönetim menüsünü aç"
-    M u_service "m-ui hizmetini yönet"
+    M u_service "UnifiedProxy hizmetini yönet"
     M u_logs "Günlükleri göster veya temizle"
     M u_settings "Panel ayarlarını göster veya değiştir"
     M u_reset "Giriş bilgilerini veya panel yolunu sıfırla"
     M u_boot "Otomatik başlatmayı aç veya kapat"
-    M u_update "m-ui'yi kur veya güncelle ya da bu betiği güncelle"
+    M u_update "UnifiedProxy'yi kur veya güncelle ya da bu betiği güncelle"
     M u_ssl "TLS sertifikalarını yönet"
     M u_misc "Sürümü göster veya kaldır"
     M u_lang "Menü dilini ayarla (%s)"
-    M menu_title "m-ui yönetimi"
+    M menu_title "UnifiedProxy yönetimi"
     M m_1 "Başlat"
     M m_2 "Durdur"
     M m_3 "Yeniden başlat"
@@ -1502,10 +1502,10 @@ lang_tr() {
 lang_fa() {
     M err_prefix "خطا:"
     M need_root "این دستور باید با دسترسی root اجرا شود"
-    M dl_installer_fail "دانلود نصب‌کنندهٔ m-ui ممکن نشد"
+    M dl_installer_fail "دانلود نصب‌کنندهٔ UnifiedProxy ممکن نشد"
     M dl_menu_fail "دانلود آخرین نسخهٔ اسکریپت مدیریت ممکن نشد"
     M menu_updated "اسکریپت مدیریت به‌روزرسانی شد"
-    M installer_syntax "نصب‌کنندهٔ دانلودشدهٔ m-ui خطای نحوی دارد"
+    M installer_syntax "نصب‌کنندهٔ دانلودشدهٔ UnifiedProxy خطای نحوی دارد"
     M acme_missing "acme.sh نصب نیست؛ ابتدا یک گواهی صادر کنید"
     M acme_not_installed "acme.sh نصب نیست"
     M p_domain "دامنه: "
@@ -1547,12 +1547,12 @@ lang_fa() {
     M tls_4 "تمدید اجباری گواهی"
     M tls_5 "ابطال گواهی"
     M tls_6 "نمایش گواهی‌های موجود"
-    M tls_7 "اعمال مسیرهای گواهی موجود روی m-ui"
+    M tls_7 "اعمال مسیرهای گواهی موجود روی UnifiedProxy"
     M back "بازگشت"
     M p_choose_07 "انتخاب کنید [0-7]: "
     M p_port "پورت پنل [1-65535]: "
     M port_invalid "پورت پنل باید بین 1 تا 65535 باشد"
-    M logs_cleared "لاگ‌های m-ui پاک شد"
+    M logs_cleared "لاگ‌های UnifiedProxy پاک شد"
     M p_keep_port "پورت پنل (خالی = بدون تغییر): "
     M p_keep_path "مسیر URI پنل (خالی = بدون تغییر): "
     M p_keep_user "نام کاربری (خالی = بدون تغییر): "
@@ -1562,24 +1562,24 @@ lang_fa() {
     M show_user "نام کاربری: %s"
     M show_pass "رمز عبور: %s"
     M show_path "مسیر پنل: %s"
-    M p_uninstall "m-ui حذف شود؟ [y/N]: "
+    M p_uninstall "UnifiedProxy حذف شود؟ [y/N]: "
     M cancelled "لغو شد"
     M p_purge "%s هم برای همیشه حذف شود؟ [y/N]: "
     M purge_refuse "پوشهٔ نصب غیرمنتظره است؛ حذف انجام نمی‌شود"
-    M removed_all "m-ui و داده‌هایش حذف شد"
-    M removed_keep "m-ui حذف شد؛ داده‌ها در %s باقی مانده است"
-    M usage_title "دستورهای مدیریت m-ui:"
+    M removed_all "UnifiedProxy و داده‌هایش حذف شد"
+    M removed_keep "UnifiedProxy حذف شد؛ داده‌ها در %s باقی مانده است"
+    M usage_title "دستورهای مدیریت UnifiedProxy:"
     M u_menu "باز کردن منوی مدیریت تعاملی"
-    M u_service "کنترل سرویس m-ui"
+    M u_service "کنترل سرویس UnifiedProxy"
     M u_logs "نمایش یا پاک کردن لاگ‌ها"
     M u_settings "نمایش یا تغییر تنظیمات پنل"
     M u_reset "بازنشانی اطلاعات ورود یا مسیر پنل"
     M u_boot "فعال یا غیرفعال کردن اجرای خودکار"
-    M u_update "نصب یا به‌روزرسانی m-ui، یا به‌روزرسانی این اسکریپت"
+    M u_update "نصب یا به‌روزرسانی UnifiedProxy، یا به‌روزرسانی این اسکریپت"
     M u_ssl "مدیریت گواهی‌های TLS"
     M u_misc "نمایش نسخه یا حذف"
     M u_lang "تنظیم زبان منو (%s)"
-    M menu_title "مدیریت m-ui"
+    M menu_title "مدیریت UnifiedProxy"
     M m_1 "شروع"
     M m_2 "توقف"
     M m_3 "راه‌اندازی مجدد"

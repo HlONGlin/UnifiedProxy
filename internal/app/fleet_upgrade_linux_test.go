@@ -6,7 +6,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/RomanovCaesar/m-ui/internal/fleet"
+	"github.com/hlonglin/unifiedproxy/internal/fleet"
 )
 
 func TestFleetUpgradeRecoveryAfterWorkerInterrupted(t *testing.T) {
@@ -29,7 +29,7 @@ func TestFleetUpgradeRecoveryAfterWorkerInterrupted(t *testing.T) {
 			if err := os.WriteFile(exe+".previous", []byte("previous"), 0755); err != nil {
 				t.Fatal(err)
 			}
-			p := fleetUpgrade{Executable: exe, Service: "m-ui-node.service", Status: "pending-restart", Phase: phase, StartedAt: time.Now().Add(-11 * time.Minute), WorkerUnit: "m-ui-upgrade-0123456789abcdef.service"}
+			p := fleetUpgrade{Executable: exe, Service: "unifiedproxy-node.service", Status: "pending-restart", Phase: phase, StartedAt: time.Now().Add(-11 * time.Minute), WorkerUnit: "unifiedproxy-upgrade-0123456789abcdef.service"}
 			path := filepath.Join(dir, "pending-upgrade.json")
 			if err := fleet.WriteJSON(path, p); err != nil {
 				t.Fatal(err)

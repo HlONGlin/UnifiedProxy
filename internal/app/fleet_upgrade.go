@@ -20,7 +20,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/RomanovCaesar/m-ui/internal/fleet"
+	"github.com/hlonglin/unifiedproxy/internal/fleet"
 )
 
 type fleetUpgrade struct {
@@ -38,7 +38,7 @@ type fleetUpgrade struct {
 	Phase      string    `json:"phase,omitempty"`
 }
 
-var fleetServicePattern = regexp.MustCompile(`^m-ui-(control|node)[a-zA-Z0-9_.-]*[.]service$`)
+var fleetServicePattern = regexp.MustCompile(`^unifiedproxy-(control|node)[a-zA-Z0-9_.-]*[.]service$`)
 
 func executableDigest(path string) (string, error) {
 	file, err := os.Open(path)
@@ -57,9 +57,9 @@ func startFleetUpgrade(dir string, settings Settings, taskID string) error {
 	if runtime.GOOS != "linux" {
 		return errors.New("automatic upgrade requires Linux systemd")
 	}
-	service := os.Getenv("MUI_SERVICE_NAME")
+	service := os.Getenv("UNIFIEDPROXY_SERVICE_NAME")
 	if !fleetServicePattern.MatchString(service) {
-		return errors.New("MUI_SERVICE_NAME must name an installed m-ui control/node systemd service")
+		return errors.New("UNIFIEDPROXY_SERVICE_NAME must name an installed UnifiedProxy control/node systemd service")
 	}
 	host, port, err := net.SplitHostPort(settings.PanelListen)
 	if err != nil {
@@ -112,7 +112,7 @@ func startFleetUpgrade(dir string, settings Settings, taskID string) error {
 		pending.HealthURL = "https://" + net.JoinHostPort(host, port) + "/fleet/v1/health"
 	}
 	pending.Status = "pending-restart"
-	pending.WorkerUnit = "m-ui-upgrade-" + fleet.ID()[:16] + ".service"
+	pending.WorkerUnit = "unifiedproxy-upgrade-" + fleet.ID()[:16] + ".service"
 	pending.StartedAt = time.Now().UTC()
 	pending.Phase = "scheduled"
 	if err = fleet.WriteJSON(path, pending); err != nil {
@@ -282,7 +282,7 @@ func recoverFleetUpgrade(dir string) error {
 	if runtime.GOOS != "linux" || !fleetServicePattern.MatchString(p.Service) || !filepath.IsAbs(p.Executable) {
 		return errors.New("invalid upgrade recovery context")
 	}
-	if regexp.MustCompile(`^m-ui-upgrade-[a-f0-9]{16}[.]service$`).MatchString(p.WorkerUnit) && fleetSystemService("is-active", p.WorkerUnit) == nil {
+	if regexp.MustCompile(`^unifiedproxy-upgrade-[a-f0-9]{16}[.]service$`).MatchString(p.WorkerUnit) && fleetSystemService("is-active", p.WorkerUnit) == nil {
 		return nil
 	}
 	if p.Phase == "backed-up" || p.Phase == "verifying" {

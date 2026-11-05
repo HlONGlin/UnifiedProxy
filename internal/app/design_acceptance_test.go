@@ -14,13 +14,13 @@ import (
 // Only the WARP provider and the core executable are local test doubles; this
 // intentionally does not certify external CA/DNS/VPN/provider availability.
 func TestDesignAcceptanceServer(t *testing.T) {
-	address := os.Getenv("UP_DESIGN_ADDRESS")
+	address := os.Getenv("UNIFIEDPROXY_DESIGN_ADDRESS")
 	if address == "" {
-		t.Skip("set UP_DESIGN_ADDRESS for opt-in browser acceptance")
+		t.Skip("set UNIFIEDPROXY_DESIGN_ADDRESS for opt-in browser acceptance")
 	}
-	dir := os.Getenv("UP_DESIGN_DATA")
+	dir := os.Getenv("UNIFIEDPROXY_DESIGN_DATA")
 	if dir == "" {
-		t.Fatal("UP_DESIGN_DATA required")
+		t.Fatal("UNIFIEDPROXY_DESIGN_DATA required")
 	}
 	m := &CoreManager{dataDir: dir, panelStarted: time.Now(), connectionStats: map[string]connectionSample{}, enforcedClients: map[string]bool{}}
 	if err := m.load(); err != nil {
@@ -28,8 +28,8 @@ func TestDesignAcceptanceServer(t *testing.T) {
 	}
 	m.state.Settings.PanelListen = address
 	m.state.Settings.PanelPath = "/"
-	m.state.Settings.CorePath = os.Getenv("UP_DESIGN_CORE")
-	m.state.Settings.APIAddress = os.Getenv("UP_DESIGN_CORE_API")
+	m.state.Settings.CorePath = os.Getenv("UNIFIEDPROXY_DESIGN_CORE")
+	m.state.Settings.APIAddress = os.Getenv("UNIFIEDPROXY_DESIGN_CORE_API")
 	if m.state.Settings.CorePath == "" || m.state.Settings.APIAddress == "" {
 		t.Fatal("provide Linux fixture core and API address")
 	}
@@ -79,7 +79,7 @@ func TestDesignAcceptanceServer(t *testing.T) {
 	}
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
-	if os.Getenv("UP_DESIGN_ROLE") == "control" {
+	if os.Getenv("UNIFIEDPROXY_DESIGN_ROLE") == "control" {
 		a.role = "control"
 		m.remote = true
 		err = a.initializeFleet(ctx, dir)

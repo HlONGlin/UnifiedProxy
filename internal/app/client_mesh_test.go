@@ -95,10 +95,10 @@ func (d *clientTestDevice) request(t *testing.T, method, endpoint, path, nonce s
 	timestamp := fmt.Sprint(time.Now().UnixMilli())
 	sig := ed25519.Sign(d.priv, append([]byte(clientDomainRequest+"\x00"), clientRequestBytes(method, path, timestamp, nonce, nil)...))
 	req, _ := http.NewRequest(method, endpoint+path, nil)
-	req.Header.Set("X-MUI-Cert", d.cert)
-	req.Header.Set("X-MUI-Time", timestamp)
-	req.Header.Set("X-MUI-Nonce", nonce)
-	req.Header.Set("X-MUI-Sig", base64.StdEncoding.EncodeToString(sig))
+	req.Header.Set("X-UP-Cert", d.cert)
+	req.Header.Set("X-UP-Time", timestamp)
+	req.Header.Set("X-UP-Nonce", nonce)
+	req.Header.Set("X-UP-Sig", base64.StdEncoding.EncodeToString(sig))
 	response, err := http.DefaultClient.Do(req)
 	if err != nil {
 		t.Fatal(err)
@@ -160,9 +160,9 @@ func TestClientMeshEnrollNetworkAndSubscriptions(t *testing.T) {
 		defer response.Body.Close()
 		body, _ := io.ReadAll(response.Body)
 		if response.StatusCode == 200 {
-			sig, _ := base64.StdEncoding.DecodeString(response.Header.Get("X-MUI-Signature"))
+			sig, _ := base64.StdEncoding.DecodeString(response.Header.Get("X-UP-Signature"))
 			signed := []byte(clientDomainConfig + "\x00" + nonce + "\x00" + sha256Hex(body))
-			if response.Header.Get("X-MUI-Signer") != signer.ID || !ed25519.Verify(nodePublicKey(signer), signed, sig) {
+			if response.Header.Get("X-UP-Signer") != signer.ID || !ed25519.Verify(nodePublicKey(signer), signed, sig) {
 				t.Fatalf("config response not signed by %s", signer.Name)
 			}
 			if !strings.Contains(response.Header.Get("Subscription-Userinfo"), "upload=") {

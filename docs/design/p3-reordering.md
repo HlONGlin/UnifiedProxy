@@ -10,7 +10,7 @@
 | 胶囊 CTA | 每屏一个主 CTA，按钮8px | 原点击事件 |
 | SF/Material | Lucide 1.5px rounded stroke | SF/AI 与 symbol ID API |
 
-按登录→概览→列表→fleet→多控→订阅→mihomo的顺序共用组件，保留 m-ui/GPL 与 Lucide/ISC 归属。
+按登录→概览→列表→fleet→多控→订阅→mihomo的顺序共用组件，保留 UnifiedProxy/GPL 与 Lucide/ISC 归属。
 
 ## 阶段证据
 

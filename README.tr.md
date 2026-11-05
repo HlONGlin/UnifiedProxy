@@ -19,24 +19,24 @@ UnifiedProxy, Mihomo yerel panelini bağımsız, kontrol ve Agent modlarında d�
 systemd veya OpenRC kullanan bir Linux sisteminde `root` olarak çalıştırın:
 
 ```bash
-bash <(curl -Ls https://raw.githubusercontent.com/HlONGlin/UnifiedProxy/main/install.sh)
+bash <(curl -Ls https://raw.githubusercontent.com/HlONGlin/unifiedproxy/main/install.sh)
 ```
 
 Yükleyici boş bir beş haneli panel portu seçer; 16 karakterlik bir panel yolu, 14 karakterlik bir kullanıcı adı ve 16 karakterlik bir parola oluşturur. Erişim adresi ve kimlik bilgileri sonunda yalnızca bir kez gösterilir. Bunları kendiniz de belirleyebilirsiniz:
 
 ```bash
-bash <(curl -Ls https://raw.githubusercontent.com/HlONGlin/UnifiedProxy/main/install.sh) \
+bash <(curl -Ls https://raw.githubusercontent.com/HlONGlin/unifiedproxy/main/install.sh) \
   --port 34567 \
   --path MyPanelA1b2C3d4 \
   --username AdminUserA1234 \
   --password 'ChangeThisA12345'
 ```
 
-UnifiedProxy `/usr/local/m-ui` dizinine kurulur ve verilerini `/usr/local/m-ui/data` içinde tutar. Yükleyici geçerli mimari için bir Mihomo çekirdeği de indirir; mevcut çekirdek, `--update-mihomo` kullanılmadıkça korunur.
+UnifiedProxy `/usr/local/unifiedproxy` dizinine kurulur ve verilerini `/usr/local/unifiedproxy/data` içinde tutar. Yükleyici geçerli mimari için bir Mihomo çekirdeği de indirir; mevcut çekirdek, `--update-mihomo` kullanılmadıkça korunur.
 
-`m-ui update`, tüm ayarları koruyarak UnifiedProxy'yi günceller. Güncellemeden önce veri dizininin anlık görüntüsünü `data/backups/` içine alır ve en yeni 3 tanesini saklar.
+`unifiedproxy update`, tüm ayarları koruyarak UnifiedProxy'yi günceller. Güncellemeden önce veri dizininin anlık görüntüsünü `data/backups/` içine alır ve en yeni 3 tanesini saklar.
 
-UnifiedProxy sürümlerinde `386`, `amd64`, `arm64`, `armv5`, `armv6`, `armv7` ve `s390x` için `unifiedproxy-linux-<architecture>.tar.gz` ile `unifiedproxy-windows-amd64.zip` bulunur; hizmet ve yönetim komutu uyumlu `m-ui` adını korur.
+UnifiedProxy sürümlerinde `386`, `amd64`, `arm64`, `armv5`, `armv6`, `armv7` ve `s390x` için `unifiedproxy-linux-<architecture>.tar.gz` ile `unifiedproxy-windows-amd64.zip` bulunur; hizmet ve yönetim komutu uyumlu `unifiedproxy` adını korur.
 
 <details>
 <summary>Docker</summary>
@@ -44,14 +44,14 @@ UnifiedProxy sürümlerinde `386`, `amd64`, `arm64`, `armv5`, `armv6`, `armv7` v
 Docker imajı Linux amd64 içindir ve UnifiedProxy ile sabit sürümlü, doğrulanmış bir Mihomo çekirdeği içerir. Compose ana makine ağını kullanır; panelde eklediğiniz girişlerin portları ek port eşlemesi gerekmeden çalışır.
 
 ```bash
-git clone https://github.com/HlONGlin/UnifiedProxy.git
-cd UnifiedProxy
+git clone https://github.com/HlONGlin/unifiedproxy.git
+cd unifiedproxy
 cp .env.example .env
 docker compose up -d --build
-docker compose logs m-ui
+docker compose logs unifiedproxy
 ```
 
-Bu depodan derleyin. Etiketli sürümler `ghcr.io/hlonglin/unifiedproxy:<tag>` ve `latest` yayımlayabilir; ilgili UnifiedProxy imajı yayımlandıktan sonra `docker compose pull` kullanın. Boş `MUI_PASSWORD` / `MUI_PATH` ilk açılışta oluşturulur ve günlüğe bir kez yazılır. Uyumluluk için `m-ui` hizmeti ve `m-ui-data`, `m-ui-core` birimleri korunur; yükseltirken bu birimleri saklayın.
+Bu depodan derleyin. Etiketli sürümler `ghcr.io/hlonglin/unifiedproxy:<tag>` ve `latest` yayımlayabilir; ilgili UnifiedProxy imajı yayımlandıktan sonra `docker compose pull` kullanın. Boş `UNIFIEDPROXY_PASSWORD` / `UNIFIEDPROXY_PATH` ilk açılışta oluşturulur ve günlüğe bir kez yazılır. Compose hizmeti `unifiedproxy`, veri birimleri `unifiedproxy-data` ve `unifiedproxy-core` adlarını kullanır.
 
 </details>
 
@@ -184,7 +184,7 @@ Bu depodan derleyin. Etiketli sürümler `ghcr.io/hlonglin/unifiedproxy:<tag>` v
 İlk etkileşimli kurulum; alan adı için Let's Encrypt sertifikası, IPv4 için kısa ömürlü Let's Encrypt sertifikası, mevcut bir sertifika ya da TLS'yi atlama seçenekleri sunar. Kurulumdan sonra şunu çalıştırın:
 
 ```bash
-m-ui ssl
+unifiedproxy ssl
 ```
 
 Menü; alan adı ve IP sertifikaları almayı, 80 numaralı port kullanılamadığında Cloudflare DNS API ile alan adı ve joker sertifika almayı, yenilemeyi, iptal etmeyi, listelemeyi ve mevcut bir sertifikayı uygulamayı sağlar. Sertifika dosyası yalnızca son sertifikayı içeriyorsa UnifiedProxy zinciri otomatik tamamlar, çünkü Mihomo Party ve FlClash gibi istemciler böyle sertifikaları reddeder.
@@ -192,13 +192,13 @@ Menü; alan adı ve IP sertifikaları almayı, 80 numaralı port kullanılamadı
 ## Yönetim komutları
 
 ```text
-m-ui                  # etkileşimli menüyü aç
-m-ui start | stop | restart | status | logs
-m-ui settings | configure | set-port
-m-ui reset-credentials | reset-path
-m-ui update | update-menu | ssl
-m-ui enable | disable | clear-logs | uninstall
-m-ui --lang <code>    menü dili, örneğin: m-ui --lang tr
+UnifiedProxy                  # etkileşimli menüyü aç
+unifiedproxy start | stop | restart | status | logs
+unifiedproxy settings | configure | set-port
+unifiedproxy reset-credentials | reset-path
+unifiedproxy update | update-menu | ssl
+unifiedproxy enable | disable | clear-logs | uninstall
+unifiedproxy --lang <code>    menü dili, örneğin: unifiedproxy --lang tr
 ```
 
 Menü, panelle aynı 11 dili destekler ve seçiminizi hatırlar. Yükleyici İngilizce kalır.
@@ -212,7 +212,7 @@ Menü, panelle aynı 11 dili destekler ve seçiminizi hatırlar. Yükleyici İng
 * [İşlev ve uyumluluk](docs/design/legacy-acceptance.md)
 * [Temalar ve kaynaklar](docs/design/p2-token-map.md)
 * [P5 incelemesi](docs/design/p5-acceptance.md)
-* [Sürümler](https://github.com/HlONGlin/UnifiedProxy/releases)
+* [Sürümler](https://github.com/HlONGlin/unifiedproxy/releases)
 
 ## Geliştirme
 
@@ -225,14 +225,14 @@ go vet ./...
 go test ./...
 ```
 
-`MUI_VERSION` / Git tag → `-X main.version=...`. [Fleet build / deployment](docs/unifiedproxy-migration.md) · [Design tokens](docs/design/p2-token-map.md).
+`UNIFIEDPROXY_VERSION` / Git tag → `-X main.version=...`. [Fleet build / deployment](docs/unifiedproxy-migration.md) · [Design tokens](docs/design/p2-token-map.md).
 
 ## Teşekkürler
 
 * [MetaCubeX/mihomo](https://github.com/MetaCubeX/mihomo): proxy çekirdeği ve yapılandırma modeli
 * [MHSanaei/3x-ui](https://github.com/MHSanaei/3x-ui): arayüz yoğunluğu ve iş akışı
 * [Sub-Store](https://github.com/sub-store-org/Sub-Store): istemci abonelik biçimleri için başvuru davranışı
-* m-ui (GPL-3.0), UnifiedProxy (MIT): [NOTICE](NOTICE), [MIT notice](licenses/UnifiedProxy-MIT.txt).
+* UnifiedProxy (GPL-3.0), UnifiedProxy (MIT): [NOTICE](NOTICE), [MIT notice](licenses/UnifiedProxy-MIT.txt).
 * [Lucide](https://lucide.dev): ISC; [icon attribution](web/licenses/LICENSE-Lucide.txt).
 * Palet referansları: Vercel / Claude (Anthropic) / Sentry / Supabase / Stripe. VoltAgent/awesome-design-md derlemesi MIT lisanslıdır; ayrıntılar [tema tasarım kaydında](docs/design/p2-token-map.md) yer alır.
 

@@ -342,7 +342,7 @@ func surgeProxyLine(proxy map[string]any, surfboard bool) (string, bool) {
 		surgeTLSParams(&builder, proxy, proxyBool(proxy, "tls"))
 		appendIfPresentBool(&builder, ",udp-relay=", proxy, "udp")
 	case "tuic":
-		// m-ui only ever produces tuic v5 (no shared token).
+		// UnifiedProxy only ever produces tuic v5 (no shared token).
 		builder.WriteString(name + "=tuic-v5," + server + "," + port)
 		builder.WriteString(",uuid=" + proxyStr(proxy, "uuid"))
 		builder.WriteString(`,password="` + proxyStr(proxy, "password") + `"`)

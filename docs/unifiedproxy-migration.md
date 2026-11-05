@@ -1,11 +1,11 @@
-# UnifiedProxy × m-ui：运行与迁移指南
+# UnifiedProxy × UnifiedProxy：运行与迁移指南
 
-合并以 m-ui 为主体，保留 Mihomo 原生配置、Inbound/Client、订阅模板、3x-ui、
+合并以 UnifiedProxy 为主体，保留 Mihomo 原生配置、Inbound/Client、订阅模板、3x-ui、
 WARP/VPNGate、客户端设备和 11 种语言。外观现为五套配色（T0 黑白默认）× 独立明暗，
 旧三主题偏好可迁移。新增舰队、签名任务、期望状态、
 Sidecar、中央证书、WebDAV 和更新流程。合并产物遵循 GPL-3.0；UP 的 MIT 声明
 保留于 NOTICE 和 licenses/。P6 收尾已将成果快进合并到
-[main](https://github.com/HlONGlin/UnifiedProxy/tree/main)，
+[main](https://github.com/HlONGlin/unifiedproxy/tree/main)，
 旧 master 原始源码保留于 `archive/legacy-master-20261005` 标签。
 main 合并不等于发布公开 Release 或切换生产服务，执行记录见 [P6 收尾](design/p6-completion.md)。
 
@@ -17,9 +17,9 @@ main 合并不等于发布公开 Release 或切换生产服务，执行记录见
 
 | 模式 | 主程序 | 薄入口 |
 | --- | --- | --- |
-| 独立 | m-ui serve | node serve |
-| 控制 | m-ui --control serve | control serve |
-| Agent | m-ui --agent serve | 已接入的 node serve |
+| 独立 | UnifiedProxy serve | node serve |
+| 控制 | UnifiedProxy --control serve | control serve |
+| Agent | UnifiedProxy --agent serve | 已接入的 node serve |
 
 独立模式保留原有面板和 Multi-control。控制端不运行本机内核。Agent 保留锁定的
 诊断面板及紧急接管入口，没有 agent.json 的节点不会自动入网。
@@ -108,7 +108,7 @@ ShadowTLS v0.2.25、ss-rust v1.18.2；需要 tar/xz。Caddy 自动包只覆盖 a
 
 证书页支持 PEM 导入、ACME 申请、续期、入站/Naive 绑定；先验证配对、域名、
 有效期。列表不返回私钥；下发内容写入节点自己的版本目录。ACME 由控制端本地
-acme.sh 执行，可设置 MUI_ACME_PATH；支持 HTTP-01、dns_cf 及 IP shortlived。
+acme.sh 执行，可设置 UNIFIEDPROXY_ACME_PATH；支持 HTTP-01、dns_cf 及 IP shortlived。
 DNS 凭据留在控制端环境。每六小时检查自动续期；真实 CA/DNS 挑战须现场验收。
 
 ## 运维与管理 CLI
@@ -123,15 +123,15 @@ sudo bash scripts/install-fleet.sh control ./control-linux-amd64 SHA256
 sudo bash scripts/install-fleet.sh node ./node-linux-amd64 SHA256
 ```
 
-按安装器输出 configure 后启动服务；安装器设置 MUI_SERVICE_NAME。面板更新检查
+按安装器输出 configure 后启动服务；安装器设置 UNIFIEDPROXY_SERVICE_NAME。面板更新检查
 Release 与平台校验和，再下载候选、验证可运行，交独立 systemd transient unit
 停服/原子换文件/重启/健康检查，失败回退；Agent 的成功回执等健康确认后才发送。
 安装器另外安装每分钟检查的 recovery timer。升级阶段落盘，worker 中断或重启后
 超过十分钟仍未完成时，从独立 recovery 二进制恢复旧程序并发送失败回执。
 它不把未验证的候选程序报为成功。内核和 Geo 数据任务也要求配置验证与健康检查，
 失败恢复原文件；金丝雀只有收到成功回执才推进下一台。
-更新检查默认指向 HlONGlin/UnifiedProxy；MUI_RELEASE_REPO 可覆盖为兼容发行仓库。
-只有该仓库发布了对应角色/架构的资产和校验和才能升级；不会退回下载 m-ui 上游程序。
+更新检查默认指向 HlONGlin/UnifiedProxy；UNIFIEDPROXY_RELEASE_REPO 可覆盖为兼容发行仓库。
+只有该仓库发布了对应角色/架构的资产和校验和才能升级；不会退回下载 UnifiedProxy 上游程序。
 32 位 ARM 的自动检查选择兼容所有受支持 CPU 的 armv5 包；可显式指定 linux-armv6/armv7。
 Windows 人工换包，Docker 同数据卷重建镜像；它们不声明 systemd 自动升级能力。
 Dockerfile.fleet 与 docker-compose.fleet.yml 提供两种角色，Mihomo 使用 core 挂载。

@@ -9,7 +9,7 @@ import (
 // writes it.
 func samplePanelLogLines() []string {
 	lines := []string{
-		"Mihomo 自动启动失败: 找不到 Mihomo 核心: /usr/local/m-ui/bin/mihomo",
+		"Mihomo 自动启动失败: 找不到 Mihomo 核心: /usr/local/unifiedproxy/bin/mihomo",
 		"Mihomo 已启动",
 		"Mihomo 已退出: exit status 1",
 		"Mihomo 已停止",

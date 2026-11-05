@@ -80,7 +80,7 @@ func TestCrossPanelPathManualSaveValidationAndCompatibility(t *testing.T) {
 	if m.state.Settings.CrossPanelSubscriptionPath != "/isub4ad5kaf479afnbj2" {
 		t.Fatal("older client erased path")
 	}
-	for _, path := range []string{"/", "/api", "/static/abc", "/_m-ui/peer", "/_subscription-assets", "/bad?query", "/bad/../path", "/bad//path", "/isubabc", "/isubabcdefghijklmnop", "/isub1234567890123456", m.state.Settings.SubscriptionPath} {
+	for _, path := range []string{"/", "/api", "/static/abc", "/_UnifiedProxy/peer", "/_subscription-assets", "/bad?query", "/bad/../path", "/bad//path", "/isubabc", "/isubabcdefghijklmnop", "/isub1234567890123456", m.state.Settings.SubscriptionPath} {
 		settings = m.state.Settings
 		settings.Password = ""
 		settings.CrossPanelSubscriptionPath = path

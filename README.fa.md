@@ -23,7 +23,7 @@ UnifiedProxy پنل بومی Mihomo را با مدیریت مجموعهٔ گره
 <div dir="ltr">
 
 ```bash
-bash <(curl -Ls https://raw.githubusercontent.com/HlONGlin/UnifiedProxy/main/install.sh)
+bash <(curl -Ls https://raw.githubusercontent.com/HlONGlin/unifiedproxy/main/install.sh)
 ```
 
 </div>
@@ -33,7 +33,7 @@ bash <(curl -Ls https://raw.githubusercontent.com/HlONGlin/UnifiedProxy/main/ins
 <div dir="ltr">
 
 ```bash
-bash <(curl -Ls https://raw.githubusercontent.com/HlONGlin/UnifiedProxy/main/install.sh) \
+bash <(curl -Ls https://raw.githubusercontent.com/HlONGlin/unifiedproxy/main/install.sh) \
   --port 34567 \
   --path MyPanelA1b2C3d4 \
   --username AdminUserA1234 \
@@ -42,11 +42,11 @@ bash <(curl -Ls https://raw.githubusercontent.com/HlONGlin/UnifiedProxy/main/ins
 
 </div>
 
-UnifiedProxy در `/usr/local/m-ui` نصب می‌شود و داده‌هایش را در `/usr/local/m-ui/data` نگه می‌دارد. نصب‌کننده یک هستهٔ Mihomo متناسب با معماری فعلی هم دانلود می‌کند؛ هستهٔ موجود حفظ می‌شود، مگر اینکه `--update-mihomo` را بدهید.
+UnifiedProxy در `/usr/local/unifiedproxy` نصب می‌شود و داده‌هایش را در `/usr/local/unifiedproxy/data` نگه می‌دارد. نصب‌کننده یک هستهٔ Mihomo متناسب با معماری فعلی هم دانلود می‌کند؛ هستهٔ موجود حفظ می‌شود، مگر اینکه `--update-mihomo` را بدهید.
 
-`m-ui update` با حفظ همهٔ تنظیمات UnifiedProxy را به‌روز می‌کند. پیش از به‌روزرسانی، از پوشهٔ داده در `data/backups/` تصویر لحظه‌ای می‌گیرد و ۳ نسخهٔ آخر را نگه می‌دارد.
+`unifiedproxy update` با حفظ همهٔ تنظیمات UnifiedProxy را به‌روز می‌کند. پیش از به‌روزرسانی، از پوشهٔ داده در `data/backups/` تصویر لحظه‌ای می‌گیرد و ۳ نسخهٔ آخر را نگه می‌دارد.
 
-انتشارهای UnifiedProxy شامل `unifiedproxy-linux-<architecture>.tar.gz` برای معماری‌های `386`، `amd64`، `arm64`، `armv5`، `armv6`، `armv7` و `s390x` و نیز `unifiedproxy-windows-amd64.zip` هستند؛ نام سازگار سرویس و فرمان مدیریت همچنان `m-ui` است.
+انتشارهای UnifiedProxy شامل `unifiedproxy-linux-<architecture>.tar.gz` برای معماری‌های `386`، `amd64`، `arm64`، `armv5`، `armv6`، `armv7` و `s390x` و نیز `unifiedproxy-windows-amd64.zip` هستند؛ نام سازگار سرویس و فرمان مدیریت همچنان `unifiedproxy` است.
 
 <details>
 <summary>داکر</summary>
@@ -56,16 +56,16 @@ UnifiedProxy در `/usr/local/m-ui` نصب می‌شود و داده‌هایش 
 <div dir="ltr">
 
 ```bash
-git clone https://github.com/HlONGlin/UnifiedProxy.git
-cd UnifiedProxy
+git clone https://github.com/HlONGlin/unifiedproxy.git
+cd unifiedproxy
 cp .env.example .env
 docker compose up -d --build
-docker compose logs m-ui
+docker compose logs unifiedproxy
 ```
 
 </div>
 
-از همین مخزن بسازید. انتشارهای تگ‌دار می‌توانند `ghcr.io/hlonglin/unifiedproxy:<tag>` و `latest` را منتشر کنند؛ پس از موجود شدن ایمیج مربوط از `docker compose pull` استفاده کنید. مقادیر خالی `MUI_PASSWORD` / `MUI_PATH` در اولین اجرا تولید و یک بار در لاگ نمایش داده می‌شوند. برای سازگاری، سرویس `m-ui` و حجم‌های `m-ui-data` و `m-ui-core` حفظ شده‌اند؛ هنگام ارتقا آن‌ها را نگه دارید.
+از همین مخزن بسازید. انتشارهای تگ‌دار می‌توانند `ghcr.io/hlonglin/unifiedproxy:<tag>` و `latest` را منتشر کنند؛ پس از موجود شدن ایمیج مربوط از `docker compose pull` استفاده کنید. مقادیر خالی `UNIFIEDPROXY_PASSWORD` / `UNIFIEDPROXY_PATH` در اولین اجرا تولید و یک بار در لاگ نمایش داده می‌شوند. برای سازگاری، سرویس `unifiedproxy` و حجم‌های `unifiedproxy-data` و `unifiedproxy-core` حفظ شده‌اند؛ هنگام ارتقا آن‌ها را نگه دارید.
 
 </details>
 
@@ -200,7 +200,7 @@ docker compose logs m-ui
 <div dir="ltr">
 
 ```bash
-m-ui ssl
+unifiedproxy ssl
 ```
 
 </div>
@@ -214,13 +214,13 @@ m-ui ssl
 <div dir="ltr">
 
 ```text
-m-ui                  # باز کردن منوی تعاملی
-m-ui start | stop | restart | status | logs
-m-ui settings | configure | set-port
-m-ui reset-credentials | reset-path
-m-ui update | update-menu | ssl
-m-ui enable | disable | clear-logs | uninstall
-m-ui --lang <code>    زبان منو، برای نمونه: m-ui --lang fa
+UnifiedProxy                  # باز کردن منوی تعاملی
+unifiedproxy start | stop | restart | status | logs
+unifiedproxy settings | configure | set-port
+unifiedproxy reset-credentials | reset-path
+unifiedproxy update | update-menu | ssl
+unifiedproxy enable | disable | clear-logs | uninstall
+unifiedproxy --lang <code>    زبان منو، برای نمونه: unifiedproxy --lang fa
 ```
 
 </div>
@@ -238,7 +238,7 @@ m-ui --lang <code>    زبان منو، برای نمونه: m-ui --lang fa
 * [امکانات و سازگاری](docs/design/legacy-acceptance.md)
 * [رنگ‌ها و منابع](docs/design/p2-token-map.md)
 * [بررسی P5](docs/design/p5-acceptance.md)
-* [انتشارها](https://github.com/HlONGlin/UnifiedProxy/releases)
+* [انتشارها](https://github.com/HlONGlin/unifiedproxy/releases)
 
 ## توسعه
 
@@ -255,14 +255,14 @@ go test ./...
 
 </div>
 
-`MUI_VERSION` / Git tag → `-X main.version=...`. [Fleet build / deployment](docs/unifiedproxy-migration.md) · [Design tokens](docs/design/p2-token-map.md).
+`UNIFIEDPROXY_VERSION` / Git tag → `-X main.version=...`. [Fleet build / deployment](docs/unifiedproxy-migration.md) · [Design tokens](docs/design/p2-token-map.md).
 
 ## سپاسگزاری
 
 * [MetaCubeX/mihomo](https://github.com/MetaCubeX/mihomo): هستهٔ پروکسی و مدل پیکربندی
 * [MHSanaei/3x-ui](https://github.com/MHSanaei/3x-ui): تراکم اطلاعات و روند کار رابط کاربری
 * [Sub-Store](https://github.com/sub-store-org/Sub-Store): رفتار مرجع برای قالب‌های اشتراک کلاینت‌ها
-* m-ui (GPL-3.0), UnifiedProxy (MIT): [NOTICE](NOTICE), [MIT notice](licenses/UnifiedProxy-MIT.txt).
+* UnifiedProxy (GPL-3.0), UnifiedProxy (MIT): [NOTICE](NOTICE), [MIT notice](licenses/UnifiedProxy-MIT.txt).
 * [Lucide](https://lucide.dev): ISC; [icon attribution](web/licenses/LICENSE-Lucide.txt).
 * مرجع‌های پالت رنگ Vercel / Claude (Anthropic) / Sentry / Supabase / Stripe هستند. گردآوری VoltAgent/awesome-design-md با مجوز MIT است؛ جزئیات در [سند طراحی پوسته](docs/design/p2-token-map.md) آمده است.
 

@@ -19,24 +19,24 @@ Comece por [implantação e migração](docs/unifiedproxy-migration.md). Backups
 Execute como `root` em um Linux com systemd ou OpenRC:
 
 ```bash
-bash <(curl -Ls https://raw.githubusercontent.com/HlONGlin/UnifiedProxy/main/install.sh)
+bash <(curl -Ls https://raw.githubusercontent.com/HlONGlin/unifiedproxy/main/install.sh)
 ```
 
 O instalador escolhe uma porta livre de cinco dígitos e gera um caminho de painel de 16 caracteres, um usuário de 14 caracteres e uma senha de 16 caracteres. No final, mostra uma única vez a URL de acesso e as credenciais. Você também pode defini-los:
 
 ```bash
-bash <(curl -Ls https://raw.githubusercontent.com/HlONGlin/UnifiedProxy/main/install.sh) \
+bash <(curl -Ls https://raw.githubusercontent.com/HlONGlin/unifiedproxy/main/install.sh) \
   --port 34567 \
   --path MyPanelA1b2C3d4 \
   --username AdminUserA1234 \
   --password 'ChangeThisA12345'
 ```
 
-O UnifiedProxy é instalado em `/usr/local/m-ui` e guarda os dados em `/usr/local/m-ui/data`. O instalador também baixa um núcleo do Mihomo para a arquitetura atual; um núcleo já instalado é mantido, a menos que você use `--update-mihomo`.
+O UnifiedProxy é instalado em `/usr/local/unifiedproxy` e guarda os dados em `/usr/local/unifiedproxy/data`. O instalador também baixa um núcleo do Mihomo para a arquitetura atual; um núcleo já instalado é mantido, a menos que você use `--update-mihomo`.
 
-`m-ui update` atualiza o UnifiedProxy mantendo todas as configurações. Antes de atualizar, salva um snapshot do diretório de dados em `data/backups/` e mantém os 3 mais recentes.
+`unifiedproxy update` atualiza o UnifiedProxy mantendo todas as configurações. Antes de atualizar, salva um snapshot do diretório de dados em `data/backups/` e mantém os 3 mais recentes.
 
-As versões do UnifiedProxy incluem `unifiedproxy-linux-<architecture>.tar.gz` para `386`, `amd64`, `arm64`, `armv5`, `armv6`, `armv7` e `s390x`, além de `unifiedproxy-windows-amd64.zip`; o serviço e o comando de gerenciamento mantêm o nome compatível `m-ui`.
+As versões do UnifiedProxy incluem `unifiedproxy-linux-<architecture>.tar.gz` para `386`, `amd64`, `arm64`, `armv5`, `armv6`, `armv7` e `s390x`, além de `unifiedproxy-windows-amd64.zip`. o serviço e o comando de gerenciamento mantêm o nome compatível `unifiedproxy`.
 
 <details>
 <summary>Docker</summary>
@@ -44,14 +44,14 @@ As versões do UnifiedProxy incluem `unifiedproxy-linux-<architecture>.tar.gz` p
 A imagem Docker é para Linux amd64 e inclui o UnifiedProxy e um núcleo do Mihomo de versão fixa e verificado. O Compose usa a rede do host, então as portas das entradas adicionadas no painel funcionam sem mapeamentos extras.
 
 ```bash
-git clone https://github.com/HlONGlin/UnifiedProxy.git
-cd UnifiedProxy
+git clone https://github.com/HlONGlin/unifiedproxy.git
+cd unifiedproxy
 cp .env.example .env
 docker compose up -d --build
-docker compose logs m-ui
+docker compose logs unifiedproxy
 ```
 
-Compile a partir deste repositório. Versões com tags podem publicar `ghcr.io/hlonglin/unifiedproxy:<tag>` e `latest`; use `docker compose pull` quando a imagem correspondente do UnifiedProxy estiver disponível. `MUI_PASSWORD` / `MUI_PATH` vazios são gerados no primeiro início e exibidos uma vez no log. Por compatibilidade, mantenha o serviço `m-ui` e os volumes `m-ui-data`, `m-ui-core` ao atualizar.
+Compile a partir deste repositório. Versões com tags podem publicar `ghcr.io/hlonglin/unifiedproxy:<tag>` e `latest`; use `docker compose pull` quando a imagem correspondente do UnifiedProxy estiver disponível. `UNIFIEDPROXY_PASSWORD` / `UNIFIEDPROXY_PATH` vazios são gerados no primeiro início e exibidos uma vez no log. O serviço Compose usa o nome `unifiedproxy` e os volumes `unifiedproxy-data` e `unifiedproxy-core`.
 
 </details>
 
@@ -184,7 +184,7 @@ Compile a partir deste repositório. Versões com tags podem publicar `ghcr.io/h
 A primeira instalação interativa oferece um certificado Let's Encrypt para domínio, um certificado Let's Encrypt de curta duração para IPv4, um certificado existente ou seguir sem TLS. Depois de instalar, execute:
 
 ```bash
-m-ui ssl
+unifiedproxy ssl
 ```
 
 O menu permite emitir certificados para domínios e IPs, obter certificados de domínio e curinga pela API DNS da Cloudflare quando a porta 80 não está disponível, renovar, revogar, listar e aplicar um certificado existente. Se o arquivo do certificado tiver apenas o certificado final, o UnifiedProxy completa a cadeia automaticamente, porque clientes como Mihomo Party e FlClash o rejeitam.
@@ -192,13 +192,13 @@ O menu permite emitir certificados para domínios e IPs, obter certificados de d
 ## Comandos de gerenciamento
 
 ```text
-m-ui                  # abrir o menu interativo
-m-ui start | stop | restart | status | logs
-m-ui settings | configure | set-port
-m-ui reset-credentials | reset-path
-m-ui update | update-menu | ssl
-m-ui enable | disable | clear-logs | uninstall
-m-ui --lang <code>    idioma do menu, por exemplo: m-ui --lang pt-br
+UnifiedProxy                  # abrir o menu interativo
+unifiedproxy start | stop | restart | status | logs
+unifiedproxy settings | configure | set-port
+unifiedproxy reset-credentials | reset-path
+unifiedproxy update | update-menu | ssl
+unifiedproxy enable | disable | clear-logs | uninstall
+unifiedproxy --lang <code>    idioma do menu, por exemplo: unifiedproxy --lang pt-br
 ```
 
 O menu fala os mesmos 11 idiomas do painel e lembra a sua escolha. O instalador continua em inglês.
@@ -212,7 +212,7 @@ O menu fala os mesmos 11 idiomas do painel e lembra a sua escolha. O instalador 
 * [Funções e compatibilidade](docs/design/legacy-acceptance.md)
 * [Temas e referências](docs/design/p2-token-map.md)
 * [Revisão P5](docs/design/p5-acceptance.md)
-* [Versões](https://github.com/HlONGlin/UnifiedProxy/releases)
+* [Versões](https://github.com/HlONGlin/unifiedproxy/releases)
 
 ## Desenvolvimento
 
@@ -225,14 +225,14 @@ go vet ./...
 go test ./...
 ```
 
-`MUI_VERSION` / Git tag → `-X main.version=...`. [Fleet build / deployment](docs/unifiedproxy-migration.md) · [Design tokens](docs/design/p2-token-map.md).
+`UNIFIEDPROXY_VERSION` / Git tag → `-X main.version=...`. [Fleet build / deployment](docs/unifiedproxy-migration.md) · [Design tokens](docs/design/p2-token-map.md).
 
 ## Agradecimentos
 
 * [MetaCubeX/mihomo](https://github.com/MetaCubeX/mihomo): o núcleo proxy e o modelo de configuração
 * [MHSanaei/3x-ui](https://github.com/MHSanaei/3x-ui): densidade da interface e fluxo de trabalho
 * [Sub-Store](https://github.com/sub-store-org/Sub-Store): comportamento de referência dos formatos de assinatura
-* m-ui (GPL-3.0), UnifiedProxy (MIT): [NOTICE](NOTICE), [MIT notice](licenses/UnifiedProxy-MIT.txt).
+* UnifiedProxy (GPL-3.0), UnifiedProxy (MIT): [NOTICE](NOTICE), [MIT notice](licenses/UnifiedProxy-MIT.txt).
 * [Lucide](https://lucide.dev): ISC; [icon attribution](web/licenses/LICENSE-Lucide.txt).
 * Referências das paletas: Vercel / Claude (Anthropic) / Sentry / Supabase / Stripe. A coleção VoltAgent/awesome-design-md usa a licença MIT; consulte o [registro de design dos temas](docs/design/p2-token-map.md).
 

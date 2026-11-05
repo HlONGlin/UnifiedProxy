@@ -3,8 +3,8 @@
  * 浏览器的对话框是系统样式（Chrome 里是一个黑色小窗），不跟随面板主题和语言，
  * 还会挡住整个页面的脚本。这里用和面板其他弹窗一样的 Liquid Glass 窗口：
  *
- *   if (!await muiConfirm(muiT('msg.confirmDeleteClient'), {danger: true})) return;
- *   const name = await muiPrompt(muiT('subtpl.renamePrompt'), currentName);  // 取消时为 null
+ *   if (!await upConfirm(upT('msg.confirmDeleteClient'), {danger: true})) return;
+ *   const name = await upPrompt(upT('subtpl.renamePrompt'), currentName);  // 取消时为 null
  *
  * danger 用红色按钮，并且默认焦点在「取消」上，误按回车不会执行删除。
  * Esc 和点击遮罩都等于取消。
@@ -24,28 +24,28 @@
   const show = ({title, message, input, confirmText, danger}) => new Promise(resolve => {
     const job = () => {
       const backdrop = document.createElement('div');
-      backdrop.className = 'modal-backdrop mui-dialog open';
+      backdrop.className = 'modal-backdrop up-dialog open';
       const panel = document.createElement('section');
-      panel.className = 'modal-panel narrow mui-dialog-panel';
+      panel.className = 'modal-panel narrow up-dialog-panel';
       panel.setAttribute('role', input ? 'dialog' : 'alertdialog');
       panel.setAttribute('aria-modal', 'true');
 
       const header = document.createElement('header');
       header.className = 'modal-titlebar';
       header.textContent = title;
-      header.id = 'mui-dialog-title-' + Date.now();
+      header.id = 'up-dialog-title-' + Date.now();
       panel.setAttribute('aria-labelledby', header.id);
 
       const content = document.createElement('div');
-      content.className = 'modal-content mui-dialog-content';
+      content.className = 'modal-content up-dialog-content';
       const text = document.createElement('p');
-      text.className = 'mui-dialog-message';
+      text.className = 'up-dialog-message';
       text.textContent = message;
       content.appendChild(text);
       let field = null;
       if (input) {
         field = document.createElement('input');
-        field.className = 'mui-dialog-input';
+        field.className = 'up-dialog-input';
         field.value = input.value ?? '';
         field.spellcheck = false;
         field.setAttribute('aria-label', message);
@@ -54,8 +54,8 @@
 
       const footer = document.createElement('footer');
       footer.className = 'modal-footer';
-      const cancel = button('outline-btn', muiT('common.cancel'));
-      const ok = button(danger ? 'danger-btn' : 'primary-btn', confirmText || muiT('common.confirm'));
+      const cancel = button('outline-btn', upT('common.cancel'));
+      const ok = button(danger ? 'danger-btn' : 'primary-btn', confirmText || upT('common.confirm'));
       footer.append(cancel, ok);
       panel.append(header, content, footer);
       backdrop.appendChild(panel);
@@ -98,15 +98,15 @@
     if (active) queue.push(job); else job();
   });
 
-  window.muiConfirm = (message, options = {}) => show({
-    title: options.title || muiT('dialog.confirmTitle'),
+  window.upConfirm = (message, options = {}) => show({
+    title: options.title || upT('dialog.confirmTitle'),
     message,
     confirmText: options.confirmText,
     danger: !!options.danger,
   });
 
-  window.muiPrompt = (message, value = '', options = {}) => show({
-    title: options.title || muiT('dialog.promptTitle'),
+  window.upPrompt = (message, value = '', options = {}) => show({
+    title: options.title || upT('dialog.promptTitle'),
     message,
     input: {value},
     confirmText: options.confirmText,

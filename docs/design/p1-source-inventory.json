@@ -517,7 +517,7 @@
         "id": "overview-panel-version",
         "rel": "noopener",
         "target": "_blank",
-        "href": "https://github.com/RomanovCaesar/m-ui/releases"
+        "href": "https://github.com/hlonglin/unifiedproxy/releases"
       },
       {
         "tag": "a",
@@ -531,7 +531,7 @@
         "class": "tiny-tag purple",
         "rel": "noopener",
         "target": "_blank",
-        "href": "https://github.com/RomanovCaesar/m-ui/wiki",
+        "href": "https://github.com/hlonglin/unifiedproxy/wiki",
         "data-i18n": "dash.documentation"
       },
       {
@@ -1036,12 +1036,12 @@
       {
         "tag": "input",
         "name": "panelCertFile",
-        "placeholder": "/etc/m-ui/fullchain.pem"
+        "placeholder": "/etc/unifiedproxy/fullchain.pem"
       },
       {
         "tag": "input",
         "name": "panelKeyFile",
-        "placeholder": "/etc/m-ui/privkey.pem"
+        "placeholder": "/etc/unifiedproxy/privkey.pem"
       },
       {
         "tag": "summary"
@@ -2561,7 +2561,7 @@
       "static/sf-symbols.js",
       "static/i18n-locales.js",
       "static/i18n.js",
-      "media/m-ui_logo.png",
+      "media/UnifiedProxy_logo.png",
       "#sf-bulb",
       "#sf-down",
       "#sf-dashboard",
@@ -2586,9 +2586,9 @@
       "#sf-code",
       "#sf-hdd",
       "#sf-import",
-      "https://github.com/RomanovCaesar/m-ui/releases",
+      "https://github.com/hlonglin/unifiedproxy/releases",
       "https://t.me/MihomoUI",
-      "https://github.com/RomanovCaesar/m-ui/wiki",
+      "https://github.com/hlonglin/unifiedproxy/wiki",
       "#sf-eye",
       "#sf-swap",
       "#sf-pie-chart",
@@ -3097,7 +3097,7 @@
       "static/theme-shadcn.css",
       "static/theme-md3.css",
       "#sf-setting",
-      "media/m-ui_logo.png",
+      "media/UnifiedProxy_logo.png",
       "static/icons-lucide.js",
       "static/icons-material.js",
       "static/sf-symbols.js",

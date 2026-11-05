@@ -1,4 +1,4 @@
-module github.com/RomanovCaesar/m-ui
+module github.com/hlonglin/unifiedproxy
 
 go 1.24
 

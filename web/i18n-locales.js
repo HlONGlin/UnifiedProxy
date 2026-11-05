@@ -1,7 +1,7 @@
 // Code generated from the complete UI catalogs. DO NOT EDIT.
 (function () {
   'use strict';
-  window.MUI_LOCALES = {
+  window.UNIFIEDPROXY_LOCALES = {
     "zh-TW": {
       "appearance.title": "外觀與主題",
       "appearance.description": "配色與明暗獨立選擇",
@@ -231,7 +231,7 @@
       "modal.backUp": "備份",
       "modal.backUpDesc": "下載完整備份：面板設定、入口資料、Multi-control 身份與跨面板訂閱快取。",
       "modal.restore": "恢復",
-      "modal.restoreDesc": "選擇由 UnifiedProxy 匯出的 ZIP 備份檔案恢復資料。TLS 證書不在備份內，恢復後請用 m-ui ssl 重新簽發。",
+      "modal.restoreDesc": "選擇由 UnifiedProxy 匯出的 ZIP 備份檔案恢復資料。TLS 證書不在備份內，恢復後請用 unifiedproxy ssl 重新簽發。",
       "modal.restoreIdentity": "同時恢復 Multi-control 身份（僅整機遷移時勾選）",
       "modal.exportSubsTitle": "匯出全部連結 - 訂閱",
       "modal.qrTitle": "二維碼",
@@ -5733,7 +5733,7 @@
       "modal.backUp": "バックアップ",
       "modal.backUpDesc": "パネル設定、受信データ、マルチコントロール ID、およびクロスパネル サブスクリプション キャッシュの完全バックアップをダウンロードします。",
       "modal.restore": "復元",
-      "modal.restoreDesc": "データを復元するには、UnifiedProxy によってエクスポートされた ZIP バックアップを選択します。 TLS 証明書は含まれていません。後で m-ui ssl を使用して再発行してください。",
+      "modal.restoreDesc": "データを復元するには、UnifiedProxy によってエクスポートされた ZIP バックアップを選択します。 TLS 証明書は含まれていません。後で unifiedproxy ssl を使用して再発行してください。",
       "modal.restoreIdentity": "マルチコントロール ID も復元します (マシン全体の移行の場合のみ)。",
       "modal.exportSubsTitle": "すべての URL をエクスポート - サブスクリプション",
       "modal.qrTitle": "QRコード",
@@ -6650,7 +6650,7 @@
       "modal.backUp": "Резервне копіювання",
       "modal.backUpDesc": "Завантажте повну резервну копію: налаштувань панелі, вхідних даних, ідентичності кількох елементів керування та кешу підписки між панелями.",
       "modal.restore": "Відновити",
-      "modal.restoreDesc": "Виберіть резервну копію ZIP, експортовану UnifiedProxy, щоб відновити дані. Сертифікати TLS не включені — пізніше видайте їх за допомогою m-ui ssl.",
+      "modal.restoreDesc": "Виберіть резервну копію ZIP, експортовану UnifiedProxy, щоб відновити дані. Сертифікати TLS не включені — пізніше видайте їх за допомогою unifiedproxy ssl.",
       "modal.restoreIdentity": "Також відновіть ідентичність кількох елементів керування (тільки для міграції всієї машини)",
       "modal.exportSubsTitle": "Експортувати всі URL-адреси – підписка",
       "modal.qrTitle": "QR-код",
@@ -7735,7 +7735,7 @@
       "proto.deferBaseTitle": "Corrigido atraso antes da primeira gravação, em nanossegundos; 0 significa sem atraso",
       "proto.deferRandomTitle": "Limite de atraso aleatório adicionado ao atraso fixo, em nanossegundos",
       "proto.suitesTitle": "Números de suíte TLS 1.2 com nonce explícito; o núcleo nunca aplica uma lista recomendada por si só - use o botão abaixo para preencher uma",
-      "proto.mieruHintTitle": "Exigir que os clientes carreguem a dica do nome de usuário no handshake; acelera a correspondência com muitos usuários, mas os clientes devem oferecer suporte",
+      "proto.mieruHintTitle": "Exigir que os clientes carreguem a dica do nome de usuário no handshake; acelera a correspondência com uptos usuários, mas os clientes devem oferecer suporte",
       "proto.mieruPatternTitle": "Padrão de tráfego Base64 exportado pela ferramenta mieru; o painel valida apenas base64, o núcleo analisa o conteúdo e ambas as extremidades devem corresponder",
       "proto.sudokuTableTypeTitle": "prefer_entropy é o padrão principal; as direções para cima/para baixo podem usar uma tabela ascii ou de entropia",
       "proto.sudokuPaddingTitle": "Quando desmarcado, padding-min/padding-max não são gravados e o núcleo usa seus padrões 10/30",

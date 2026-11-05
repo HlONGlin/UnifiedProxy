@@ -5,7 +5,7 @@ import (
 	"strings"
 )
 
-// Lines m-ui writes to the log buffer itself (Mihomo's own output is English).
+// Lines UnifiedProxy writes to the log buffer itself (Mihomo's own output is English).
 // They are stored in Chinese and translated when the log is served, like the
 // other server messages: a detail after ": " (usually an error) is translated
 // on its own.

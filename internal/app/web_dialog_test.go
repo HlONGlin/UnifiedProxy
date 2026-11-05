@@ -9,7 +9,7 @@ import (
 )
 
 // The browser's own confirm(), alert() and prompt() boxes ignore the panel theme
-// and language; web/dialog.js provides muiConfirm and muiPrompt instead.
+// and language; web/dialog.js provides upConfirm and upPrompt instead.
 func TestWebUsesPanelDialogs(t *testing.T) {
 	files, err := filepath.Glob("web/*")
 	if err != nil {
@@ -28,7 +28,7 @@ func TestWebUsesPanelDialogs(t *testing.T) {
 		checked++
 		for number, line := range strings.Split(string(data), "\n") {
 			if match := native.FindString(line); match != "" {
-				t.Errorf("%s:%d uses the browser dialog %q; use muiConfirm / muiPrompt", file, number+1, strings.TrimSpace(match))
+				t.Errorf("%s:%d uses the browser dialog %q; use upConfirm / upPrompt", file, number+1, strings.TrimSpace(match))
 			}
 		}
 	}

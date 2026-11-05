@@ -17,15 +17,15 @@ import (
 	"testing"
 	"time"
 
-	"github.com/RomanovCaesar/m-ui/internal/agent"
+	"github.com/hlonglin/unifiedproxy/internal/agent"
 )
 
 // Opt-in loopback transport test using actual Mihomo on both ends. No external
 // proxy, DNS, CA or provider is needed. The oldest backup shape is the input.
 func TestLegacyMihomoTransportFromOldestBackup(t *testing.T) {
-	core := os.Getenv("UP_TEST_REAL_CORE")
+	core := os.Getenv("UNIFIEDPROXY_TEST_REAL_CORE")
 	if core == "" {
-		t.Skip("set UP_TEST_REAL_CORE to an actual Linux Mihomo binary")
+		t.Skip("set UNIFIEDPROXY_TEST_REAL_CORE to an actual Linux Mihomo binary")
 	}
 	freePort := func() int {
 		l, err := net.Listen("tcp", "127.0.0.1:0")

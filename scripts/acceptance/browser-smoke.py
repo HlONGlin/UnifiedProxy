@@ -28,7 +28,7 @@ with socket.socket() as listener:
     port = listener.getsockname()[1]
 url = f"http://127.0.0.1:{port}"
 results = []
-with tempfile.TemporaryDirectory(prefix="mui-fleet-browser-") as data:
+with tempfile.TemporaryDirectory(prefix="up-fleet-browser-") as data:
     subprocess.run([binary, "configure", "--data-dir", data, "--username", "fixture",
                     "--password-stdin", "--listen-ip", "127.0.0.1", "--port", str(port)],
                    input="fixture-password", text=True, check=True, stdout=subprocess.DEVNULL)
@@ -62,16 +62,16 @@ with tempfile.TemporaryDirectory(prefix="mui-fleet-browser-") as data:
                     page.goto(url, wait_until="networkidle")
                     page.locator('#nav button[data-view="fleet"]').click()
                     page.locator("#view-fleet h2").wait_for()
-                    locales = page.evaluate("window.MUIFleet.locales")
-                    missing = page.evaluate("Object.entries(MUIFleet.words).filter(([key,v])=>v.length!==11||v.some(x=>!x)).map(([key])=>key)")
+                    locales = page.evaluate("window.UPFleet.locales")
+                    missing = page.evaluate("Object.entries(UPFleet.words).filter(([key,v])=>v.length!==11||v.some(x=>!x)).map(([key])=>key)")
                     assert not missing, missing
                     for locale in locales:
-                        page.evaluate("lang => muiSetLang(lang)", locale)
+                        page.evaluate("lang => upSetLang(lang)", locale)
                         assert page.locator("#view-fleet h2").inner_text().strip()
                         assert page.locator("#view-fleet textarea").count() >= 5
                         assert not errors, errors
                         results.append({"theme": theme, "locale": locale, "status": "passed"})
-                    page.evaluate("muiSetLang('zh-CN')")
+                    page.evaluate("upSetLang('zh-CN')")
                     assert page.locator(".fleet-grid tbody tr").count() >= 1
                     page.set_viewport_size({"width": 390, "height": 844})
                     page.evaluate("setDrawerOpen(false)")

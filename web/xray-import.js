@@ -30,12 +30,12 @@
       </div>
     </section>`;
     document.body.appendChild(modal);
-    if (window.muiApply) window.muiApply(modal);
+    if (window.upApply) window.upApply(modal);
     const file = $('#ximport-file', modal), name = $('#ximport-file-name', modal);
     $('#ximport-pick', modal).onclick = () => file.click();
     file.onchange = () => {
       const chosen = file.files && file.files[0];
-      name.textContent = chosen ? chosen.name : muiT('ximport.noFile');
+      name.textContent = chosen ? chosen.name : upT('ximport.noFile');
       name.classList.toggle('chosen', !!chosen);
     };
     $('#ximport-form', modal).onsubmit = submit;
@@ -49,7 +49,7 @@
     $('#ximport-form', modal).hidden = false;
     $('#ximport-result', modal).hidden = true;
     $('#ximport-file', modal).value = '';
-    $('#ximport-file-name', modal).textContent = muiT('ximport.noFile');
+    $('#ximport-file-name', modal).textContent = upT('ximport.noFile');
     $('#ximport-file-name', modal).classList.remove('chosen');
     $('#ximport-content', modal).value = '';
   };
@@ -59,29 +59,29 @@
     if (busy) return;
     const file = $('#ximport-file', modal).files[0];
     const content = $('#ximport-content', modal).value.trim();
-    if (!file && !content) { toast(muiT('ximport.needInput'), true); return; }
+    if (!file && !content) { toast(upT('ximport.needInput'), true); return; }
     const body = new FormData();
     if (file) body.append('file', file); else body.append('content', content);
     const start = $('#ximport-start', modal);
     busy = true; start.disabled = true;
-    start.lastElementChild.textContent = muiT('ximport.importing');
+    start.lastElementChild.textContent = upT('ximport.importing');
     try {
       const response = await fetch(panelURL('api/import/xray'), {method: 'POST', body});
       let payload = {};
       try { payload = await response.json(); } catch {}
       if (response.status === 401) { location.href = panelURL('login'); return; }
       if (payload.data && payload.data.log) showResult(payload.data, response.ok ? '' : payload.message);
-      else if (!response.ok) throw new Error(payload.message || muiT('msg.requestFailed'));
+      else if (!response.ok) throw new Error(payload.message || upT('msg.requestFailed'));
       if (response.ok && typeof refresh === 'function') refresh().catch(() => {});
     } catch (error) {
       toast(error.message, true);
     } finally {
       busy = false; start.disabled = false;
-      start.lastElementChild.textContent = muiT('ximport.start');
+      start.lastElementChild.textContent = upT('ximport.start');
     }
   }
 
-  const stat = (label, imported, skipped) => `<div class="ximport-stat"><strong>${esc(String(imported))}</strong><span>${esc(label)}</span>${skipped ? `<small>${esc(muiT('ximport.skipped', {n: skipped}))}</small>` : ''}</div>`;
+  const stat = (label, imported, skipped) => `<div class="ximport-stat"><strong>${esc(String(imported))}</strong><span>${esc(label)}</span>${skipped ? `<small>${esc(upT('ximport.skipped', {n: skipped}))}</small>` : ''}</div>`;
 
   function showResult(result, failure) {
     lastLog = result.log || '';
@@ -90,18 +90,18 @@
     box.innerHTML = `
       ${failure ? `<div class="ximport-failure">${esc(failure)}</div>` : ''}
       <div class="ximport-stats">
-        ${stat(muiT('ximport.inbounds'), result.inbounds, result.inboundsSkipped)}
-        ${stat(muiT('ximport.clients'), result.clients, 0)}
-        ${stat(muiT('ximport.outbounds'), result.outbounds + result.groups, result.outboundsSkipped)}
-        ${stat(muiT('ximport.rules'), result.rules, result.rulesSkipped)}
+        ${stat(upT('ximport.inbounds'), result.inbounds, result.inboundsSkipped)}
+        ${stat(upT('ximport.clients'), result.clients, 0)}
+        ${stat(upT('ximport.outbounds'), result.outbounds + result.groups, result.outboundsSkipped)}
+        ${stat(upT('ximport.rules'), result.rules, result.rulesSkipped)}
       </div>
-      <p class="ximport-section-title">${esc(result.warnings ? muiT('ximport.warnings', {n: result.warnings}) : muiT('ximport.noWarnings'))}</p>
+      <p class="ximport-section-title">${esc(result.warnings ? upT('ximport.warnings', {n: result.warnings}) : upT('ximport.noWarnings'))}</p>
       ${highlights.length ? `<ul class="ximport-warnings">${highlights.map(line => `<li>${esc(line)}</li>`).join('')}</ul>` : ''}
-      ${failure ? '' : `<p class="ximport-hint">${esc(muiT('ximport.restartHint'))}</p>`}
+      ${failure ? '' : `<p class="ximport-hint">${esc(upT('ximport.restartHint'))}</p>`}
       <div class="ximport-actions">
-        <button class="outline-btn" type="button" id="ximport-download">${SF('download')} <span>${esc(muiT('ximport.downloadLog'))}</span></button>
-        <button class="outline-btn" type="button" id="ximport-again">${SF('plus')} <span>${esc(muiT('ximport.again'))}</span></button>
-        ${failure ? '' : `<button class="primary-btn" type="button" id="ximport-restart">${SF('reload')} <span>${esc(muiT('ximport.restart'))}</span></button>`}
+        <button class="outline-btn" type="button" id="ximport-download">${SF('download')} <span>${esc(upT('ximport.downloadLog'))}</span></button>
+        <button class="outline-btn" type="button" id="ximport-again">${SF('plus')} <span>${esc(upT('ximport.again'))}</span></button>
+        ${failure ? '' : `<button class="primary-btn" type="button" id="ximport-restart">${SF('reload')} <span>${esc(upT('ximport.restart'))}</span></button>`}
       </div>`;
     $('#ximport-form', modal).hidden = true;
     box.hidden = false;
@@ -119,7 +119,7 @@
     const blob = new Blob([lastLog], {type: 'text/plain;charset=utf-8'});
     const link = document.createElement('a');
     link.href = URL.createObjectURL(blob);
-    link.download = `m-ui-import-${stamp}.txt`;
+    link.download = `UnifiedProxy-import-${stamp}.txt`;
     document.body.appendChild(link);
     link.click();
     link.remove();
@@ -131,5 +131,5 @@
     if (!busy) reset();
     modal.classList.add('open');
   };
-  window.addEventListener('mui-langchange', () => { if (modal && window.muiApply) window.muiApply(modal); });
+  window.addEventListener('up-langchange', () => { if (modal && window.upApply) window.upApply(modal); });
 })();

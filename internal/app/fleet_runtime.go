@@ -19,8 +19,8 @@ import (
 	"sync"
 	"time"
 
-	"github.com/RomanovCaesar/m-ui/internal/agent"
-	"github.com/RomanovCaesar/m-ui/internal/fleet"
+	"github.com/hlonglin/unifiedproxy/internal/agent"
+	"github.com/hlonglin/unifiedproxy/internal/fleet"
 )
 
 type nodeRuntime struct {
@@ -55,7 +55,7 @@ func (n *nodeRuntime) Snapshot() fleet.Status {
 	if n.applied != nil && n.sidecars != nil {
 		sidecarStatus = n.sidecars.Status(n.applied.Sidecars)
 	}
-	if runtime.GOOS != "linux" || !fleetServicePattern.MatchString(os.Getenv("MUI_SERVICE_NAME")) {
+	if runtime.GOOS != "linux" || !fleetServicePattern.MatchString(os.Getenv("UNIFIEDPROXY_SERVICE_NAME")) {
 		capabilities := []string{}
 		for _, kind := range status.Capabilities {
 			if kind != "agent-upgrade" {
@@ -173,7 +173,7 @@ func (n *nodeRuntime) Apply(ctx context.Context, desired fleet.DesiredState) err
 		return err
 	}
 	if !bytes.Equal(rendered, []byte(desired.MihomoYAML)) {
-		return errors.New("desired YAML differs from the native m-ui model")
+		return errors.New("desired YAML differs from the native UnifiedProxy model")
 	}
 	bundle := filepath.Join(m.dataDir, "fleet-configs", fmt.Sprintf("%d-%s", desired.Revision, desired.Digest[:16]))
 	if err = os.MkdirAll(bundle, 0700); err != nil {

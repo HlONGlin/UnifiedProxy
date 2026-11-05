@@ -1,5 +1,5 @@
 /* UnifiedProxy palette controls. References: Vercel, Claude/Anthropic, Sentry,
- * Supabase, Stripe via awesome-design-md (MIT). m-ui application attribution in NOTICE. */
+ * Supabase, Stripe via awesome-design-md (MIT). UnifiedProxy application attribution in NOTICE. */
 (function () {
   'use strict';
   const root = document.documentElement;
@@ -17,7 +17,7 @@
     transitionTimer=setTimeout(()=>root.classList.remove('up-theme-changing'),150);
   }
   let color = valid(get('up-color-theme')) ? get('up-color-theme') : (valid(root.dataset.colorTheme) ? root.dataset.colorTheme : 't0');
-  let theme = modes[color] || get('up-theme') || (get('mui-is-ultra-dark') === 'true' ? 'dark' : get('mui-theme')) || (color === 't2' ? 'dark' : 'light');
+  let theme = modes[color] || get('up-theme') || (get('up-is-ultra-dark') === 'true' ? 'dark' : get('up-theme')) || (color === 't2' ? 'dark' : 'light');
   theme = theme === 'dark' ? 'dark' : 'light';
   function sync() {
     root.dataset.colorTheme = color;
@@ -35,7 +35,7 @@
     colorTransition();
     theme = value === 'dark' || value === true ? 'dark' : 'light';
     if (manual) { modes[color] = theme; put('up-appearance-modes', JSON.stringify(modes)); }
-    put('up-theme', theme); put('mui-theme', theme); sync();
+    put('up-theme', theme); put('up-theme', theme); sync();
   }
   function setColor(value) {
     if (!valid(value)) return;

@@ -55,7 +55,7 @@ func syncAPICall(t *testing.T, app *App, method, url string, body any) *httptest
 	t.Helper()
 	data, _ := json.Marshal(body)
 	req := httptest.NewRequest(method, url, bytes.NewReader(data))
-	req.AddCookie(&http.Cookie{Name: "mui_session", Value: "test-session"})
+	req.AddCookie(&http.Cookie{Name: "up_session", Value: "test-session"})
 	w := httptest.NewRecorder()
 	app.routes().ServeHTTP(w, req)
 	return w
@@ -411,7 +411,7 @@ func TestInboundSyncJobMultipleTargetsAndIdempotentSubmission(t *testing.T) {
 // Three disposable panels with known matrix cells and a deliberate target-port
 // conflict, for the interactive browser verification of the complete workflow.
 func TestInboundSyncBrowserFixture(t *testing.T) {
-	if os.Getenv("MUI_SYNC_BROWSER") != "1" {
+	if os.Getenv("UNIFIEDPROXY_SYNC_BROWSER") != "1" {
 		t.Skip("browser fixture disabled")
 	}
 	apps := []*App{}

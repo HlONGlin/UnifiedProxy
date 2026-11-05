@@ -1,6 +1,6 @@
 # 模型映射与协议 v1
 
-| UnifiedProxy | m-ui 合并模型 | 规则 |
+| UnifiedProxy | UnifiedProxy 合并模型 | 规则 |
 | --- | --- | --- |
 | Node.id/name/address | fleet.Node | legacy ID 稳定摘要生成新 ID，重复导入幂等 |
 | Node.apiKey | 不迁移 | 单次令牌换发 Ed25519 |

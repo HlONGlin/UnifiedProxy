@@ -9,15 +9,15 @@
   orca-linux 容器 `/workspace` 构建、测试、预览。
 - README 引用 18 张本轮真实浏览器演示截图，覆盖五配色的十种组合、入站、
   客户端、出站、路由、导入、舰队、登录及手机订阅页。不是设计稿或生产数据。
-- 删除 README 中的旧三主题宣传、旧截图与 m-ui 产品仓库/Wiki/频道链接；
+- 删除 README 中的旧三主题宣传、旧截图与 UnifiedProxy 产品仓库/Wiki/频道链接；
   Mihomo、Clash Caesar 等实际依赖的链接仍保留，GPL/NOTICE/MIT 归属不改写。
 - Compose 镜像默认源、Docker OCI 标题/源码地址、Release 标题统一为 UnifiedProxy。
-  CLI、压缩包名、服务名、数据目录和卷名保持兼容。
+  CLI、压缩包名、服务名、数据目录和卷名统一切换为 UnifiedProxy 命名。
 - 浏览器验收增加 `--output`，将 main 的 P6 复验结果单独保存，保留 P5 原始证据。
 - Git 切换工作树暴露 Python shebang 被转为 CRLF 的问题，补充 `*.py eol=lf`，
   并保留真实 Mihomo 验证入口的可执行位，使再次检出后仍可启动。
   没有换用虚假内核或跳过原解析检查。
-- Compose 原断言固定绑定 m-ui 上游，随本次明确的发行源改动改为精确匹配
+- Compose 原断言固定绑定 UnifiedProxy 上游，随本次明确的发行源改动改为精确匹配
   `ghcr.io/hlonglin/unifiedproxy`，并补查 OCI 品牌/源码地址。原平台、host 网络、
   数据卷、内核版本和 SHA256、发布权限与实际解析检查均继续执行。
 
@@ -48,7 +48,7 @@ Git 保存：59eaefff381dbb2a0d69341173f2ca4ac11cc061
 
 原公告指向旧嵌套目录，未覆盖到新版 README；需要取回时可从上述备份恢复。
 `docs/MERGER_NOTICE.md`、`.opencode/` 会话文件也已备份并保留原位；
-原 `m-ui/` 是另一独立 Git 仓库，保留原位及原提交，不混入合并。
+原 `UnifiedProxy/` 是另一独立 Git 仓库，保留原位及原提交，不混入合并。
 
 ## main 复验与交付
 

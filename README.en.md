@@ -10,15 +10,15 @@ UnifiedProxy brings native Mihomo configuration, user subscriptions and fleet op
 
 [简体中文](/README.md) · [English](/README.en.md) · [Languages](#languages)
 
-[Deploy](#deploy) · [Migrate a backup](#migration) · [Explore the workspace](#workspace) · [Acceptance records](docs/design/p5-acceptance.md) · [Releases](https://github.com/HlONGlin/UnifiedProxy/releases)
+[Deploy](#deploy) · [Migrate a backup](#migration) · [Explore the workspace](#workspace) · [Acceptance records](docs/design/p5-acceptance.md) · [Releases](https://github.com/HlONGlin/unifiedproxy/releases)
 
 ## Choose how to run
 
 | Scenario | Entry point | Behavior |
 |---|---|---|
-| Manage one server | `m-ui serve` | Operate local Mihomo, with Multi-control networking and subscription aggregation |
-| Manage several servers centrally | `m-ui --control serve` | Edit node drafts, publish policies and schedule signed tasks; the controller does not run a local proxy core |
-| Enroll a managed node | `m-ui --agent serve` | Join explicitly, apply policies and execute tasks; running proxies continue when the controller is offline |
+| Manage one server | `unifiedproxy serve` | Operate local Mihomo, with Multi-control networking and subscription aggregation |
+| Manage several servers centrally | `unifiedproxy --control serve` | Edit node drafts, publish policies and schedule signed tasks; the controller does not run a local proxy core |
+| Enroll a managed node | `unifiedproxy --agent serve` | Join explicitly, apply policies and execute tasks; running proxies continue when the controller is offline |
 
 `control` / `node` are deployment entry points for the same application. Read the [operations and migration guide](docs/unifiedproxy-migration.md) for enrollment, ownership and emergency local control.
 
@@ -29,16 +29,16 @@ UnifiedProxy brings native Mihomo configuration, user subscriptions and fleet op
 On a Linux server using systemd or OpenRC, run as `root`:
 
 ```bash
-bash <(curl -Ls https://raw.githubusercontent.com/HlONGlin/UnifiedProxy/main/install.sh)
+bash <(curl -Ls https://raw.githubusercontent.com/HlONGlin/unifiedproxy/main/install.sh)
 ```
 
-The installer prints the access URL and generated credentials once: an unused five-digit port, a 16-character panel path, a 14-character username and a 16-character password. The program lives in `/usr/local/m-ui`, with data under `/usr/local/m-ui/data`. Compatibility names keep existing deployments upgradeable.
+The installer prints the access URL and generated credentials once: an unused five-digit port, a 16-character panel path, a 14-character username and a 16-character password. The program lives in `/usr/local/unifiedproxy`, with data under `/usr/local/unifiedproxy/data`. The management command and system service use the `unifiedproxy` name.
 
 <details>
 <summary>Set the port, panel path and credentials explicitly</summary>
 
 ```bash
-bash <(curl -Ls https://raw.githubusercontent.com/HlONGlin/UnifiedProxy/main/install.sh) \
+bash <(curl -Ls https://raw.githubusercontent.com/HlONGlin/unifiedproxy/main/install.sh) \
   --port 34567 \
   --path MyPanelA1b2C3d4 \
   --username AdminUserA1234 \
@@ -51,20 +51,20 @@ bash <(curl -Ls https://raw.githubusercontent.com/HlONGlin/UnifiedProxy/main/ins
 <summary>Use Docker Compose</summary>
 
 ```bash
-git clone https://github.com/HlONGlin/UnifiedProxy.git
-cd UnifiedProxy
+git clone https://github.com/HlONGlin/unifiedproxy.git
+cd unifiedproxy
 cp .env.example .env
 docker compose up -d --build
-docker compose logs m-ui
+docker compose logs unifiedproxy
 ```
 
-The image targets Linux amd64 and includes a pinned, checksum-verified Mihomo core. Host networking lets newly configured inbound ports work without extra mappings. Empty `MUI_PASSWORD` / `MUI_PATH` values are generated on first start and printed once in the log.
+The image targets Linux amd64 and includes a pinned, checksum-verified Mihomo core. Host networking lets newly configured inbound ports work without extra mappings. Empty `UNIFIEDPROXY_PASSWORD` / `UNIFIEDPROXY_PATH` values are generated on first start and printed once in the log.
 
-Build from this repository by default. The release workflow can publish `ghcr.io/hlonglin/unifiedproxy:<tag>` and `latest`; use `docker compose pull` once the corresponding image is available. Retain the `m-ui` service and `m-ui-data` / `m-ui-core` volumes when upgrading.
+Build from this repository by default. The release workflow can publish `ghcr.io/hlonglin/unifiedproxy:<tag>` and `latest`; use `docker compose pull` once the corresponding image is available. Retain the `unifiedproxy` service and `unifiedproxy-data` / `unifiedproxy-core` volumes when upgrading.
 
 </details>
 
-Existing installations use `m-ui update`. It snapshots data into `data/backups/` before updating and keeps the newest three snapshots. An existing Mihomo core is retained unless `--update-mihomo` is supplied. UnifiedProxy releases provide `unifiedproxy-linux-<architecture>.tar.gz` for `386`, `amd64`, `arm64`, `armv5`, `armv6`, `armv7` and `s390x`, plus `unifiedproxy-windows-amd64.zip`; the service and management command retain the compatible `m-ui` name.
+Existing installations use `unifiedproxy update`. It snapshots data into `data/backups/` before updating and keeps the newest three snapshots. An existing Mihomo core is retained unless `--update-mihomo` is supplied. UnifiedProxy releases provide `unifiedproxy-linux-<architecture>.tar.gz` for `386`, `amd64`, `arm64`, `armv5`, `armv6`, `armv7` and `s390x`, plus `unifiedproxy-windows-amd64.zip`.
 
 <a id="workspace"></a>
 
@@ -199,19 +199,19 @@ Follow the [operations and migration guide](docs/unifiedproxy-migration.md). The
 
 | Action | Commands |
 |---|---|
-| Open the menu / select English | `m-ui` / `m-ui --lang en` |
-| Start, stop, restart | `m-ui start` / `m-ui stop` / `m-ui restart` |
-| Inspect status and logs / clear logs | `m-ui status` / `m-ui logs` / `m-ui clear-logs` |
-| Configure the panel / change its port | `m-ui settings` / `m-ui configure` / `m-ui set-port` |
-| Reset credentials / panel path | `m-ui reset-credentials` / `m-ui reset-path` |
-| Update the application / management menu | `m-ui update` / `m-ui update-menu` |
-| Enable / disable startup | `m-ui enable` / `m-ui disable` |
-| Uninstall | `m-ui uninstall` |
+| Open the menu / select English | `unifiedproxy` / `unifiedproxy --lang en` |
+| Start, stop, restart | `unifiedproxy start` / `unifiedproxy stop` / `unifiedproxy restart` |
+| Inspect status and logs / clear logs | `unifiedproxy status` / `unifiedproxy logs` / `unifiedproxy clear-logs` |
+| Configure the panel / change its port | `unifiedproxy settings` / `unifiedproxy configure` / `unifiedproxy set-port` |
+| Reset credentials / panel path | `unifiedproxy reset-credentials` / `unifiedproxy reset-path` |
+| Update the application / management menu | `unifiedproxy update` / `unifiedproxy update-menu` |
+| Enable / disable startup | `unifiedproxy enable` / `unifiedproxy disable` |
+| Uninstall | `unifiedproxy uninstall` |
 
 The menu remembers the selected language. The installer uses English. Open certificate management with:
 
 ```bash
-m-ui ssl
+unifiedproxy ssl
 ```
 
 The first interactive installation offers a Let's Encrypt domain certificate, a short-lived IPv4 certificate, an existing certificate/key pair or skipping TLS. The menu issues, renews, revokes, lists and applies certificates. Cloudflare DNS API issuance supports domains and wildcards when port 80 is unavailable. Leaf-only files receive a complete chain for clients such as Mihomo Party and FlClash.
@@ -237,13 +237,13 @@ go vet ./...
 go test ./...
 ```
 
-Set the version with `MUI_VERSION` or a Git tag and inject it using `-X main.version=...`. Fleet build and deployment steps are in the [guide](docs/unifiedproxy-migration.md).
+Set the version with `UNIFIEDPROXY_VERSION` or a Git tag and inject it using `-X main.version=...`. Fleet build and deployment steps are in the [guide](docs/unifiedproxy-migration.md).
 
 ## Origins and licensing
 
 | Source | Role and retained notice |
 |---|---|
-| m-ui | Mihomo panel foundation, inbound/client and subscription capabilities; GPL-3.0 attribution retained |
+| UnifiedProxy | Mihomo panel foundation, inbound/client and subscription capabilities; GPL-3.0 attribution retained |
 | Original UnifiedProxy (MieruPilot / merit) | Fleet lifecycle, task queue, legacy backup migration and Sidecar capabilities; [MIT notice](licenses/UnifiedProxy-MIT.txt) retained |
 | [MetaCubeX/mihomo](https://github.com/MetaCubeX/mihomo) | Proxy core and native configuration model |
 | [MHSanaei/3x-ui](https://github.com/MHSanaei/3x-ui) · [Sub-Store](https://github.com/sub-store-org/Sub-Store) | References for management workflows and client subscription formats |

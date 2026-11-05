@@ -203,7 +203,7 @@ func TestCrossSubscriptionPullJobAndCacheFailureRetention(t *testing.T) {
 		t.Fatal(err)
 	}
 	input := httptest.NewRequest(http.MethodPost, "/hidden-panel/api/cross-subscriptions", nil)
-	input.AddCookie(&http.Cookie{Name: "mui_session", Value: "test-session"})
+	input.AddCookie(&http.Cookie{Name: "up_session", Value: "test-session"})
 	response := httptest.NewRecorder()
 	a.routes().ServeHTTP(response, input)
 	if response.Code != http.StatusAccepted {
@@ -225,7 +225,7 @@ func TestCrossSubscriptionPullJobAndCacheFailureRetention(t *testing.T) {
 	deadline := time.Now().Add(10 * time.Second)
 	for {
 		request := httptest.NewRequest(http.MethodGet, "/hidden-panel/api/cross-subscriptions?job="+jobID, nil)
-		request.AddCookie(&http.Cookie{Name: "mui_session", Value: "test-session"})
+		request.AddCookie(&http.Cookie{Name: "up_session", Value: "test-session"})
 		response = httptest.NewRecorder()
 		a.routes().ServeHTTP(response, request)
 		var envelope struct {

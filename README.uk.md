@@ -19,24 +19,24 @@ UnifiedProxy об’єднує нативну панель Mihomo та керу�
 Виконайте від імені `root` у Linux із systemd або OpenRC:
 
 ```bash
-bash <(curl -Ls https://raw.githubusercontent.com/HlONGlin/UnifiedProxy/main/install.sh)
+bash <(curl -Ls https://raw.githubusercontent.com/HlONGlin/unifiedproxy/main/install.sh)
 ```
 
 Інсталятор обирає вільний п'ятизначний порт панелі та генерує шлях панелі з 16 символів, ім'я користувача з 14 символів і пароль із 16 символів. Адреса та облікові дані виводяться один раз наприкінці встановлення. Їх можна задати явно:
 
 ```bash
-bash <(curl -Ls https://raw.githubusercontent.com/HlONGlin/UnifiedProxy/main/install.sh) \
+bash <(curl -Ls https://raw.githubusercontent.com/HlONGlin/unifiedproxy/main/install.sh) \
   --port 34567 \
   --path MyPanelA1b2C3d4 \
   --username AdminUserA1234 \
   --password 'ChangeThisA12345'
 ```
 
-UnifiedProxy встановлюється в `/usr/local/m-ui`, дані зберігаються в `/usr/local/m-ui/data`. Інсталятор також завантажує ядро Mihomo для поточної архітектури; наявне ядро зберігається, якщо не вказано `--update-mihomo`.
+UnifiedProxy встановлюється в `/usr/local/unifiedproxy`, дані зберігаються в `/usr/local/unifiedproxy/data`. Інсталятор також завантажує ядро Mihomo для поточної архітектури; наявне ядро зберігається, якщо не вказано `--update-mihomo`.
 
-`m-ui update` оновлює UnifiedProxy зі збереженням усіх налаштувань. Перед оновленням створюється знімок каталогу даних у `data/backups/`; зберігаються три останні знімки.
+`unifiedproxy update` оновлює UnifiedProxy зі збереженням усіх налаштувань. Перед оновленням створюється знімок каталогу даних у `data/backups/`; зберігаються три останні знімки.
 
-Релізи UnifiedProxy містять `unifiedproxy-linux-<architecture>.tar.gz` для `386`, `amd64`, `arm64`, `armv5`, `armv6`, `armv7` і `s390x`, а також `unifiedproxy-windows-amd64.zip`; назва служби й команди керування зберігає сумісність із `m-ui`.
+Релізи UnifiedProxy містять `unifiedproxy-linux-<architecture>.tar.gz` для `386`, `amd64`, `arm64`, `armv5`, `armv6`, `armv7` і `s390x`, а також `unifiedproxy-windows-amd64.zip`. назва служби й команди керування зберігає сумісність із `unifiedproxy`.
 
 <details>
 <summary>Docker</summary>
@@ -44,14 +44,14 @@ UnifiedProxy встановлюється в `/usr/local/m-ui`, дані збе�
 Образ Docker зібрано для Linux amd64; він містить UnifiedProxy і перевірене ядро Mihomo фіксованої версії. Compose використовує мережу хоста, тому порти входів, доданих у панелі, працюють без окремого прокидання портів.
 
 ```bash
-git clone https://github.com/HlONGlin/UnifiedProxy.git
-cd UnifiedProxy
+git clone https://github.com/HlONGlin/unifiedproxy.git
+cd unifiedproxy
 cp .env.example .env
 docker compose up -d --build
-docker compose logs m-ui
+docker compose logs unifiedproxy
 ```
 
-Збирайте з цього репозиторію. Релізи з тегами можуть публікувати `ghcr.io/hlonglin/unifiedproxy:<tag>` і `latest`; використовуйте `docker compose pull` після появи відповідного образу UnifiedProxy. Порожні `MUI_PASSWORD` / `MUI_PATH` створюються при першому запуску й один раз виводяться в журнал. Для сумісності збережено сервіс `m-ui` та томи `m-ui-data`, `m-ui-core`; зберігайте їх під час оновлення.
+Збирайте з цього репозиторію. Релізи з тегами можуть публікувати `ghcr.io/hlonglin/unifiedproxy:<tag>` і `latest`; використовуйте `docker compose pull` після появи відповідного образу UnifiedProxy. Порожні `UNIFIEDPROXY_PASSWORD` / `UNIFIEDPROXY_PATH` створюються при першому запуску й один раз виводяться в журнал. Назва сервісу Compose — `unifiedproxy`, томів — `unifiedproxy-data` і `unifiedproxy-core`.
 
 </details>
 
@@ -184,7 +184,7 @@ docker compose logs m-ui
 Під час першого інтерактивного встановлення можна обрати сертифікат Let's Encrypt для домену, короткостроковий сертифікат Let's Encrypt для IPv4, наявну пару сертифікат/ключ або пропустити TLS. Після встановлення виконайте:
 
 ```bash
-m-ui ssl
+unifiedproxy ssl
 ```
 
 У меню можна випустити сертифікати для домену та IP, отримати сертифікат для домену й wildcard через Cloudflare DNS API, якщо порт 80 недоступний, а також поновити, відкликати, переглянути й застосувати наявний сертифікат. Якщо файл сертифіката містить лише кінцевий сертифікат, UnifiedProxy сам доповнює ланцюжок: клієнти на кшталт Mihomo Party і FlClash такі сертифікати відхиляють.
@@ -192,13 +192,13 @@ m-ui ssl
 ## Команди керування
 
 ```text
-m-ui                  # відкрити інтерактивне меню
-m-ui start | stop | restart | status | logs
-m-ui settings | configure | set-port
-m-ui reset-credentials | reset-path
-m-ui update | update-menu | ssl
-m-ui enable | disable | clear-logs | uninstall
-m-ui --lang <code>    мова меню, наприклад: m-ui --lang uk
+UnifiedProxy                  # відкрити інтерактивне меню
+unifiedproxy start | stop | restart | status | logs
+unifiedproxy settings | configure | set-port
+unifiedproxy reset-credentials | reset-path
+unifiedproxy update | update-menu | ssl
+unifiedproxy enable | disable | clear-logs | uninstall
+unifiedproxy --lang <code>    мова меню, наприклад: unifiedproxy --lang uk
 ```
 
 Меню підтримує ті самі 11 мов, що й панель, і запам'ятовує вибір. Інсталятор залишається англійською.
@@ -212,7 +212,7 @@ m-ui --lang <code>    мова меню, наприклад: m-ui --lang uk
 * [Функції й сумісність](docs/design/legacy-acceptance.md)
 * [Теми та джерела](docs/design/p2-token-map.md)
 * [Перевірка P5](docs/design/p5-acceptance.md)
-* [Релізи](https://github.com/HlONGlin/UnifiedProxy/releases)
+* [Релізи](https://github.com/HlONGlin/unifiedproxy/releases)
 
 ## Розробка
 
@@ -225,14 +225,14 @@ go vet ./...
 go test ./...
 ```
 
-`MUI_VERSION` / Git tag → `-X main.version=...`. [Fleet build / deployment](docs/unifiedproxy-migration.md) · [Design tokens](docs/design/p2-token-map.md).
+`UNIFIEDPROXY_VERSION` / Git tag → `-X main.version=...`. [Fleet build / deployment](docs/unifiedproxy-migration.md) · [Design tokens](docs/design/p2-token-map.md).
 
 ## Подяки
 
 * [MetaCubeX/mihomo](https://github.com/MetaCubeX/mihomo): проксі-ядро та модель конфігурації
 * [MHSanaei/3x-ui](https://github.com/MHSanaei/3x-ui): щільність інтерфейсу та логіка роботи
 * [Sub-Store](https://github.com/sub-store-org/Sub-Store): еталонна поведінка форматів підписок для клієнтів
-* m-ui (GPL-3.0), UnifiedProxy (MIT): [NOTICE](NOTICE), [MIT notice](licenses/UnifiedProxy-MIT.txt).
+* UnifiedProxy (GPL-3.0), UnifiedProxy (MIT): [NOTICE](NOTICE), [MIT notice](licenses/UnifiedProxy-MIT.txt).
 * [Lucide](https://lucide.dev): ISC; [icon attribution](web/licenses/LICENSE-Lucide.txt).
 * Референси палітр: Vercel / Claude (Anthropic) / Sentry / Supabase / Stripe. Добірка VoltAgent/awesome-design-md поширюється за MIT; подробиці наведені в [описі тем](docs/design/p2-token-map.md).
 

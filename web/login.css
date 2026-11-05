@@ -1,4 +1,4 @@
-/* UnifiedProxy visual foundation, adapted from m-ui (GPL-3.0).
+/* UnifiedProxy visual foundation, adapted from UnifiedProxy (GPL-3.0).
  * Palette references: Vercel, Claude/Anthropic, Sentry, Supabase, Stripe
  * via VoltAgent/awesome-design-md (MIT). See docs/design/p2-token-map.md.
  * This sheet preserves functional layout and visibility; themes.css owns color.
@@ -33,7 +33,7 @@ html.dark .aurora-orb { opacity: 0.45; filter: none; }
 100% { transform: translate(70px, -60px) scale(1.08); }
 
 }
-.login-card { position: relative; z-index: 1; width: min(420px, calc(100vw - 36px)); padding: 3rem 2.25rem 2.25rem; border-radius: var(--rounded-xxl); background: var(--card-bg) !important; border: 1px solid var(--card-border) !important; box-shadow: none !important; backdrop-filter: none !important; -webkit-backdrop-filter: none !important; animation: mui-sheet-in var(--duration-slow) var(--ease-modal) both; user-select: none; -webkit-user-select: none; overflow: hidden; }
+.login-card { position: relative; z-index: 1; width: min(420px, calc(100vw - 36px)); padding: 3rem 2.25rem 2.25rem; border-radius: var(--rounded-xxl); background: var(--card-bg) !important; border: 1px solid var(--card-border) !important; box-shadow: none !important; backdrop-filter: none !important; -webkit-backdrop-filter: none !important; animation: up-sheet-in var(--duration-slow) var(--ease-modal) both; user-select: none; -webkit-user-select: none; overflow: hidden; }
 .login-card::after { content: ""; position: absolute; inset: 0; border-radius: inherit; pointer-events: none; background: var(--surface-1); opacity: 0.85; transition: opacity var(--duration-slow) var(--ease); mix-blend-mode: overlay; }
 html.dark .login-card::after { background: var(--surface-1); mix-blend-mode: screen; }
 .mac-traffic-lights { position: absolute; top: 18px; left: 20px; display: flex; gap: 7px; z-index: 5; }

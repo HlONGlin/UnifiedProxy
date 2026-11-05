@@ -12,9 +12,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/RomanovCaesar/m-ui/internal/agent"
-	"github.com/RomanovCaesar/m-ui/internal/control"
-	"github.com/RomanovCaesar/m-ui/internal/fleet"
+	"github.com/hlonglin/unifiedproxy/internal/agent"
+	"github.com/hlonglin/unifiedproxy/internal/control"
+	"github.com/hlonglin/unifiedproxy/internal/fleet"
 )
 
 func runFleetCLI(args []string, role string) (bool, error) {
@@ -51,7 +51,7 @@ func runFleetCLI(args []string, role string) (bool, error) {
 		if fs.NArg() != 0 {
 			return true, errors.New("unexpected serve arguments")
 		}
-		if err := os.Setenv("MUI_DATA_DIR", *dir); err != nil {
+		if err := os.Setenv("UNIFIEDPROXY_DATA_DIR", *dir); err != nil {
 			return true, err
 		}
 		os.Args = os.Args[:1]

@@ -1,5 +1,5 @@
-m-ui
-Copyright (C) RomanovCaesar and m-ui contributors.
+Upstream GPL-3.0 project
+Copyright (C) RomanovCaesar and upstream contributors.
 Licensed under the GNU General Public License v3.0 (see LICENSE).
 
 This product includes software derived from third-party projects:
@@ -65,8 +65,7 @@ Material Symbols Outlined (weight 400) icons from @material-symbols/svg-400
 
 UnifiedProxy interface revision (2026-11-04): the optical/Material/SF visual
 implementations described above are historical attribution and have been retired.
-web/icons.js uses the Lucide paths and preserves their ISC notice. Legacy font
-files and the old logo URL remain available for existing cached clients.
+The current icon paths are in web/icons.js, and the Lucide ISC notice is preserved.
 Five interface palette references: Vercel, Claude/Anthropic, Sentry, Supabase,
 Stripe, assembled by VoltAgent/awesome-design-md (MIT). These references do not
 imply affiliation or endorsement. See docs/design/p2-token-map.md.

@@ -1,6 +1,6 @@
 # Liquid Glass frontend
 
-m-ui's panel, login page and public subscription page imitate Apple's
+UnifiedProxy's panel, login page and public subscription page imitate Apple's
 iOS 26 / macOS 26 Liquid Glass. The controls follow
 [Liquid Glass WebGL Port](https://github.com/martin65536/liquid-glass-webgl)
 (Apache-2.0, a web port of Kyant0/AndroidLiquidGlass): its spring constants,
@@ -128,7 +128,7 @@ The three pages mark dark mode differently:
 
 ## Deliberate differences from the reference
 
-- m-ui sits on white cards, not a colourful wallpaper, so the tab bar's plate
+- UnifiedProxy sits on white cards, not a colourful wallpaper, so the tab bar's plate
   shadow is tighter and darker than `Shadow.Default`.
 - Lens rims use the Ambient highlight (bright/dark sides), because the
   reference's additive Default rim is invisible on white.

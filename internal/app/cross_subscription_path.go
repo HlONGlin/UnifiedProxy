@@ -35,7 +35,7 @@ func validateCrossPanelSubscriptionPath(settings Settings) error {
 		return fmt.Errorf("跨面板订阅路径无效: %w", err)
 	}
 	first := strings.Split(strings.TrimPrefix(path, "/"), "/")[0]
-	if first == "_m-ui" || first == "_subscription-assets" {
+	if first == "_UnifiedProxy" || first == "_subscription-assets" {
 		return fmt.Errorf("跨面板订阅路径不能使用保留路径 /%s", first)
 	}
 	if path == normalizeSubscriptionPath(settings.SubscriptionPath) {

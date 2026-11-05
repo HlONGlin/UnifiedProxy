@@ -48,8 +48,11 @@ func TestInstallerAndReleaseWorkflowUseUnifiedProxyPackageNames(t *testing.T) {
 	for _, required := range []string{
 		`unifiedproxy-linux-${ARCH}.tar.gz`,
 		`unifiedproxy-linux-${ARCH}`,
-		`m-ui-linux-${ARCH}.tar.gz`,
+		`download_unifiedproxy`,
 		`has no UnifiedProxy Linux package`,
+		`UNIFIEDPROXY_INSTALL_DIR`,
+		`/usr/local/unifiedproxy`,
+		`/etc/systemd/system/unifiedproxy.service`,
 	} {
 		if !strings.Contains(installerText, required) {
 			t.Fatalf("install.sh is missing package lookup %q", required)
@@ -65,19 +68,13 @@ func TestInstallerAndReleaseWorkflowUseUnifiedProxyPackageNames(t *testing.T) {
 			t.Fatalf("release workflow is missing UnifiedProxy package configuration %q", required)
 		}
 	}
-	for _, legacy := range []string{
-		`local output="m-ui-linux-${asset}"`,
-		`windows_archive="dist/m-ui-windows-amd64.zip"`,
-		`reported_version="$(./dist/m-ui-linux-amd64 version)"`,
-	} {
-		if strings.Contains(workflowText, legacy) {
-			t.Fatalf("release workflow still publishes legacy product asset naming: %s", legacy)
-		}
+	if strings.Contains(installerText, `legacy_asset`) {
+		t.Fatal("installer still probes alternate release asset names")
 	}
 }
 
 func TestManagementScriptKeepsMenuChoicesLocal(t *testing.T) {
-	management, err := os.ReadFile("scripts/m-ui.sh")
+	management, err := os.ReadFile("scripts/unifiedproxy.sh")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -90,13 +87,13 @@ func TestManagementScriptKeepsMenuChoicesLocal(t *testing.T) {
 		`bash -n "$script"`,
 	} {
 		if !strings.Contains(content, required) {
-			t.Fatalf("scripts/m-ui.sh is missing %q", required)
+			t.Fatalf("scripts/unifiedproxy.sh is missing %q", required)
 		}
 	}
 }
 
 func TestAcmeInstallUsesNoEmailBootstrap(t *testing.T) {
-	for _, name := range []string{"install.sh", "scripts/m-ui.sh"} {
+	for _, name := range []string{"install.sh", "scripts/unifiedproxy.sh"} {
 		data, err := os.ReadFile(name)
 		if err != nil {
 			t.Fatal(err)
@@ -121,7 +118,7 @@ func TestBashScriptsParse(t *testing.T) {
 	if err != nil {
 		t.Skip("bash is not installed on this host")
 	}
-	command := exec.Command(bash, "-n", "install.sh", "scripts/m-ui.sh", "docker/entrypoint.sh")
+	command := exec.Command(bash, "-n", "install.sh", "scripts/unifiedproxy.sh", "docker/entrypoint.sh")
 	if output, err := command.CombinedOutput(); err != nil {
 		t.Fatalf("shell syntax check failed: %v\n%s", err, output)
 	}
@@ -130,7 +127,7 @@ func TestBashScriptsParse(t *testing.T) {
 // 菜单脚本的语言表要和面板 supportedLanguages 一一对应，每种语言的键和英文完全一致，
 // 带 %s 的格式串占位数也要一致，否则 printf 会错位。
 func TestManagementScriptTranslationsAreComplete(t *testing.T) {
-	data, err := os.ReadFile("scripts/m-ui.sh")
+	data, err := os.ReadFile("scripts/unifiedproxy.sh")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -194,24 +191,24 @@ func TestManagementScriptLanguageOption(t *testing.T) {
 	}
 	dir := t.TempDir()
 	run := func(args ...string) (string, error) {
-		command := exec.Command(bash, append([]string{"scripts/m-ui.sh"}, args...)...)
-		command.Env = append(os.Environ(), "MUI_INSTALL_DIR="+filepath.ToSlash(dir))
+		command := exec.Command(bash, append([]string{"scripts/unifiedproxy.sh"}, args...)...)
+		command.Env = append(os.Environ(), "UNIFIEDPROXY_INSTALL_DIR="+filepath.ToSlash(dir))
 		output, err := command.CombinedOutput()
 		return string(output), err
 	}
-	if output, err := run("help"); err != nil || !strings.Contains(output, "m-ui management commands:") {
+	if output, err := run("help"); err != nil || !strings.Contains(output, "UnifiedProxy management commands:") {
 		t.Fatalf("default language is not English: %v\n%s", err, output)
 	}
-	if output, err := run("--lang", "zh-cn", "help"); err != nil || !strings.Contains(output, "m-ui 管理命令：") {
+	if output, err := run("--lang", "zh-cn", "help"); err != nil || !strings.Contains(output, "UnifiedProxy 管理命令：") {
 		t.Fatalf("--lang zh-cn did not switch to Simplified Chinese: %v\n%s", err, output)
 	}
 	if saved, err := os.ReadFile(filepath.Join(dir, "menu-lang")); err != nil || strings.TrimSpace(string(saved)) != "zh-CN" {
 		t.Fatalf("language preference not saved: %q %v", saved, err)
 	}
-	if output, err := run("help"); err != nil || !strings.Contains(output, "m-ui 管理命令：") {
+	if output, err := run("help"); err != nil || !strings.Contains(output, "UnifiedProxy 管理命令：") {
 		t.Fatalf("saved language not reused: %v\n%s", err, output)
 	}
-	if output, err := run("help", "--lang=PT_br"); err != nil || !strings.Contains(output, "Comandos de gerenciamento do m-ui:") {
+	if output, err := run("help", "--lang=PT_br"); err != nil || !strings.Contains(output, "Comandos de gerenciamento do UnifiedProxy:") {
 		t.Fatalf("--lang after the command was not honoured: %v\n%s", err, output)
 	}
 	if output, err := run("--lang", "xx", "help"); err == nil || !strings.Contains(output, "xx") {

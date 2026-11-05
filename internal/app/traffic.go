@@ -29,7 +29,7 @@ type externalInboundTraffic struct {
 	Down       int64
 }
 
-// externalClientTraffic 对应 3x-ui 的 xray.ClientTraffic。m-ui 的主键是字符串、
+// externalClientTraffic 对应 3x-ui 的 xray.ClientTraffic。UnifiedProxy 的主键是字符串、
 // 客户端也没有 email 概念，所以 id/inboundId 用字符串，email 位置放客户端名。
 type externalClientTraffic struct {
 	ID         string `json:"id"`
@@ -45,7 +45,7 @@ type externalClientTraffic struct {
 	LastOnline int64  `json:"lastOnline"`
 }
 
-// 3x-ui 的流量任务每 10 秒跑一次并顺带上报，m-ui 每秒轮询内核，所以把增量攒起来
+// 3x-ui 的流量任务每 10 秒跑一次并顺带上报，UnifiedProxy 每秒轮询内核，所以把增量攒起来
 // 按同样的节奏发出去，接收端看到的频率和 3x-ui 一致。
 const externalTrafficInformPeriod = 10 * time.Second
 

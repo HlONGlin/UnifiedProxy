@@ -36,7 +36,7 @@ ${cross}
 window.addEventListener('load', () => {
   try {
     const assert = (ok, message) => { if (!ok) throw Error(message); };
-    assert(muiGetAppliedLang() === ${JSON.stringify(language)}, 'Initial language');
+    assert(upGetAppliedLang() === ${JSON.stringify(language)}, 'Initial language');
     // Factories run AFTER the initial translation scan, exactly like a first click.
     ensureWarpModal(); makeModal();
     const note = document.querySelector('[data-i18n-html="mh.warpNote"]');
@@ -48,14 +48,14 @@ window.addEventListener('load', () => {
       const root = $('#'+id);
       for (const el of root.querySelectorAll('[data-i18n]')) {
         const key = el.dataset.i18n;
-        assert(muiT(key) !== key && el.textContent === muiT(key), id + ': ' + key);
+        assert(upT(key) !== key && el.textContent === upT(key), id + ': ' + key);
       }
       for (const el of root.querySelectorAll('[data-i18n-html]')) {
-        const expected = document.createElement('div'); expected.innerHTML = muiT(el.dataset.i18nHtml);
+        const expected = document.createElement('div'); expected.innerHTML = upT(el.dataset.i18nHtml);
         assert(el.innerHTML === expected.innerHTML, id + ': ' + el.dataset.i18nHtml);
       }
       for (const [data, attr] of [['data-i18n-placeholder', 'placeholder'], ['data-i18n-aria', 'aria-label']]) {
-        for (const el of root.querySelectorAll('['+data+']')) assert(el.getAttribute(attr) === muiT(el.getAttribute(data)), id + ': ' + attr);
+        for (const el of root.querySelectorAll('['+data+']')) assert(el.getAttribute(attr) === upT(el.getAttribute(data)), id + ': ' + attr);
       }
       root.classList.remove('open'); openModal(id);
     }

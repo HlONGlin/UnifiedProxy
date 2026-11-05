@@ -19,24 +19,24 @@ UnifiedProxy 將 Mihomo 原生面板與艦隊管理整合為同一應用，支�
 在使用 systemd 或 OpenRC 的 Linux 上以 `root` 執行：
 
 ```bash
-bash <(curl -Ls https://raw.githubusercontent.com/HlONGlin/UnifiedProxy/main/install.sh)
+bash <(curl -Ls https://raw.githubusercontent.com/HlONGlin/unifiedproxy/main/install.sh)
 ```
 
 安裝程式會選擇一個未被占用的五位數面板連接埠，並產生 16 位面板路徑、14 位使用者名稱和 16 位密碼，安裝結束時只顯示一次存取網址和憑證。也可以明確指定：
 
 ```bash
-bash <(curl -Ls https://raw.githubusercontent.com/HlONGlin/UnifiedProxy/main/install.sh) \
+bash <(curl -Ls https://raw.githubusercontent.com/HlONGlin/unifiedproxy/main/install.sh) \
   --port 34567 \
   --path MyPanelA1b2C3d4 \
   --username AdminUserA1234 \
   --password 'ChangeThisA12345'
 ```
 
-UnifiedProxy 安裝在 `/usr/local/m-ui`，資料儲存在 `/usr/local/m-ui/data`。安裝程式也會下載適用於目前架構的 Mihomo 核心；已有核心預設保留，加上 `--update-mihomo` 才會替換。
+UnifiedProxy 安裝在 `/usr/local/unifiedproxy`，資料儲存在 `/usr/local/unifiedproxy/data`。安裝程式也會下載適用於目前架構的 Mihomo 核心；已有核心預設保留，加上 `--update-mihomo` 才會替換。
 
-`m-ui update` 會升級 UnifiedProxy 並保留全部設定。更新前會把資料目錄快照到 `data/backups/`，保留最近 3 份。
+`unifiedproxy update` 會升級 UnifiedProxy 並保留全部設定。更新前會把資料目錄快照到 `data/backups/`，保留最近 3 份。
 
-UnifiedProxy Release 提供 `unifiedproxy-linux-<architecture>.tar.gz`（`386`、`amd64`、`arm64`、`armv5`、`armv6`、`armv7`、`s390x`）和 `unifiedproxy-windows-amd64.zip`；系統服務與管理指令保留相容的 `m-ui` 名稱。
+UnifiedProxy Release 提供 `unifiedproxy-linux-<architecture>.tar.gz`（`386`、`amd64`、`arm64`、`armv5`、`armv6`、`armv7`、`s390x`）和 `unifiedproxy-windows-amd64.zip`。系統服務與管理指令統一使用 `unifiedproxy` 名稱。
 
 <details>
 <summary>Docker</summary>
@@ -44,14 +44,14 @@ UnifiedProxy Release 提供 `unifiedproxy-linux-<architecture>.tar.gz`（`386`�
 Docker 映像檔適用於 Linux amd64，內含 UnifiedProxy 和一個固定版本、經過校驗的 Mihomo 核心。Compose 使用 host 網路，面板裡新增的 Inbound 連接埠不需要額外的連接埠對應即可使用。
 
 ```bash
-git clone https://github.com/HlONGlin/UnifiedProxy.git
-cd UnifiedProxy
+git clone https://github.com/HlONGlin/unifiedproxy.git
+cd unifiedproxy
 cp .env.example .env
 docker compose up -d --build
-docker compose logs m-ui
+docker compose logs unifiedproxy
 ```
 
-從本儲存庫建置。版本工作流程可發佈 `ghcr.io/hlonglin/unifiedproxy:<tag>` 與 `latest`；確認對應映像已發佈後再執行 `docker compose pull`。`MUI_PASSWORD` / `MUI_PATH` 留空時會在首次啟動生成並輸出一次。為保持相容，服務及資料卷繼續使用 `m-ui`、`m-ui-data`、`m-ui-core`，升級時請保留。
+從本儲存庫建置。版本工作流程可發佈 `ghcr.io/hlonglin/unifiedproxy:<tag>` 與 `latest`；確認對應映像已發佈後再執行 `docker compose pull`。`UNIFIEDPROXY_PASSWORD` / `UNIFIEDPROXY_PATH` 留空時會在首次啟動生成並輸出一次。Compose 服務名稱為 `unifiedproxy`，資料卷名稱為 `unifiedproxy-data` 與 `unifiedproxy-core`。
 
 </details>
 
@@ -184,7 +184,7 @@ docker compose logs m-ui
 首次互動安裝時可以選擇：Let's Encrypt 網域憑證、Let's Encrypt 短期 IPv4 憑證、既有憑證和私鑰，或略過 TLS。安裝後執行：
 
 ```bash
-m-ui ssl
+unifiedproxy ssl
 ```
 
 選單可以申請網域和 IP 憑證；80 連接埠無法使用時，可透過 Cloudflare DNS API 申請網域與萬用字元憑證；也可以續期、撤銷、檢視憑證，以及套用既有憑證。憑證檔案只有葉憑證時，UnifiedProxy 會自動補齊憑證鏈，因為 Mihomo Party、FlClash 等用戶端會拒絕這種憑證。
@@ -192,13 +192,13 @@ m-ui ssl
 ## 管理指令
 
 ```text
-m-ui                  # 開啟互動選單
-m-ui start | stop | restart | status | logs
-m-ui settings | configure | set-port
-m-ui reset-credentials | reset-path
-m-ui update | update-menu | ssl
-m-ui enable | disable | clear-logs | uninstall
-m-ui --lang <code>    選單語言，例如：m-ui --lang zh-tw
+UnifiedProxy                  # 開啟互動選單
+unifiedproxy start | stop | restart | status | logs
+unifiedproxy settings | configure | set-port
+unifiedproxy reset-credentials | reset-path
+unifiedproxy update | update-menu | ssl
+unifiedproxy enable | disable | clear-logs | uninstall
+unifiedproxy --lang <code>    選單語言，例如：unifiedproxy --lang zh-tw
 ```
 
 管理選單支援和面板相同的 11 種語言，並會記住你的選擇。安裝程式維持英文。
@@ -212,7 +212,7 @@ m-ui --lang <code>    選單語言，例如：m-ui --lang zh-tw
 * [功能與相容驗收](docs/design/legacy-acceptance.md)
 * [主題 tokens 與參考對象](docs/design/p2-token-map.md)
 * [P5 視覺與功能審查](docs/design/p5-acceptance.md)
-* [版本發佈](https://github.com/HlONGlin/UnifiedProxy/releases)
+* [版本發佈](https://github.com/HlONGlin/unifiedproxy/releases)
 
 ## 開發
 
@@ -225,14 +225,14 @@ go vet ./...
 go test ./...
 ```
 
-`MUI_VERSION` / Git tag → `-X main.version=...`. [Fleet build / deployment](docs/unifiedproxy-migration.md) · [Design tokens](docs/design/p2-token-map.md).
+`UNIFIEDPROXY_VERSION` / Git tag → `-X main.version=...`. [Fleet build / deployment](docs/unifiedproxy-migration.md) · [Design tokens](docs/design/p2-token-map.md).
 
 ## 致謝
 
 * [MetaCubeX/mihomo](https://github.com/MetaCubeX/mihomo)：代理核心與設定模型
 * [MHSanaei/3x-ui](https://github.com/MHSanaei/3x-ui)：介面資訊密度與操作流程
 * [Sub-Store](https://github.com/sub-store-org/Sub-Store)：用戶端訂閱格式的參考實作
-* m-ui (GPL-3.0), UnifiedProxy (MIT): [NOTICE](NOTICE), [MIT notice](licenses/UnifiedProxy-MIT.txt).
+* UnifiedProxy (GPL-3.0), UnifiedProxy (MIT): [NOTICE](NOTICE), [MIT notice](licenses/UnifiedProxy-MIT.txt).
 * [Lucide](https://lucide.dev): ISC; [icon attribution](web/licenses/LICENSE-Lucide.txt).
 * 配色參考對象為 Vercel / Claude（Anthropic）/ Sentry / Supabase / Stripe；資料由 VoltAgent/awesome-design-md（MIT）整理，詳見[主題設計記錄](docs/design/p2-token-map.md)。
 

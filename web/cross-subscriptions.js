@@ -17,37 +17,37 @@
     $('#cs-close').onclick = close; $('#cs-close-footer').onclick = close;
     modal.onclick = event => { if (event.target === modal) close(); };
     $('#cs-pull').onclick = pull; $('#cs-clear').onclick = clearCache;
-    $('#cs-copy').onclick = () => copyShareText($('#cs-urls').value, muiT('cs.urlsCopied'));
-    $('#cs-download').onclick = () => downloadText('m-ui-cross-panel-subscriptions.txt', $('#cs-urls').value ? $('#cs-urls').value + '\n' : '');
+    $('#cs-copy').onclick = () => copyShareText($('#cs-urls').value, upT('cs.urlsCopied'));
+    $('#cs-download').onclick = () => downloadText('UnifiedProxy-cross-panel-subscriptions.txt', $('#cs-urls').value ? $('#cs-urls').value + '\n' : '');
     return modal;
   };
   const setError = message => { $('#cs-error').textContent = message; $('#cs-error').hidden = !message; };
   const formatDate = value => !value || value.startsWith('0001-') ? '—' : new Date(value).toLocaleString();
-  const formatAge = value => { if (!value || value.startsWith('0001-')) return muiT('cs.never'); const age = Math.max(0, Date.now() - new Date(value).getTime()); if (age < 60000) return muiT('cs.justNow'); if (age < 3600000) return muiT('cs.minutesAgo', {n: Math.floor(age / 60000)}); return muiT('cs.hoursAgo', {n: Math.floor(age / 3600000)}); };
+  const formatAge = value => { if (!value || value.startsWith('0001-')) return upT('cs.never'); const age = Math.max(0, Date.now() - new Date(value).getTime()); if (age < 60000) return upT('cs.justNow'); if (age < 3600000) return upT('cs.minutesAgo', {n: Math.floor(age / 60000)}); return upT('cs.hoursAgo', {n: Math.floor(age / 3600000)}); };
   const renderView = view => {
     lastView = view;
     const urls = (view.users || []).map(user => user.url).filter(Boolean);
     $('#cs-urls').value = urls.join('\n');
-    $('#cs-cache-summary').textContent = muiT('cs.cacheSummary', {sources: (view.sources || []).length, urls: urls.length});
+    $('#cs-cache-summary').textContent = upT('cs.cacheSummary', {sources: (view.sources || []).length, urls: urls.length});
     const list = $('#cs-cache-list');
-    list.innerHTML = (view.sources || []).length ? view.sources.map(source => `<div class="cs-cache-row"><div>${esc(source.node.name || source.node.id)}<small>${esc(source.node.endpoint || muiT('mc.noEndpoint'))} · ${formatAge(source.retrievedAt)}（${esc(formatDate(source.retrievedAt))}）</small></div><span>${source.inboundCount} Inbound / ${source.clientCount} Client</span><span class="${source.lastError ? 'failed' : 'success'}">${source.lastError ? esc(source.lastError) : esc(muiT('cs.cached'))}</span></div>`).join('') : `<div class="cs-empty">${muiT('cs.emptyCache')}</div>`;
+    list.innerHTML = (view.sources || []).length ? view.sources.map(source => `<div class="cs-cache-row"><div>${esc(source.node.name || source.node.id)}<small>${esc(source.node.endpoint || upT('mc.noEndpoint'))} · ${formatAge(source.retrievedAt)}（${esc(formatDate(source.retrievedAt))}）</small></div><span>${source.inboundCount} Inbound / ${source.clientCount} Client</span><span class="${source.lastError ? 'failed' : 'success'}">${source.lastError ? esc(source.lastError) : esc(upT('cs.cached'))}</span></div>`).join('') : `<div class="cs-empty">${upT('cs.emptyCache')}</div>`;
     if (view.activeJob && !jobID) { jobID = view.activeJob; showProgress(); }
   };
   const renderJob = job => {
     lastJobState = job;
     const title = $('#cs-progress-title'), status = $('#cs-progress-status'), bar = $('#cs-progress-bar'), targets = $('#cs-progress-targets');
     const done = job.done, success = job.targets.filter(target => target.status === 'success').length;
-    title.textContent = muiT(done ? 'cs.pullDone' : 'cs.pullRunning'); status.textContent = done ? muiT('cs.jobDone', {success: success, failed: job.targets.length - success}) : muiT('cs.jobProgress', {completed: job.completed, total: job.targets.length});
+    title.textContent = upT(done ? 'cs.pullDone' : 'cs.pullRunning'); status.textContent = done ? upT('cs.jobDone', {success: success, failed: job.targets.length - success}) : upT('cs.jobProgress', {completed: job.completed, total: job.targets.length});
     status.className = `cs-status ${done && success === job.targets.length ? 'success' : done ? 'failed' : ''}`;
     bar.max = job.targets.length || 1; bar.value = job.completed;
     const labels = {pending:'cs.statusPending',running:'cs.statusRunning',success:'cs.statusSuccess',failed:'cs.statusFailed'};
-    targets.innerHTML = job.targets.map(target => `<div class="cs-cache-row"><div>${esc(target.endpoint || target.id)}</div><span>${target.inbounds || 0} Inbound / ${target.clients || 0} Client</span><span class="${target.status === 'success' ? 'success' : target.status === 'failed' ? 'failed' : ''}">${labels[target.status] ? esc(muiT(labels[target.status])) : esc(target.status)}${target.message ? `：${esc(target.message)}` : ''}</span></div>`).join('');
+    targets.innerHTML = job.targets.map(target => `<div class="cs-cache-row"><div>${esc(target.endpoint || target.id)}</div><span>${target.inbounds || 0} Inbound / ${target.clients || 0} Client</span><span class="${target.status === 'success' ? 'success' : target.status === 'failed' ? 'failed' : ''}">${labels[target.status] ? esc(upT(labels[target.status])) : esc(target.status)}${target.message ? `：${esc(target.message)}` : ''}</span></div>`).join('');
   };
   const showProgress = () => { $('#cs-progress').hidden = false; poll(); };
   const poll = async () => {
     clearTimeout(pollTimer); if (!jobID || !modal?.classList.contains('open')) return;
     try { const job = await api('/api/cross-subscriptions?job=' + encodeURIComponent(jobID)); renderJob(job); if (!job.done) pollTimer = setTimeout(poll, 700); else { jobID = ''; const view = await api('/api/cross-subscriptions'); renderView(view); } }
-    catch (error) { setError(error.message + muiT('cs.pollErrorSuffix')); $('#cs-progress-status').textContent = muiT('cs.jobQueryFailed'); }
+    catch (error) { setError(error.message + upT('cs.pollErrorSuffix')); $('#cs-progress-status').textContent = upT('cs.jobQueryFailed'); }
   };
   const open = async () => {
     makeModal(); opening = true; setError(''); openModal(modal.id); $('#cs-urls').value = ''; $('#cs-progress').hidden = true; $('#cs-pull').disabled = false; $('#cs-clear').disabled = false;
@@ -63,7 +63,7 @@
     finally { $('#cs-pull').disabled = false; }
   };
   const clearCache = async () => {
-    if (jobID) { setError(muiT('cs.busyPulling')); return; }
+    if (jobID) { setError(upT('cs.busyPulling')); return; }
     $('#cs-clear').disabled = true; setError('');
     try { const view = await api('/api/cross-subscriptions', {method:'DELETE'}); renderView(view); }
     catch (error) { setError(error.message); }
@@ -72,7 +72,7 @@
   const close = () => { clearTimeout(pollTimer); closeModal(modal); };
   action.onclick = open;
   document.addEventListener('keydown', event => { if (event.key === 'Escape' && modal?.classList.contains('open')) close(); });
-  window.addEventListener('mui-langchange', () => {
+  window.addEventListener('up-langchange', () => {
     if (!modal) return;
     if (lastView) renderView(lastView);
     if (lastJobState) renderJob(lastJobState);

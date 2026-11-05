@@ -1,13 +1,13 @@
 const assert = require('node:assert/strict');
-const { chromium } = require(process.env.MUI_PLAYWRIGHT || 'playwright');
+const { chromium } = require(process.env.UNIFIEDPROXY_PLAYWRIGHT || 'playwright');
 
 (async () => {
-  const browser = await chromium.launch({ headless: true, executablePath: process.env.MUI_CHROMIUM });
+  const browser = await chromium.launch({ headless: true, executablePath: process.env.UNIFIEDPROXY_CHROMIUM });
   try {
     const page = await browser.newPage({ viewport: { width: 1440, height: 1000 } });
     const errors = [];
     page.on('pageerror', error => { errors.push(error.message); console.error('PAGE ERROR:', error.message); });
-    await page.goto(process.env.MUI_TEST_URL || 'http://127.0.0.1:21530/');
+    await page.goto(process.env.UNIFIEDPROXY_TEST_URL || 'http://127.0.0.1:21530/');
     await page.locator('#username').fill('admin');
     await page.locator('#password').fill('admin');
     await page.locator('#login-button').click();

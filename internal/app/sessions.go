@@ -10,7 +10,7 @@ import (
 // process-wide token: logging out only dropped the cookie, so a copied cookie kept
 // working until the panel restarted or the password changed.
 const (
-	sessionCookieName = "mui_session"
+	sessionCookieName = "up_session"
 	// maxPanelSessions bounds the table; the oldest session is dropped beyond it.
 	maxPanelSessions = 64
 )

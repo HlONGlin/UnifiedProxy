@@ -194,7 +194,7 @@ func TestXrayConfigImport(t *testing.T) {
 		}
 	}
 
-	if core := os.Getenv("MUI_TEST_CORE"); core != "" {
+	if core := os.Getenv("UNIFIEDPROXY_TEST_CORE"); core != "" {
 		config, err := m.renderConfig()
 		if err != nil {
 			t.Fatal(err)

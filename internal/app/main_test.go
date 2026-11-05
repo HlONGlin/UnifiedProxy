@@ -283,7 +283,7 @@ func TestRenderConfigIncludesEnabledClients(t *testing.T) {
 func TestAdvancedInboundFieldsRenderToYAML(t *testing.T) {
 	inbound := Inbound{
 		ID: "vless-one", Name: "vless-reality", Type: "vless", Listen: "0.0.0.0", Port: 2443, Enabled: true,
-		Network: "grpc", GRPCServiceName: "m-ui-grpc", Decryption: "none",
+		Network: "grpc", GRPCServiceName: "UnifiedProxy-grpc", Decryption: "none",
 		Clients: []Client{{ID: "client-one", Name: "alice", Username: "alice", UUID: "00000000-0000-0000-0000-000000000001", Flow: "xtls-rprx-vision", Enabled: true}},
 		Reality: RealitySettings{Enabled: true, Dest: "example.com:443", PrivateKey: "private-key", ServerNames: "example.com,www.example.com", ShortIDs: "1234,5678"},
 		Mux:     MuxSettings{Padding: true, BrutalEnabled: true, Up: "100 Mbps", Down: "200 Mbps"},
@@ -297,7 +297,7 @@ func TestAdvancedInboundFieldsRenderToYAML(t *testing.T) {
 		t.Fatal(err)
 	}
 	yaml := string(data)
-	for _, expected := range []string{"grpc-service-name: \"m-ui-grpc\"", "reality-config:", "server-names:", "flow: \"xtls-rprx-vision\"", "mux-option:"} {
+	for _, expected := range []string{"grpc-service-name: \"UnifiedProxy-grpc\"", "reality-config:", "server-names:", "flow: \"xtls-rprx-vision\"", "mux-option:"} {
 		if !strings.Contains(yaml, expected) {
 			t.Fatalf("missing %q in YAML:\n%s", expected, yaml)
 		}
@@ -1005,7 +1005,7 @@ func TestSubscriptionPageSettingsMenuWiring(t *testing.T) {
 		`id="settings-button"`, `id="settings-menu"`, `id="dark-mode"`, `data-appearance-slot`, `id="language-select"`,
 		`data-theme="light"`, `data-color-theme="{{.UITheme}}`, `appearance.js`, `themes.css`,
 		"function toggleSettings()", "function closeSettings(", "function applyTheme(", "function applyLanguage(",
-		"UPTheme.sync()", "mui-language", "Panel Settings", "面板设置",
+		"UPTheme.sync()", "up-language", "Panel Settings", "面板设置",
 		`id="android-btn"`, `id="ios-btn"`, `id="mac-btn"`, `class="client-menu"`, "function closeClientMenus(", "'/sing-box'", "'/v2box'", "'/shadowrocket'", "'/streisand'",
 		"'/surge'", "'/surgemac'", "'/surfboard'", "'/loon'", "'/qx'", "'/stash'", "'/egern'",
 	} {
@@ -1425,7 +1425,7 @@ func TestSnellListenerRendersSinglePSK(t *testing.T) {
 
 func TestSnellAlwaysStatesListenerVersion(t *testing.T) {
 	// Mihomo's snell listener defaults to v4 while its client defaults to v1, so
-	// m-ui always writes the version even when the operator left it unset.
+	// UnifiedProxy always writes the version even when the operator left it unset.
 	if got := snellVersion(Inbound{Type: "snell"}); got != 4 {
 		t.Fatalf("snellVersion default = %d, want 4", got)
 	}
@@ -2604,7 +2604,7 @@ func TestPanelExplainsWhyBrutalMuxIsUnavailable(t *testing.T) {
 		t.Fatal(err)
 	}
 	for _, needle := range []string{
-		"muiT('drawer.brutalLinuxOnly')",
+		"upT('drawer.brutalLinuxOnly')",
 		"function brutalMuxSupported()",
 		"app.state?.platform",
 		"syncBrutalUI();",
@@ -4220,7 +4220,7 @@ func TestPanelPathAppliesToRedirectsAndSessionCookie(t *testing.T) {
 	}
 	recorder = httptest.NewRecorder()
 	loggedIn := httptest.NewRequest(http.MethodGet, "/login", nil)
-	loggedIn.AddCookie(&http.Cookie{Name: "mui_session", Value: "token"})
+	loggedIn.AddCookie(&http.Cookie{Name: "up_session", Value: "token"})
 	app.handleLoginPage(recorder, loggedIn)
 	if recorder.Code != http.StatusFound || recorder.Header().Get("Location") != "/hidden-panel/" {
 		t.Fatalf("logged-in login page: code %d, Location %q", recorder.Code, recorder.Header().Get("Location"))
@@ -4479,7 +4479,7 @@ func TestCredentialsEndpointChecksCurrentPairAndRotatesSession(t *testing.T) {
 	if app.validSession("old-token") || app.validSession(other) {
 		t.Fatal("a credential change must sign every browser out")
 	}
-	if cookies := recorder.Result().Cookies(); len(cookies) != 1 || cookies[0].Name != "mui_session" || cookies[0].MaxAge >= 0 {
+	if cookies := recorder.Result().Cookies(); len(cookies) != 1 || cookies[0].Name != "up_session" || cookies[0].MaxAge >= 0 {
 		t.Fatalf("the response must clear the session cookie, got %+v", cookies)
 	}
 }
@@ -4492,7 +4492,7 @@ func TestSessionExpiresAfterSessionMaxAge(t *testing.T) {
 		t.Fatal(err)
 	}
 	request := httptest.NewRequest(http.MethodGet, "/api/state", nil)
-	request.AddCookie(&http.Cookie{Name: "mui_session", Value: token})
+	request.AddCookie(&http.Cookie{Name: "up_session", Value: token})
 	if !app.isLoggedIn(request) {
 		t.Fatal("a fresh session must be accepted")
 	}
@@ -4503,7 +4503,7 @@ func TestSessionExpiresAfterSessionMaxAge(t *testing.T) {
 	// 直接构造 App 时填的 session 是测试用的固定令牌，永不过期。
 	plain := &App{manager: manager, session: "token"}
 	plainRequest := httptest.NewRequest(http.MethodGet, "/api/state", nil)
-	plainRequest.AddCookie(&http.Cookie{Name: "mui_session", Value: "token"})
+	plainRequest.AddCookie(&http.Cookie{Name: "up_session", Value: "token"})
 	if !plain.isLoggedIn(plainRequest) {
 		t.Fatal("the fixed test session must stay valid")
 	}
@@ -4772,7 +4772,7 @@ func TestSettingsPageReplicates3xUiLayout(t *testing.T) {
 		"function syncRemarkModel()", "function remarkLabel(inbound,client)", "function splitPanelListen(value)",
 		"function joinPanelListen(ip,port)", "function inboundPager(current,pages,total)",
 		"async function saveCredentials()", "async function restartPanel()",
-		"localStorage.setItem('mui-language'",
+		"localStorage.setItem('up-language'",
 	} {
 		if !strings.Contains(content, needle) {
 			t.Fatalf("web/index.html is missing %s", needle)
@@ -4826,15 +4826,15 @@ func TestMediaLogoServing(t *testing.T) {
 	app := &App{manager: manager, session: "admin-session"}
 	handler := app.panelRoutes(false)
 
-	req := httptest.NewRequest(http.MethodGet, "/panel/media/m-ui_logo.png", nil)
+	req := httptest.NewRequest(http.MethodGet, "/panel/media/unifiedproxy.svg", nil)
 	rec := httptest.NewRecorder()
 	handler.ServeHTTP(rec, req)
 
 	if rec.Code != http.StatusOK {
-		t.Fatalf("expected 200 OK for /panel/media/m-ui_logo.png, got %d", rec.Code)
+		t.Fatalf("expected 200 OK for /panel/media/unifiedproxy.svg, got %d", rec.Code)
 	}
-	if ct := rec.Header().Get("Content-Type"); ct != "image/png" {
-		t.Fatalf("expected Content-Type image/png, got %s", ct)
+	if ct := rec.Header().Get("Content-Type"); ct != "image/svg+xml" {
+		t.Fatalf("expected Content-Type image/svg+xml, got %s", ct)
 	}
 	if rec.Body.Len() == 0 {
 		t.Fatal("expected non-empty response body for logo")

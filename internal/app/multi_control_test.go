@@ -399,16 +399,16 @@ func TestMeshPublicAndAdminRoutesAreSeparated(t *testing.T) {
 
 // Run only when explicitly requested for isolated local UI testing.
 func TestMultiControlBrowserFixture(t *testing.T) {
-	address := os.Getenv("MUI_PEER_BROWSER_ADDR")
+	address := os.Getenv("UNIFIEDPROXY_PEER_BROWSER_ADDR")
 	if address == "" {
 		t.Skip("browser fixture disabled")
 	}
-	dir, err := os.MkdirTemp("", "m-ui-mesh-ui-")
+	dir, err := os.MkdirTemp("", "UnifiedProxy-mesh-ui-")
 	if err != nil {
 		t.Fatal(err)
 	}
 	defer os.RemoveAll(dir)
-	if configured := os.Getenv("MUI_PEER_BROWSER_DATA"); configured != "" {
+	if configured := os.Getenv("UNIFIEDPROXY_PEER_BROWSER_DATA"); configured != "" {
 		dir = configured
 		if err = os.MkdirAll(dir, 0700); err != nil {
 			t.Fatal(err)
@@ -418,7 +418,7 @@ func TestMultiControlBrowserFixture(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if err = p.configure(valueOr(os.Getenv("MUI_PEER_BROWSER_NAME"), "Panel "+address), "http://"+address); err != nil {
+	if err = p.configure(valueOr(os.Getenv("UNIFIEDPROXY_PEER_BROWSER_NAME"), "Panel "+address), "http://"+address); err != nil {
 		t.Fatal(err)
 	}
 	m := &CoreManager{dataDir: dir, state: defaultState()}

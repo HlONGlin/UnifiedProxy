@@ -38,7 +38,7 @@ func (l *xrayImportLog) section(title string) {
 func xrayListener(in xrayImportInbound, log *xrayImportLog) (map[string]any, xrayText) {
 	switch in.Protocol {
 	case "tunnel", "dokodemo-door":
-		return nil, xt("m-ui has no tunnel (dokodemo-door) inbound")
+		return nil, xt("UnifiedProxy has no tunnel (dokodemo-door) inbound")
 	case "wireguard":
 		return nil, xt("Mihomo has no WireGuard server (listener)")
 	case "tun":

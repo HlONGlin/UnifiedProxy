@@ -20,7 +20,7 @@ import (
 
 func warpFixture() WarpDevice {
 	var device WarpDevice
-	_ = json.Unmarshal([]byte(`{"id":"00000000-0000-0000-0000-000000000001","token":"test-access-token","name":"m-ui","model":"m-ui","enabled":true,"account":{"license":"aaaaaaaa-bbbbbbbb-cccccccc","account_type":"free","role":"child","premium_data":0,"quota":0,"usage":0},"config":{"client_id":"AQID","interface":{"addresses":{"v4":"172.16.0.2","v6":"2606:4700:110:8abc::2"}},"peers":[{"public_key":"AQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQE=","endpoint":{"host":"engage.cloudflareclient.com:2408"}}]}}`), &device)
+	_ = json.Unmarshal([]byte(`{"id":"00000000-0000-0000-0000-000000000001","token":"test-access-token","name":"UnifiedProxy","model":"UnifiedProxy","enabled":true,"account":{"license":"aaaaaaaa-bbbbbbbb-cccccccc","account_type":"free","role":"child","premium_data":0,"quota":0,"usage":0},"config":{"client_id":"AQID","interface":{"addresses":{"v4":"172.16.0.2","v6":"2606:4700:110:8abc::2"}},"peers":[{"public_key":"AQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQE=","endpoint":{"host":"engage.cloudflareclient.com:2408"}}]}}`), &device)
 	return device
 }
 
@@ -42,7 +42,7 @@ func TestWarpAccountLifecycleAndConcurrentCreate(t *testing.T) {
 				t.Error(err)
 			}
 			publicKey, _ = body["key"].(string)
-			if body["tos"] == "" || body["model"] != "m-ui" || body["private-key"] != nil || r.Header.Get("CF-Client-Version") == "" {
+			if body["tos"] == "" || body["model"] != "UnifiedProxy" || body["private-key"] != nil || r.Header.Get("CF-Client-Version") == "" {
 				t.Error("bad registration request")
 			}
 			_ = json.NewEncoder(w).Encode(warpFixture())
@@ -196,7 +196,7 @@ func TestWarpWireGuardConfigAndRouting(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if rules[0] != "DOMAIN-SUFFIX,blocked.example.com,REJECT" || rules[1] != "DOMAIN-SUFFIX,example.net,MUI-IPV4" || rules[2] != "DOMAIN-SUFFIX,example.com,warp" {
+	if rules[0] != "DOMAIN-SUFFIX,blocked.example.com,REJECT" || rules[1] != "DOMAIN-SUFFIX,example.net,UP-IPV4" || rules[2] != "DOMAIN-SUFFIX,example.com,warp" {
 		t.Fatalf("unexpected rule order: %v", rules)
 	}
 	renamed := strings.Replace(string(data), `name: "warp"`, `name: "my-warp"`, 1)
@@ -216,7 +216,7 @@ func TestWarpWireGuardConfigAndRouting(t *testing.T) {
 	if _, err = warpOutbound(&invalid); err == nil {
 		t.Fatal("accepted invalid reserved bytes")
 	}
-	core := os.Getenv("MUI_TEST_CORE")
+	core := os.Getenv("UNIFIEDPROXY_TEST_CORE")
 	if core == "" {
 		return
 	}
@@ -252,7 +252,7 @@ func TestWarpEndpointsRequireAuthAndHideAccountFromPolling(t *testing.T) {
 	}
 	for _, path := range []string{"/api/state", "/api/mihomo/warp"} {
 		req := httptest.NewRequest("GET", path, nil)
-		req.AddCookie(&http.Cookie{Name: "mui_session", Value: "test-session"})
+		req.AddCookie(&http.Cookie{Name: "up_session", Value: "test-session"})
 		rec := httptest.NewRecorder()
 		app.routes().ServeHTTP(rec, req)
 		if rec.Code != 200 {
@@ -270,13 +270,13 @@ func TestWarpEndpointsRequireAuthAndHideAccountFromPolling(t *testing.T) {
 
 // Explicit opt-in fixture for browser tests; never contacts Cloudflare.
 func TestWarpBrowserFixture(t *testing.T) {
-	address := os.Getenv("MUI_WARP_BROWSER_ADDR")
+	address := os.Getenv("UNIFIEDPROXY_WARP_BROWSER_ADDR")
 	if address == "" {
 		t.Skip("browser fixture disabled")
 	}
-	dataDir := os.Getenv("MUI_WARP_BROWSER_DATA")
+	dataDir := os.Getenv("UNIFIEDPROXY_WARP_BROWSER_DATA")
 	if dataDir == "" {
-		t.Fatal("MUI_WARP_BROWSER_DATA is required")
+		t.Fatal("UNIFIEDPROXY_WARP_BROWSER_DATA is required")
 	}
 	if err := os.MkdirAll(dataDir, 0700); err != nil {
 		t.Fatal(err)

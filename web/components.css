@@ -1,4 +1,4 @@
-/* UnifiedProxy components, adapted from m-ui (GPL-3.0).
+/* UnifiedProxy components, adapted from UnifiedProxy (GPL-3.0).
  * Palette references: Vercel / Claude (Anthropic) / Sentry / Supabase / Stripe,
  * via VoltAgent/awesome-design-md (MIT). Colors are defined only in themes.css.
  */
@@ -57,8 +57,8 @@ html body :is(.gauge-value,.metric-value,.traffic-value,.mono,.fleet-result,code
 html body :is(.toast,.dynamic-island-toast) { color: var(--inverse-ink); background: var(--inverse-canvas); border: 1px solid var(--hairline-strong); border-radius: var(--rounded-md); box-shadow: none; }
 [data-theme=dark] body :is(.toast,.dynamic-island-toast) { color: var(--ink); background: var(--surface-3); }
 html body :is(.swift-picker-selection,.swift-picker-menu) { color: var(--ink); background: var(--surface-1); border: 1px solid var(--hairline-strong); border-radius: var(--rounded-md); box-shadow: none; backdrop-filter: none; }
-html body .swift-picker-menu li.mui-selected { color: var(--primary-deep); background: var(--primary-soft); }
-html body .swift-picker-menu li:is(:hover,.mui-active) { color: var(--ink); background: var(--surface-2); }
+html body .swift-picker-menu li.up-selected { color: var(--primary-deep); background: var(--primary-soft); }
+html body .swift-picker-menu li:is(:hover,.up-active) { color: var(--ink); background: var(--surface-2); }
 [data-appearance-slot] select { width: 100%; font-size: var(--p-caption); }
 html body .ink-bar { display: none; }
 html body .nav > button.active { background: var(--primary-soft); color: var(--primary-deep); border-inline-start: 0; box-shadow: none; }

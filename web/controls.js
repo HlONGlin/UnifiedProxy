@@ -1,10 +1,10 @@
-/* UnifiedProxy accessible controls; behavior adapted from m-ui (GPL-3.0). See NOTICE. */
+/* UnifiedProxy accessible controls; behavior adapted from UnifiedProxy (GPL-3.0). See NOTICE. */
 
 (function(){
   'use strict';
 
-  var STYLE_ID = 'mui-swiftui-components-style';
-  var ARROW = '<svg class="sf-symbol mui-select-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>';
+  var STYLE_ID = 'up-swiftui-components-style';
+  var ARROW = '<svg class="sf-symbol up-select-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>';
 
   var CSS = '';
 
@@ -78,12 +78,12 @@
   function closeAll(){
     if(!openWrap) return;
     openWrap.classList.remove('swift-picker-open');
-    if(openWrap.mui && openWrap.mui.menu) openWrap.mui.menu.hidden = true;
+    if(openWrap.up && openWrap.up.menu) openWrap.up.menu.hidden = true;
     openWrap = null;
   }
 
   function position(wrap){
-    var menu = wrap.mui.menu, rect = wrap.getBoundingClientRect();
+    var menu = wrap.up.menu, rect = wrap.getBoundingClientRect();
     menu.style.width = Math.max(rect.width, 120) + 'px';
     menu.hidden = false;
     var height = menu.offsetHeight, top = rect.bottom + 4;
@@ -93,47 +93,47 @@
   }
 
   function open(wrap){
-    if(wrap.mui.select.disabled) return;
+    if(wrap.up.select.disabled) return;
     if(openWrap === wrap){ closeAll(); return; }
     closeAll();
     rebuild(wrap);
     openWrap = wrap;
     wrap.classList.add('swift-picker-open');
     position(wrap);
-    var active = wrap.mui.menu.querySelector('.mui-selected') || wrap.mui.menu.querySelector('li');
-    if(active) wrap.mui.menu.scrollTop = Math.max(0, active.offsetTop - wrap.mui.menu.clientHeight / 2 + active.offsetHeight / 2);
+    var active = wrap.up.menu.querySelector('.up-selected') || wrap.up.menu.querySelector('li');
+    if(active) wrap.up.menu.scrollTop = Math.max(0, active.offsetTop - wrap.up.menu.clientHeight / 2 + active.offsetHeight / 2);
   }
 
   function rebuild(wrap){
-    var select = wrap.mui.select, menu = wrap.mui.menu, html = '';
+    var select = wrap.up.select, menu = wrap.up.menu, html = '';
     for(var i = 0; i < select.options.length; i++){
       var option = select.options[i];
       if(option.hidden) continue;
-      html += '<li data-index="' + i + '" class="' + (option.selected ? 'mui-selected' : '') + (option.disabled ? ' mui-disabled' : '') + '" role="option">' + option.textContent.replace(/[&<>]/g, function(ch){ return ch === '&' ? '&amp;' : ch === '<' ? '&lt;' : '&gt;'; }) + '</li>';
+      html += '<li data-index="' + i + '" class="' + (option.selected ? 'up-selected' : '') + (option.disabled ? ' up-disabled' : '') + '" role="option">' + option.textContent.replace(/[&<>]/g, function(ch){ return ch === '&' ? '&amp;' : ch === '<' ? '&lt;' : '&gt;'; }) + '</li>';
     }
-    menu.innerHTML = html || '<li class="mui-empty"></li>';
-    wrap.mui.sig = signature(select);
+    menu.innerHTML = html || '<li class="up-empty"></li>';
+    wrap.up.sig = signature(select);
   }
 
   function refresh(wrap){
-    var select = wrap.mui.select;
+    var select = wrap.up.select;
     wrap.hidden = isHiddenSelect(select);
     wrap.classList.toggle('swift-picker-disabled', select.disabled);
     var option = select.options[select.selectedIndex];
-    wrap.mui.value.textContent = option ? option.textContent : '';
-    if(signature(select) !== wrap.mui.sig) rebuild(wrap);
+    wrap.up.value.textContent = option ? option.textContent : '';
+    if(signature(select) !== wrap.up.sig) rebuild(wrap);
     else {
-      var items = wrap.mui.menu.children;
+      var items = wrap.up.menu.children;
       for(var i = 0; i < items.length; i++){
         if(items[i].dataset.index === undefined) continue;
-        items[i].classList.toggle('mui-selected', !!select.options[Number(items[i].dataset.index)]?.selected);
+        items[i].classList.toggle('up-selected', !!select.options[Number(items[i].dataset.index)]?.selected);
       }
     }
     if(openWrap === wrap) position(wrap);
   }
 
   function pick(wrap, index){
-    var select = wrap.mui.select;
+    var select = wrap.up.select;
     valueDesc.set.call(select, select.options[index].value);
     closeAll();
     refresh(wrap);
@@ -150,11 +150,11 @@
     if(select.style.width) wrap.style.width = select.style.width;
     select.parentNode.insertBefore(wrap, select);
     wrap.appendChild(select);
-    select.classList.add('mui-native-select');
+    select.classList.add('up-native-select');
     var selection = document.createElement('span');
     selection.className = 'swift-picker-selection';
     var value = document.createElement('span');
-    value.className = 'mui-select-value';
+    value.className = 'up-select-value';
     selection.appendChild(value);
     selection.insertAdjacentHTML('beforeend', ARROW);
     wrap.appendChild(selection);
@@ -162,7 +162,7 @@
     menu.className = 'swift-picker-menu';
     menu.hidden = true;
     document.body.appendChild(menu);
-    wrap.mui = { select: select, menu: menu, value: value, sig: '' };
+    wrap.up = { select: select, menu: menu, value: value, sig: '' };
 
     Object.defineProperty(select, 'value', {
       configurable: true,
@@ -174,7 +174,7 @@
     wrap.addEventListener('keydown', function(event){
       if(event.key === 'Enter' || event.key === ' '){
         event.preventDefault();
-        var active = wrap.classList.contains('swift-picker-open') && wrap.mui.menu.querySelector('.mui-active[data-index]');
+        var active = wrap.classList.contains('swift-picker-open') && wrap.up.menu.querySelector('.up-active[data-index]');
         if(active) pick(wrap, Number(active.dataset.index)); else open(wrap);
         return;
       }
@@ -182,11 +182,11 @@
       if(!['ArrowDown','ArrowUp','Home','End'].includes(event.key)) return;
       event.preventDefault();
       if(!wrap.classList.contains('swift-picker-open')){ open(wrap); return; }
-      var items = [].slice.call(wrap.mui.menu.children).filter(function(item){ return !item.classList.contains('mui-empty') && item.dataset.index !== undefined && !select.options[Number(item.dataset.index)].disabled; });
+      var items = [].slice.call(wrap.up.menu.children).filter(function(item){ return !item.classList.contains('up-empty') && item.dataset.index !== undefined && !select.options[Number(item.dataset.index)].disabled; });
       if(!items.length) return;
-      var current = items.findIndex(function(item){ return item.classList.contains('mui-active'); });
+      var current = items.findIndex(function(item){ return item.classList.contains('up-active'); });
       var next = event.key === 'Home' ? 0 : event.key === 'End' ? items.length - 1 : event.key === 'ArrowDown' ? Math.min(items.length - 1, current + 1) : Math.max(0, current < 0 ? items.length - 1 : current - 1);
-      items.forEach(function(item, index){ item.classList.toggle('mui-active', index === next); });
+      items.forEach(function(item, index){ item.classList.toggle('up-active', index === next); });
     });
     menu.addEventListener('mousedown', function(event){ event.preventDefault(); });
     menu.addEventListener('click', function(event){
@@ -212,7 +212,7 @@
     Promise.resolve().then(function(){
       pending.delete(select);
       var wrap = select.parentElement;
-      if(wrap && wrap.mui && wrap.mui.select === select) refresh(wrap);
+      if(wrap && wrap.up && wrap.up.select === select) refresh(wrap);
       else if(!select.dataset.swiftPicker) upgrade(select);
     });
   }
@@ -222,7 +222,7 @@
   }
 
   document.addEventListener('pointerdown', function(event){
-    if(openWrap && !openWrap.contains(event.target) && !openWrap.mui.menu.contains(event.target)) closeAll();
+    if(openWrap && !openWrap.contains(event.target) && !openWrap.up.menu.contains(event.target)) closeAll();
   }, true);
   document.addEventListener('keydown', function(event){
     if(event.key === 'Escape') closeAll();
@@ -273,13 +273,13 @@
     selection.insertAdjacentHTML('beforeend', ARROW);
     wrap.appendChild(selection);
 
-    var arrow = selection.querySelector('.mui-select-arrow');
+    var arrow = selection.querySelector('.up-select-arrow');
     var menu = document.createElement('ul');
     menu.className = 'swift-picker-menu';
     menu.hidden = true;
     document.body.appendChild(menu);
 
-    wrap.mui = {
+    wrap.up = {
       isCombobox: true,
       input: input,
       menu: menu,
@@ -295,7 +295,7 @@
     }
 
     function rebuild(){
-      var raw = typeof wrap.mui.getOptions === 'function' ? wrap.mui.getOptions() : (wrap.mui.getOptions || []);
+      var raw = typeof wrap.up.getOptions === 'function' ? wrap.up.getOptions() : (wrap.up.getOptions || []);
       var items = [];
       for(var i = 0; i < raw.length; i++){
         var opt = raw[i];
@@ -310,7 +310,7 @@
       }
 
       var current = (input.value || '').trim();
-      var filter = (wrap.mui.filterActive ? current : '').toLowerCase();
+      var filter = (wrap.up.filterActive ? current : '').toLowerCase();
 
       var list = items;
       if(filter){
@@ -322,7 +322,7 @@
       }
 
       if(!list.length){
-        menu.innerHTML = '<li class="mui-empty" style="color:var(--muted-2);cursor:default;font-style:italic">None</li>';
+        menu.innerHTML = '<li class="up-empty" style="color:var(--muted-2);cursor:default;font-style:italic">None</li>';
         return;
       }
 
@@ -330,11 +330,11 @@
       for(var j = 0; j < list.length; j++){
         var item = list[j];
         var isSelected = current && (item.value.toLowerCase() === current.toLowerCase() || item.label.toLowerCase() === current.toLowerCase());
-        html += '<li data-value="' + esc(item.value) + '" class="' + (isSelected ? 'mui-selected' : '') + ' mui-combobox-item" role="option">';
+        html += '<li data-value="' + esc(item.value) + '" class="' + (isSelected ? 'up-selected' : '') + ' up-combobox-item" role="option">';
         if(item.sublabel && item.sublabel !== item.value){
-          html += '<span class="mui-combobox-val">' + esc(item.value) + '</span><span class="mui-combobox-sub">' + esc(item.sublabel) + '</span>';
+          html += '<span class="up-combobox-val">' + esc(item.value) + '</span><span class="up-combobox-sub">' + esc(item.sublabel) + '</span>';
         } else {
-          html += '<span class="mui-combobox-val">' + esc(item.label) + '</span>';
+          html += '<span class="up-combobox-val">' + esc(item.label) + '</span>';
         }
         html += '</li>';
       }
@@ -348,12 +348,12 @@
         return;
       }
       closeAll();
-      wrap.mui.filterActive = !resetFilter;
+      wrap.up.filterActive = !resetFilter;
       rebuild();
       openWrap = wrap;
       wrap.classList.add('swift-picker-open');
       position(wrap);
-      var active = menu.querySelector('.mui-selected') || menu.querySelector('li:not(.mui-empty)');
+      var active = menu.querySelector('.up-selected') || menu.querySelector('li:not(.up-empty)');
       if(active) menu.scrollTop = Math.max(0, active.offsetTop - menu.clientHeight / 2 + active.offsetHeight / 2);
     }
 
@@ -361,12 +361,12 @@
       input.value = value;
       closeAll();
       refresh();
-      wrap.mui.picking = true;
+      wrap.up.picking = true;
       try {
         input.dispatchEvent(new Event('input', { bubbles: true }));
         input.dispatchEvent(new Event('change', { bubbles: true }));
       } finally {
-        wrap.mui.picking = false;
+        wrap.up.picking = false;
       }
     }
 
@@ -403,8 +403,8 @@
     });
 
     input.addEventListener('input', function(){
-      if(input.disabled || wrap.mui.picking) return;
-      wrap.mui.filterActive = true;
+      if(input.disabled || wrap.up.picking) return;
+      wrap.up.filterActive = true;
       if(!wrap.classList.contains('swift-picker-open')){
         open(false);
       } else {
@@ -438,11 +438,11 @@
           open(true);
           return;
         }
-        var items = [].slice.call(menu.children).filter(function(it){ return !it.classList.contains('mui-empty'); });
+        var items = [].slice.call(menu.children).filter(function(it){ return !it.classList.contains('up-empty'); });
         if(!items.length) return;
-        var current = items.findIndex(function(it){ return it.classList.contains('mui-active'); });
+        var current = items.findIndex(function(it){ return it.classList.contains('up-active'); });
         var next = event.key === 'ArrowDown' ? Math.min(items.length - 1, current + 1) : Math.max(0, current < 0 ? items.length - 1 : current - 1);
-        items.forEach(function(it, idx){ it.classList.toggle('mui-active', idx === next); });
+        items.forEach(function(it, idx){ it.classList.toggle('up-active', idx === next); });
         if(items[next]){
           menu.scrollTop = Math.max(0, items[next].offsetTop - menu.clientHeight / 2 + items[next].offsetHeight / 2);
         }
@@ -450,7 +450,7 @@
       }
       if(event.key === 'Enter'){
         if(wrap.classList.contains('swift-picker-open')){
-          var active = menu.querySelector('li.mui-active');
+          var active = menu.querySelector('li.up-active');
           if(active && active.dataset.value !== undefined){
             event.preventDefault();
             event.stopPropagation();
@@ -510,8 +510,8 @@
     initSliders: initDraggableLiquidSliders
   };
 
-  window.muiUpgradeSelects = scan;
-  window.muiUpgradeCombobox = upgradeCombobox;
-  window.muiCloseSelects = closeAll;
+  window.upUpgradeSelects = scan;
+  window.upUpgradeCombobox = upgradeCombobox;
+  window.upCloseSelects = closeAll;
   window.initDraggableLiquidSliders = initDraggableLiquidSliders;
 })();

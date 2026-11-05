@@ -2,7 +2,7 @@
 
 参考对象：T0 黑白·墨—Vercel；T1 暖纸陶土—Claude/Anthropic；T2 夜紫荧光—Sentry；
 T3 翡翠绿—Supabase；T4 靛紫—Stripe。色板由用户提供，经 VoltAgent/awesome-design-md（MIT）整理。
-基础应用来自 m-ui（GPL-3.0），本次改造不能声称全部组件从零自研。
+基础应用来自 UnifiedProxy（GPL-3.0），本次改造不能声称全部组件从零自研。
 
 用户 2026-11-04 已授权连续推进至 P6；本表在产品修改前落盘，后续按此执行。
 

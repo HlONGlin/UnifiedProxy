@@ -10,7 +10,7 @@
 
 未改 P3 信息结构或五套颜色数值。新增 polish.css 在三种页面末尾加载，公开订阅
 监听器只为该确定资源增加白名单，不开放管理 API。来源头注保留 Vercel、
-Claude/Anthropic、Sentry、Supabase、Stripe 和 m-ui/GPL 归属。
+Claude/Anthropic、Sentry、Supabase、Stripe 和 UnifiedProxy/GPL 归属。
 
 证据：`dist/design-audit/p4-check.log` build/vet/test 全绿；`p4/` 六视图×十组合
 60张截图、设置子页和零 pageerror；`native-controls.json` 18项真实交互通过。

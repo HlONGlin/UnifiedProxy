@@ -15,17 +15,17 @@
     const response = await fetch(panelURL(path), {headers: {'Content-Type': 'application/json'}, ...options});
     let body = {};
     try { body = await response.json(); } catch {}
-    if (response.status === 401) { location.href = panelURL('login'); throw new Error(muiT('msg.sessionExpired')); }
+    if (response.status === 401) { location.href = panelURL('login'); throw new Error(upT('msg.sessionExpired')); }
     if (!response.ok) {
       const key = body.message || '';
-      const message = key.startsWith('subTemplates.err.') ? muiT(key) : (key || muiT('msg.requestFailed'));
+      const message = key.startsWith('subTemplates.err.') ? upT(key) : (key || upT('msg.requestFailed'));
       const detail = body.data && body.data.detail;
       throw new Error(detail ? `${message}: ${detail}` : message);
     }
     return body.data ?? body;
   };
 
-  const variantLabel = variant => muiT('subtpl.variant.' + variant);
+  const variantLabel = variant => upT('subtpl.variant.' + variant);
   const formatDate = value => value ? new Date(value).toLocaleString() : '';
 
   /* 内置模版那一行只建一次：变体选择器是液态玻璃标签栏，重建会丢掉它的动画状态。 */
@@ -59,13 +59,13 @@
     builtinRow.classList.toggle('active', builtinActive);
     builtinRow.querySelector('.subtpl-badge').hidden = !builtinActive;
     builtinRow.querySelector('[data-subtpl-use]').hidden = builtinActive;
-    $('#subtpl-builtin-meta').textContent = muiT('subtpl.meta', {groups: builtin.groups || 0, rules: builtin.rules || 0}) + ' · ' + variantLabel(view.variant);
+    $('#subtpl-builtin-meta').textContent = upT('subtpl.meta', {groups: builtin.groups || 0, rules: builtin.rules || 0}) + ' · ' + variantLabel(view.variant);
 
     const custom = view.templates.filter(item => !item.builtin);
     customList.innerHTML = custom.length ? custom.map(item => {
       const active = view.active === item.id;
-      return `<div class="setting-row subtpl-row${active ? ' active' : ''}"><div class="subtpl-info"><strong><span>${esc(item.name)}</span>${active ? `<span class="subtpl-badge">${esc(muiT('subtpl.inUse'))}</span>` : ''}</strong><p class="subtpl-meta">${esc(muiT('subtpl.meta', {groups: item.groups, rules: item.rules}))} · ${esc(muiT('subtpl.importedAt', {time: formatDate(item.createdAt)}))}</p></div><div class="setting-control subtpl-actions"><button type="button" class="outline-btn" data-subtpl-view="${esc(item.id)}">${esc(muiT('subtpl.view'))}</button><button type="button" class="outline-btn" data-subtpl-rename="${esc(item.id)}">${esc(muiT('subtpl.rename'))}</button><button type="button" class="danger-btn" data-subtpl-delete="${esc(item.id)}">${esc(muiT('common.delete'))}</button>${active ? '' : `<button type="button" class="primary-btn" data-subtpl-use="${esc(item.id)}">${esc(muiT('subtpl.use'))}</button>`}</div></div>`;
-    }).join('') : `<div class="subtpl-empty">${esc(muiT('subtpl.empty'))}</div>`;
+      return `<div class="setting-row subtpl-row${active ? ' active' : ''}"><div class="subtpl-info"><strong><span>${esc(item.name)}</span>${active ? `<span class="subtpl-badge">${esc(upT('subtpl.inUse'))}</span>` : ''}</strong><p class="subtpl-meta">${esc(upT('subtpl.meta', {groups: item.groups, rules: item.rules}))} · ${esc(upT('subtpl.importedAt', {time: formatDate(item.createdAt)}))}</p></div><div class="setting-control subtpl-actions"><button type="button" class="outline-btn" data-subtpl-view="${esc(item.id)}">${esc(upT('subtpl.view'))}</button><button type="button" class="outline-btn" data-subtpl-rename="${esc(item.id)}">${esc(upT('subtpl.rename'))}</button><button type="button" class="danger-btn" data-subtpl-delete="${esc(item.id)}">${esc(upT('common.delete'))}</button>${active ? '' : `<button type="button" class="primary-btn" data-subtpl-use="${esc(item.id)}">${esc(upT('subtpl.use'))}</button>`}</div></div>`;
+    }).join('') : `<div class="subtpl-empty">${esc(upT('subtpl.empty'))}</div>`;
     $$('[data-subtpl-use]', root).forEach(button => button.onclick = () => activate(button.dataset.subtplUse));
     $$('[data-subtpl-view]', root).forEach(button => button.onclick = () => openView(button.dataset.subtplView));
     $$('[data-subtpl-rename]', root).forEach(button => button.onclick = () => rename(button.dataset.subtplRename));
@@ -81,29 +81,29 @@
   };
 
   const activate = async id => {
-    try { view = await request('/api/sub-templates/active', {method: 'POST', body: JSON.stringify({id})}); render(); toast(muiT('subtpl.activated')); }
+    try { view = await request('/api/sub-templates/active', {method: 'POST', body: JSON.stringify({id})}); render(); toast(upT('subtpl.activated')); }
     catch (error) { toast(error.message, true); }
   };
 
   /* 选变体就是在用内置模版：选中即切过去，省得再点一次“使用”。 */
   const chooseVariant = async variant => {
     if (!view || (view.variant === variant && view.active === 'builtin')) return;
-    try { view = await request('/api/sub-templates/active', {method: 'POST', body: JSON.stringify({id: 'builtin', variant})}); render(); toast(muiT('subtpl.variantChanged', {variant: variantLabel(variant)})); }
+    try { view = await request('/api/sub-templates/active', {method: 'POST', body: JSON.stringify({id: 'builtin', variant})}); render(); toast(upT('subtpl.variantChanged', {variant: variantLabel(variant)})); }
     catch (error) { toast(error.message, true); render(); }
   };
 
   const findName = id => (view?.templates || []).find(item => item.id === id)?.name || '';
 
   const rename = async id => {
-    const name = await muiPrompt(muiT('subtpl.renamePrompt'), findName(id));
+    const name = await upPrompt(upT('subtpl.renamePrompt'), findName(id));
     if (name === null || !name.trim()) return;
     try { view = await request('/api/sub-templates/' + encodeURIComponent(id), {method: 'PUT', body: JSON.stringify({name: name.trim()})}); render(); }
     catch (error) { toast(error.message, true); }
   };
 
   const remove = async id => {
-    if (!await muiConfirm(muiT('subtpl.confirmDelete', {name: findName(id)}), {danger: true})) return;
-    try { view = await request('/api/sub-templates/' + encodeURIComponent(id), {method: 'DELETE'}); render(); toast(muiT('subtpl.deleted')); }
+    if (!await upConfirm(upT('subtpl.confirmDelete', {name: findName(id)}), {danger: true})) return;
+    try { view = await request('/api/sub-templates/' + encodeURIComponent(id), {method: 'DELETE'}); render(); toast(upT('subtpl.deleted')); }
     catch (error) { toast(error.message, true); }
   };
 
@@ -117,20 +117,20 @@
     document.body.appendChild(viewModal);
     $$('[data-subtpl-close]', viewModal).forEach(button => button.onclick = () => closeModal(viewModal));
     viewModal.onclick = event => { if (event.target === viewModal) closeModal(viewModal); };
-    $('#subtpl-view-copy').onclick = () => copyShareText($('#subtpl-view-code').value, muiT('subtpl.copied'));
+    $('#subtpl-view-copy').onclick = () => copyShareText($('#subtpl-view-code').value, upT('subtpl.copied'));
     return viewModal;
   };
 
   const openView = async id => {
     makeViewModal();
     const builtin = id === 'builtin';
-    const title = builtin ? `${muiT('subtpl.builtinName')} · ${variantLabel(view.variant)}` : findName(id);
+    const title = builtin ? `${upT('subtpl.builtinName')} · ${variantLabel(view.variant)}` : findName(id);
     try {
       const data = await request('/api/sub-templates/content?id=' + encodeURIComponent(id) + (builtin ? '&variant=' + encodeURIComponent(view.variant) : ''));
       openModal(viewModal.id);
       $('#subtpl-view-title').textContent = title;
       $('#subtpl-view-code').value = data.content;
-      $('#subtpl-view-download').onclick = () => downloadText(`m-ui-template-${builtin ? view.variant : id}.yaml`, data.content, 'application/yaml');
+      $('#subtpl-view-download').onclick = () => downloadText(`UnifiedProxy-template-${builtin ? view.variant : id}.yaml`, data.content, 'application/yaml');
     } catch (error) { toast(error.message, true); }
   };
 
@@ -149,7 +149,7 @@
     fileInput.onchange = async () => {
       const file = fileInput.files[0];
       if (!file) return;
-      if (file.size > 2 * 1024 * 1024) { setImportError(muiT('subtpl.err.tooLarge')); fileInput.value = ''; return; }
+      if (file.size > 2 * 1024 * 1024) { setImportError(upT('subtpl.err.tooLarge')); fileInput.value = ''; return; }
       $('#subtpl-import-content').value = await file.text();
       $('#subtpl-import-file-name').textContent = file.name;
       if (!$('#subtpl-import-name').value.trim()) $('#subtpl-import-name').value = file.name.replace(/\.(ya?ml|txt|conf)$/i, '');
@@ -166,16 +166,16 @@
   const resetPreview = () => { $('#subtpl-import-preview').hidden = true; setImportError(''); };
 
   const statsText = stats => {
-    const parts = [muiT('subtpl.statsRemoved', {proxies: stats.removedProxies, providers: stats.removedProviders})];
-    parts.push(muiT('subtpl.statsGroups', {groups: stats.groups, nodeGroups: stats.nodeGroups, rules: stats.rules}));
-    if (stats.retargetedRules) parts.push(muiT('subtpl.statsRetargeted', {n: stats.retargetedRules}));
+    const parts = [upT('subtpl.statsRemoved', {proxies: stats.removedProxies, providers: stats.removedProviders})];
+    parts.push(upT('subtpl.statsGroups', {groups: stats.groups, nodeGroups: stats.nodeGroups, rules: stats.rules}));
+    if (stats.retargetedRules) parts.push(upT('subtpl.statsRetargeted', {n: stats.retargetedRules}));
     return parts.join(' ');
   };
 
   const preview = async () => {
     const content = $('#subtpl-import-content').value;
     setImportError('');
-    if (!content.trim()) { setImportError(muiT('subtpl.err.empty')); return; }
+    if (!content.trim()) { setImportError(upT('subtpl.err.empty')); return; }
     try {
       const data = await request('/api/sub-templates/import', {method: 'POST', body: JSON.stringify({content, preview: true})});
       $('#subtpl-import-stats').textContent = statsText(data.stats);
@@ -187,15 +187,15 @@
   const save = async () => {
     const content = $('#subtpl-import-content').value, name = $('#subtpl-import-name').value.trim();
     setImportError('');
-    if (!name) { setImportError(muiT('subtpl.err.nameRequired')); return; }
-    if (!content.trim()) { setImportError(muiT('subtpl.err.empty')); return; }
+    if (!name) { setImportError(upT('subtpl.err.nameRequired')); return; }
+    if (!content.trim()) { setImportError(upT('subtpl.err.empty')); return; }
     const button = $('#subtpl-import-save');
     button.disabled = true;
     try {
       const data = await request('/api/sub-templates/import', {method: 'POST', body: JSON.stringify({name, content})});
       view = data.view; render();
       closeModal(importModal);
-      toast(muiT('subtpl.imported', {name}));
+      toast(upT('subtpl.imported', {name}));
     } catch (error) { setImportError(error.message); }
     finally { button.disabled = false; }
   };
@@ -211,5 +211,5 @@
 
   $('#subtpl-import').onclick = openImport;
   /* refreshLanguageUI 切换语言后会调 render，动态生成的行和变体名跟着换。 */
-  window.MUISubTemplates = {load, render};
+  window.UPSubTemplates = {load, render};
 })();

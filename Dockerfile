@@ -1,6 +1,6 @@
 # syntax=docker/dockerfile:1.7
 
-FROM --platform=$BUILDPLATFORM golang:1.26-bookworm AS m-ui-build
+FROM --platform=$BUILDPLATFORM golang:1.26-bookworm AS unifiedproxy-build
 
 WORKDIR /src
 
@@ -9,14 +9,14 @@ RUN go mod download
 
 COPY . .
 
-ARG MUI_VERSION=dev
+ARG UNIFIEDPROXY_VERSION=dev
 
 RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 \
     go build \
       -buildvcs=false \
       -trimpath \
-      -ldflags="-s -w -X main.version=${MUI_VERSION}" \
-      -o /out/m-ui \
+      -ldflags="-s -w -X main.version=${UNIFIEDPROXY_VERSION}" \
+      -o /out/unifiedproxy \
       .
 
 
@@ -42,39 +42,39 @@ RUN set -eux; \
 
 FROM debian:bookworm-slim
 
-ARG MUI_VERSION=dev
+ARG UNIFIEDPROXY_VERSION=dev
 
 LABEL org.opencontainers.image.title="UnifiedProxy" \
       org.opencontainers.image.description="A server management panel powered by Mihomo" \
       org.opencontainers.image.source="https://github.com/HlONGlin/UnifiedProxy" \
       org.opencontainers.image.licenses="GPL-3.0-only" \
-      org.opencontainers.image.version="${MUI_VERSION}"
+      org.opencontainers.image.version="${UNIFIEDPROXY_VERSION}"
 
 RUN apt-get update \
     && apt-get install -y --no-install-recommends ca-certificates tzdata \
     && rm -rf /var/lib/apt/lists/*
 
-WORKDIR /opt/m-ui
+WORKDIR /opt/unifiedproxy
 
-RUN mkdir -p /opt/m-ui/bin /opt/m-ui/bootstrap /opt/m-ui/core /opt/m-ui/data
+RUN mkdir -p /opt/unifiedproxy/bin /opt/unifiedproxy/bootstrap /opt/unifiedproxy/core /opt/unifiedproxy/data
 
-COPY --from=m-ui-build /out/m-ui /opt/m-ui/bin/m-ui
-COPY --from=mihomo-download /tmp/mihomo /opt/m-ui/bootstrap/mihomo
-COPY docker/entrypoint.sh /usr/local/bin/m-ui-entrypoint
+COPY --from=unifiedproxy-build /out/unifiedproxy /opt/unifiedproxy/bin/unifiedproxy
+COPY --from=mihomo-download /tmp/mihomo /opt/unifiedproxy/bootstrap/mihomo
+COPY docker/entrypoint.sh /usr/local/bin/unifiedproxy-entrypoint
 
 RUN chmod 0755 \
-      /opt/m-ui/bin/m-ui \
-      /opt/m-ui/bootstrap/mihomo \
-      /usr/local/bin/m-ui-entrypoint
+      /opt/unifiedproxy/bin/unifiedproxy \
+      /opt/unifiedproxy/bootstrap/mihomo \
+      /usr/local/bin/unifiedproxy-entrypoint
 
 ENV TZ=UTC \
-    MUI_DATA_DIR=/opt/m-ui/data \
-    MUI_CORE_PATH=/opt/m-ui/core/mihomo
+    UNIFIEDPROXY_DATA_DIR=/opt/unifiedproxy/data \
+    UNIFIEDPROXY_CORE_PATH=/opt/unifiedproxy/core/mihomo
 
-VOLUME ["/opt/m-ui/data", "/opt/m-ui/core"]
+VOLUME ["/opt/unifiedproxy/data", "/opt/unifiedproxy/core"]
 
 EXPOSE 2053/tcp 12080/tcp 12080/udp 2096/tcp
 
 STOPSIGNAL SIGTERM
 
-ENTRYPOINT ["/usr/local/bin/m-ui-entrypoint"]
+ENTRYPOINT ["/usr/local/bin/unifiedproxy-entrypoint"]

@@ -110,7 +110,7 @@
       darkMode.setAttribute('aria-label', text.dark);
       languageSelect.setAttribute('aria-label', text.language);
       passwordToggle.setAttribute('aria-label', passwordInput.type === 'password' ? text.show : text.hide);
-      localStorage.setItem('mui-language', lang);
+      localStorage.setItem('up-language', lang);
     }
 
     // Rotate the localized greeting; workspace.css keeps its layout stable.
@@ -190,7 +190,7 @@
     UPTheme.sync();
     // 面板设置里的 Language 通过 data-default-language 注进来，作为没访问过本面板的
     // 浏览器的初始语言；本机手动选过的话以 localStorage 为准。
-    applyLanguage(localStorage.getItem('mui-language') || document.documentElement.dataset.defaultLanguage || 'zh-CN');
+    applyLanguage(localStorage.getItem('up-language') || document.documentElement.dataset.defaultLanguage || 'zh-CN');
     setTimeout(() => rotateHeadline(document.querySelector('.words-wrapper b.is-visible'), 2000), 2000);
   </script>
 </body>

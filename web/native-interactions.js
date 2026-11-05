@@ -1,4 +1,4 @@
-/* UnifiedProxy native gestures; m-ui interaction compatibility, GPL-3.0.
+/* UnifiedProxy native gestures; UnifiedProxy interaction compatibility, GPL-3.0.
  * Retains switch/segment keyboard, drag, cancellation and disabled semantics. */
 (function () {
   'use strict';

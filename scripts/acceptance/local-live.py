@@ -45,7 +45,7 @@ def main():
     control, node, core = (str(p.resolve()) for p in (args.control, args.node, args.mihomo))
     args.output.mkdir(parents=True, exist_ok=True)
     processes, logs = [], []
-    with tempfile.TemporaryDirectory(prefix="mui-fleet-live-") as temp:
+    with tempfile.TemporaryDirectory(prefix="up-fleet-live-") as temp:
         root = Path(temp)
 
         def launch(command, name, env=None):
@@ -71,7 +71,7 @@ def main():
 
             class Target(http.server.BaseHTTPRequestHandler):
                 def do_GET(self):
-                    body = b"mui-live-hy2-data-plane"
+                    body = b"up-live-hy2-data-plane"
                     self.send_response(200)
                     self.send_header("Content-Length", str(len(body)))
                     self.end_headers()
@@ -192,7 +192,7 @@ def main():
                         time.sleep(0.2)
                 checks.append({"node": name, "protocol": protocol,
                                "proxy": f"socks5h://127.0.0.1:{socks}", "url": target_url,
-                               "caFile": str(certificate), "contains": "mui-live-hy2-data-plane"})
+                               "caFile": str(certificate), "contains": "up-live-hy2-data-plane"})
             nodes = checker.check_convergence(call, 3, 120)
             manifest = root / "manifest.json"
             manifest.write_text(json.dumps({"checks": checks}))

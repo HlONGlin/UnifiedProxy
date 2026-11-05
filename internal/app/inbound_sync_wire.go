@@ -18,7 +18,7 @@ import (
 	"time"
 )
 
-const inboundSyncWirePath = "/_m-ui/peer/inbound/v1"
+const inboundSyncWirePath = "/_UnifiedProxy/peer/inbound/v1"
 const inboundSyncWireLimit = 6 << 20
 
 // Separate from membership gossip: credentials are encrypted with fresh X25519
@@ -47,7 +47,7 @@ type inboundSyncSession struct {
 func syncWireBytes(message inboundSyncWire) []byte {
 	message.Signature = ""
 	data, _ := json.Marshal(message)
-	return append([]byte("m-ui-inbound-sync-v1\n"), data...)
+	return append([]byte("UnifiedProxy-inbound-sync-v1\n"), data...)
 }
 func (p *PeerNetwork) signSyncWire(message *inboundSyncWire) error {
 	message.Version = 1
@@ -115,7 +115,7 @@ func syncSessionKey(private *ecdh.PrivateKey, remote, from, to string) ([]byte, 
 	}
 	// Domain-separate this random shared secret from all other panel protocols.
 	h := sha256.New()
-	h.Write([]byte("m-ui-inbound-sync-key-v1\n" + from + "\n" + to + "\n"))
+	h.Write([]byte("UnifiedProxy-inbound-sync-key-v1\n" + from + "\n" + to + "\n"))
 	h.Write(secret)
 	return h.Sum(nil), nil
 }

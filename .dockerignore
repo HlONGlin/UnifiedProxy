@@ -12,10 +12,13 @@ core
 __pycache__
 dist
 *.log
-m-ui
-m-ui.exe
+UnifiedProxy
+unifiedproxy.exe
+*.exe
 mihomo
 mihomo.exe
+.opencode/
+scripts/acceptance/acceptance_*.json
 Dockerfile*
 docker-compose*.yml
 docker-compose*.yaml
