@@ -238,5 +238,10 @@
   let polling=false;setInterval(async()=>{if(polling||role!=='control'||!section.classList.contains('active'))return;polling=true;try{fleet=await request('');for(const node of fleet.nodes||[]){for(const el of section.querySelectorAll('[data-fleet-status]'))if(el.dataset.fleetStatus===node.id){el.textContent=nodeStatus(node);el.title=node.status?.error||'';}for(const el of section.querySelectorAll('[data-fleet-traffic]'))if(el.dataset.fleetTraffic===node.id)el.textContent=nodeTraffic(node);for(const el of section.querySelectorAll('[data-node-state]'))if(el.dataset.nodeState===node.id){el.textContent=nodeConnectionState(node);el.dataset.online=String(Boolean(node.online&&!node.revoked));}}const tasks=section.querySelector('#fleet-tasks');if(tasks)tasks.textContent=taskSummary(fleet.tasks);}catch(error){output(error.message,true);}finally{polling=false;}},15000);
   button.textContent=t('title');window.addEventListener('up-langchange',()=>{button.textContent=t('title');if(fleet)render();if(section.classList.contains('active'))document.querySelector('#crumb').textContent=t('title');});
   window.UPFleet={locales,words,get selectedNode(){return selected;}};
+  if(role==='control'&&typeof setView==='function'){
+    labels.fleet='crumb.dashboard';
+    setView('fleet');
+    document.querySelector('#crumb').textContent=t('title');
+  }
   load().catch(()=>{});
 }());
