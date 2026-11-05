@@ -77,12 +77,14 @@ go build -o dist/control ./cmd/control
 python3 scripts/acceptance/browser-smoke.py --binary dist/control
 
 # 使用真实 control/node 进程，下载资源和 systemctl 使用明确的本地适配器
-go build -ldflags '-X main.version=v1.6.14' -o dist/bootstrap/control ./cmd/control
-go build -ldflags '-X main.version=v1.6.14' -o dist/bootstrap/node ./cmd/node
+go build -ldflags '-X main.version=v1.6.15' -o dist/bootstrap/control ./cmd/control
+go build -ldflags '-X main.version=v1.6.15' -o dist/bootstrap/node ./cmd/node
 go build -o dist/design-audit/fixture-core ./internal/app/testdata/fleetcore
 python3 scripts/acceptance/node-bootstrap.py
 # 使用容器非回环 HTTP 地址，执行网页实际生成的命令并验证复制回退
 python3 scripts/acceptance/node-bootstrap.py --http --output dist/bootstrap-http
+# HTTP、HTTPS 和回环访问下的真实入站/用户/出口/路由编辑
+python3 scripts/acceptance/http-editors.py --transport all
 go test ./...
 go vet ./...
 ```
@@ -92,3 +94,9 @@ go vet ./...
 浏览器验收启动独立临时主机，使用真实登录、节点登记、令牌签发、模型发布、配额和备份接口；在线心跳与自动识别的界面显示使用明确的模拟数据，不代表已连接真实公网子服务器。另有 Go 集成测试验证真实签名心跳、长任务不中断上报、来源地址回退、身份校验及自动地址订阅。浏览器覆盖十一种现有语言的页面加载、五套配色的十种明暗组合、390px 手机布局、表单草稿保留、地址留空与手动覆盖、订阅范围和文字对比度。截图与结果写入 `dist/fleet-browser/`。
 
 2026-11-06，v1.6.14 发布前的 HTTP 直连验收：Go 全量测试、vet 与 fleet/agent/control 竞态检查通过；网页工作流 67 项、原基线 29 项通过，文字对比度无失败。网页实际命令在非回环 HTTP 地址下通过 13 项安装检查（含无安全上下文的复制回退），HTTPS 下通过 11 项。全新 systemd 容器的 6 项检查验证 HTTP 安装、真实 Mihomo 启动、独立心跳、自动公网 IP 和重复执行保留身份；此轮节点发布包使用本地构建夹具，Mihomo 为真实上游下载。结果分别位于 `/workspace/dist/bootstrap-http/`、`bootstrap-https/`、`fleet-http-browser/`、`fleet-http-baseline/`；systemd 检查在其临时容器的 `dist/bootstrap-systemd/` 留证后清理。以上为容器内实际进程验收，未代替公网多机现场验收。
+
+### HTTP 下点击“添加入站”没有反应
+
+v1.6.14 的编辑页面仍直接调用仅在安全上下文提供的 `crypto.randomUUID()`；使用公网或局域网 IP 的 HTTP 面板时，该接口不可用，初始化默认用户会报错，导致入站窗口打不开。v1.6.15 统一使用随机 ID 工具：HTTPS/回环继续使用浏览器 UUID 接口，普通 HTTP 使用 `crypto.getRandomValues()` 生成 UUID v4，保留密码学随机源。入站、单个与批量用户、凭据、出口和路由共用此工具。刷新页面也会先完成舰队请求绑定，再读取当前子节点配置。
+
+此问题只需更新提供网页的主机或独立面板到 v1.6.15，并重新加载页面；无需为这项界面修复重装子节点。编辑回归脚本使用真实登录及保存接口，覆盖 control/standalone × 非回环 HTTP/HTTPS/回环 HTTP 六种场景，检查添加入站、六种协议默认用户、单个和批量用户、刷新保留节点、出口与路由保存；不模拟浏览器 API 或后台响应。证据写入 `/workspace/dist/http-editors/`。

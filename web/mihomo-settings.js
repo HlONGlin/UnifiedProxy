@@ -15,7 +15,7 @@
   let draft={outbounds:[],routingRules:[],basics:defaultBasics()},dirty=false,currentTab='basics',editingOutbound='',editingRule='',outboundMode='form',outboundBusy=false,editingOriginal=null;
   let outboundFormChanged=false,outboundYAMLCached=false;
 
-  function freshID(prefix){return prefix+'-'+crypto.randomUUID().replaceAll('-','').slice(0,12);}
+  function freshID(prefix){return prefix+'-'+upRandomUUID().replaceAll('-','').slice(0,12);}
   function ensureFinalMatch(){
     if(!draft.routingRules.some(rule=>String(rule.type).toUpperCase()==='MATCH'))draft.routingRules.push({id:freshID('rule'),type:'MATCH',payload:'',target:'DIRECT',noResolve:false});
   }
