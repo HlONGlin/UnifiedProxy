@@ -22,6 +22,9 @@ button { cursor: pointer; }
 .nav button { position: relative; display: flex; align-items: center; gap: 10px; width: 100%; height: 38px; padding: 0 12px; border: 0; border-radius: var(--radius-sm); color: var(--text); background: transparent; text-align: left; white-space: nowrap; font-size: var(--p-body-sm); font-weight: 450; transition: all var(--duration-slow) var(--ease); }
 .nav button:hover { color: var(--text-strong); background: var(--surface-3); }
 .nav button.active { color: var(--ink); background: var(--teal); font-weight: 550; box-shadow: none; }
+#fleet-nav { display: none; }
+html[data-fleet-role="control"] #fleet-nav,
+html[data-fleet-role="node"] #fleet-nav { display: flex; }
 body.dark .nav button.active { background: var(--teal); box-shadow: none; }
 .nav-icon { display: inline-flex; align-items: center; justify-content: center; flex: none; width: 16px; color: inherit; font-size: var(--body); }
 .sider-trigger { position: fixed; bottom: 24px; left: 26px; z-index: 62; display: grid; place-items: center; width: 40px; height: 40px; padding: 0; border: 1px solid var(--glass-border) !important; border-radius: 50% !important; color: var(--muted); background: var(--surface-glass-heavy) !important; backdrop-filter: none !important; -webkit-backdrop-filter: none !important; box-shadow: none !important; cursor: pointer; font-size: var(--p-body); transition: left var(--duration-slow) var(--ease), width var(--duration-slow) var(--ease), height var(--duration-slow) var(--ease), transform var(--duration-slow) var(--ease), box-shadow var(--duration-slow), color var(--duration-slow); }

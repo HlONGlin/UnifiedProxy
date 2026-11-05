@@ -40,6 +40,7 @@
         <button data-view="inbounds"><span class="nav-icon"><svg class="sf-symbol" aria-hidden="true"><use href="#sf-user"></use></svg></span><span>Inbounds</span></button>
         <button data-view="subtemplates"><span class="nav-icon"><svg class="sf-symbol" aria-hidden="true"><use href="#sf-file-text"></use></svg></span><span data-i18n="nav.subTemplates">Subscription Templates</span></button>
         <button data-view="mihomo"><span class="nav-icon"><svg class="sf-symbol" aria-hidden="true"><use href="#sf-tool"></use></svg></span><span>Mihomo Settings</span></button>
+        <button data-view="fleet" id="fleet-nav"><span class="nav-icon"><svg class="sf-symbol" aria-hidden="true"><use href="#sf-multi-control"></use></svg></span><span>Fleet</span></button>
         <button data-view="settings"><span class="nav-icon"><svg class="sf-symbol" aria-hidden="true"><use href="#sf-setting"></use></svg></span><span>Panel Settings</span></button>
         <button id="sidebar-logout"><span class="nav-icon"><svg class="sf-symbol" aria-hidden="true"><use href="#sf-logout"></use></svg></span><span>Log Out</span></button>
       </nav>
@@ -52,6 +53,7 @@
       <div class="security-banner" id="panel-security-banner" hidden><strong>安全提醒</strong><span>面板当前未配置 HTTPS TLS 证书，建议在面板设置中配置证书和私钥并重启 UnifiedProxy。</span><button id="dismiss-security-banner" type="button" title="关闭"><svg class="sf-symbol" aria-hidden="true"><use href="#sf-close"></use></svg></button></div>
       <div class="security-banner" id="panel-path-banner" hidden><strong>安全提醒</strong><span data-i18n-html="banner.pathText">面板当前直接挂在根路径 <code>/</code> 上，任何扫到这个端口的脚本都能立刻拿到登录页并开始撞库爆破。请在面板设置中把「面板 URI 路径」改成一个不易猜到的值（例如 <code>/a-users-path/</code>），改完只有带这个路径的地址才能访问面板。</span><button id="dismiss-path-banner" type="button" title="关闭"><svg class="sf-symbol" aria-hidden="true"><use href="#sf-close"></use></svg></button></div>
       <main class="main">
+        <section class="view" id="view-fleet"><h2>Fleet</h2><p class="fleet-load-status" role="status" aria-live="polite">Loading…</p></section>
         <section class="view active" id="view-dashboard"><div class="workspace-heading"><div><span class="eyebrow">UnifiedProxy / Control</span><h1 data-i18n="nav.overview">Overview</h1></div><span class="caption">Mihomo · Fleet</span></div>
           <div class="dashboard-layout">
             <div class="gauges-card">
@@ -707,6 +709,7 @@
       if($('#cpu-history-modal')?.classList.contains('open'))safe(fetchCpuHistory);
       $$('.modal-backdrop.open').forEach(modal=>upApply(modal));
     }
+    window.UPPanel={refresh,isDirty:()=>!!(app.settingsDirty||document.querySelector('.mihomo-dirty')||$('#drawer-backdrop')?.classList.contains('open')||$('#client-modal')?.classList.contains('open')||$('#mihomo-outbound-modal.open')||$('#mihomo-rule-modal.open'))};
     window.addEventListener('up-langchange',refreshLanguageUI);
     $('#settings-form [name="language"]')?.addEventListener('change',event=>upSetLang(event.target.value));
     $('#settings-form [name="ipinfoToken"]')?.addEventListener('input',()=>{const clear=$('#settings-form [name="ipinfoTokenClear"]');if(clear)clear.checked=false;const status=$('#ipinfo-token-status');if(status)status.hidden=true;});

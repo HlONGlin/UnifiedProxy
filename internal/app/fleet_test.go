@@ -72,6 +72,48 @@ func TestFleetPanelAuthenticationAndManagedWriterLock(t *testing.T) {
 	}
 }
 
+func TestFleetEditorRoutesInboundToolsToSelectedNode(t *testing.T) {
+	a := fleetTestApp(t)
+	node, err := a.fleet.store.AddNode("remote-editor", "node.example:443")
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, test := range []struct {
+		method string
+		path   string
+		body   string
+	}{
+		{http.MethodGet, "/api/tools/inbound-port", ""},
+		{http.MethodPost, "/api/tools/uuid", "{}"},
+		{http.MethodPost, "/api/tools/reality-keypair", "{}"},
+		{http.MethodPost, "/api/tools/vless-encryption", `{"authentication":"mlkem768"}`},
+		{http.MethodPost, "/api/tools/subscription-path", "{}"},
+	} {
+		r := fleetAuthRequest(test.method, test.path, []byte(test.body))
+		r.Header.Set("X-Fleet-Node", node.ID)
+		w := httptest.NewRecorder()
+		a.routes().ServeHTTP(w, r)
+		if w.Code != http.StatusOK {
+			t.Fatalf("%s %s returned %d: %s", test.method, test.path, w.Code, w.Body.String())
+		}
+	}
+	if got := a.fleet.store.Node(node.ID).Desired; got != nil {
+		t.Fatalf("editor helper unexpectedly published a node policy: %#v", got)
+	}
+}
+
+func TestFleetEditorRoutesNodeScopedHelpers(t *testing.T) {
+	a := fleetTestApp(t)
+	for _, path := range []string{
+		"/api/tools/uuid", "/api/tools/inbound-port", "/api/tools/subscription-path",
+		"/api/tools/reality-keypair", "/api/tools/vless-encryption", "/api/tools/ech-keypair",
+	} {
+		if !a.remoteRoute(path) {
+			t.Errorf("remoteRoute(%q) = false", path)
+		}
+	}
+}
+
 func TestFleetNativeRenderSubscriptionAndBackupRoundTrip(t *testing.T) {
 	a := fleetTestApp(t)
 	f := a.fleet

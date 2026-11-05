@@ -115,6 +115,8 @@ func (a *App) remoteRoute(path string) bool {
 	switch path {
 	case "/api/state", "/api/inbounds", "/api/inbounds/import", "/api/clients", "/api/raw-config", "/api/config/download", "/api/traffic/reset", "/api/mihomo/settings", "/api/mihomo/outbound/parse", "/api/mihomo/warp", "/api/mihomo/vpngate", "/api/core/test", "/api/core/install", "/api/geofiles/update", "/api/core/logs", "/api/import/xray":
 		return true
+	case "/api/tools/uuid", "/api/tools/inbound-port", "/api/tools/subscription-path", "/api/tools/reality-keypair", "/api/tools/vless-encryption", "/api/tools/ech-keypair":
+		return true
 	case "/api/core/start", "/api/core/stop", "/api/core/restart", "/api/core/connections":
 		return true
 	}
@@ -357,7 +359,17 @@ func (a *App) handleRemotePanel(w http.ResponseWriter, r *http.Request, id strin
 		writeJSON(w, 200, apiResponse{OK: true, Data: details})
 		return
 	}
-	handlers := map[string]http.HandlerFunc{"/api/inbounds": editor.handleInbounds, "/api/inbounds/import": editor.handleInboundImport, "/api/clients": editor.handleClients, "/api/raw-config": editor.handleRawConfig, "/api/config/download": editor.handleConfigDownload, "/api/traffic/reset": editor.handleTrafficReset, "/api/mihomo/settings": editor.handleMihomoSettings, "/api/mihomo/outbound/parse": editor.handleMihomoOutboundYAML, "/api/core/logs": editor.handleCoreLogs, "/api/import/xray": editor.handleXrayImport}
+	handlers := map[string]http.HandlerFunc{
+		"/api/inbounds": editor.handleInbounds, "/api/inbounds/import": editor.handleInboundImport,
+		"/api/clients": editor.handleClients, "/api/raw-config": editor.handleRawConfig,
+		"/api/config/download": editor.handleConfigDownload, "/api/traffic/reset": editor.handleTrafficReset,
+		"/api/mihomo/settings": editor.handleMihomoSettings, "/api/mihomo/outbound/parse": editor.handleMihomoOutboundYAML,
+		"/api/core/logs": editor.handleCoreLogs, "/api/import/xray": editor.handleXrayImport,
+		"/api/tools/uuid": editor.handleNewUUID, "/api/tools/inbound-port": editor.handleAvailableInboundPort,
+		"/api/tools/subscription-path": editor.handleNewSubscriptionPath,
+		"/api/tools/reality-keypair": editor.handleRealityKeyPair, "/api/tools/vless-encryption": editor.handleVLESSEncryption,
+		"/api/tools/ech-keypair": editor.handleECHKeyPair,
+	}
 	if strings.HasPrefix(r.URL.Path, "/api/mihomo/warp") {
 		handlers[r.URL.Path] = editor.handleWarp
 	}
@@ -380,7 +392,7 @@ func (a *App) handleRemotePanel(w http.ResponseWriter, r *http.Request, id strin
 	}
 	captured := &captureResponse{header: make(http.Header)}
 	handler(captured, r)
-	if captured.code < 300 && r.Method != "GET" && r.Method != "HEAD" {
+	if captured.code < 300 && r.Method != "GET" && r.Method != "HEAD" && !strings.HasPrefix(r.URL.Path, "/api/tools/") {
 		if _, err = f.publish(id, editor, nil); err != nil {
 			writeJSON(w, 400, apiResponse{Message: "draft saved but publish failed: " + err.Error()})
 			return
