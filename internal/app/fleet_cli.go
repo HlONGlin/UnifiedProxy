@@ -81,7 +81,7 @@ func runFleetCLI(args []string, role string) (bool, error) {
 	}
 	fs := flag.NewFlagSet("agent "+args[1], flag.ContinueOnError)
 	dir := fs.String("data-dir", "data", "data directory")
-	url := fs.String("control", "", "HTTPS control URL")
+	url := fs.String("control", "", "HTTP or HTTPS control URL")
 	key := fs.String("control-key", "", "trusted Ed25519 public key")
 	token := fs.String("token", "", "single-use enrollment token")
 	stdin := fs.Bool("token-stdin", false, "read enrollment token from stdin")

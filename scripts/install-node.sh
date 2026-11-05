@@ -27,7 +27,7 @@ while [[ $# -gt 0 ]]; do
       esac
       shift 2 ;;
     --token-stdin) token_stdin=1; shift ;;
-    -h|--help) echo 'Usage: install-node.sh --control HTTPS_URL --control-key PUBLIC_KEY --node-id ID --token-stdin [--version TAG]'; exit 0 ;;
+    -h|--help) echo 'Usage: install-node.sh --control HTTP_OR_HTTPS_URL --control-key PUBLIC_KEY --node-id ID --token-stdin [--version TAG]'; exit 0 ;;
     *) die "Unknown option: $1" ;;
   esac
 done
@@ -54,12 +54,10 @@ if [[ $missing -eq 1 ]]; then
   else die 'Install curl, python3, coreutils, tar, gzip, xz and openssl, then run the command again.'; fi
 fi
 python3 - "$control" "$control_key" <<'PY'
-import base64, ipaddress, sys, urllib.parse
+import base64, sys, urllib.parse
 url=urllib.parse.urlsplit(sys.argv[1])
-try: loopback=ipaddress.ip_address(url.hostname or '').is_loopback
-except ValueError: loopback=url.hostname=='localhost'
-if not url.hostname or url.username or url.password or url.query or url.fragment or url.path not in ('','/') or (url.scheme!='https' and not (url.scheme=='http' and loopback)):
-    raise SystemExit('Invalid control URL. Use the HTTPS origin without the panel path.')
+if not url.hostname or url.username or url.password or url.query or url.fragment or url.path not in ('','/') or url.scheme not in ('http','https'):
+    raise SystemExit('Invalid control URL. Use the HTTP or HTTPS origin without the panel path.')
 if len(base64.b64decode(sys.argv[2],validate=True))!=32: raise SystemExit('Invalid control public key.')
 PY
 

@@ -39,9 +39,11 @@ bash scripts/build-fleet.sh dev
 ./control fleet-key --data-dir /srv/control/data
 ```
 
-configure 从标准输入读取密码。默认只监听 127.0.0.1:2053；生产环境配置面板 TLS，
-或在可信 HTTPS 反向代理后运行。代理需要同时转发根路径 /fleet/v1/ 和面板 URI。
-Agent 的控制 URL 只填源站，不附加管理员面板路径。HTTP 仅允许字面回环地址。
+configure 从标准输入读取密码。默认只监听 127.0.0.1:2053；需要让其他服务器直连时，
+使用 `--listen-ip 0.0.0.0` 并开放相应端口。主机可直接使用 HTTP，也可配置面板 TLS
+或 HTTPS 反向代理。代理需要同时转发根路径 /fleet/v1/ 和面板 URI。
+Agent 的控制 URL 只填源站，例如 `http://203.0.113.10:2053`，不附加管理员面板路径。
+公网或局域网 HTTP 均无需证书；签名身份与防重放校验继续生效，但 HTTP 不加密传输。
 
 在控制端主机网页的“舰队”页创建子节点后，页面会立即建立节点卡片并签发绑定该节点的
 一次性接入令牌，同时显示一键接入命令。复制整条命令，在 Linux 子主机以 root 粘贴回车，
@@ -54,6 +56,7 @@ Agent 的控制 URL 只填源站，不附加管理员面板路径。HTTP 仅允�
 # 先安装 Mihomo 或通过节点原有面板安装核心：
 ./node configure --data-dir /srv/node/data --core-path /usr/local/bin/mihomo
 ./node agent join --data-dir /srv/node/data --control https://control.example --control-key PUBLIC_KEY --token-stdin
+# 主机直接使用 HTTP 时，将上一行的 --control 换为 http://主机IP:端口
 ./node serve --data-dir /srv/node/data
 ```
 

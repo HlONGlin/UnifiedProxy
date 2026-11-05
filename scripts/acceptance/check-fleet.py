@@ -20,11 +20,11 @@ import urllib.parse
 import urllib.request
 
 
-def safe_url(value, schemes=("https",)):
+def safe_url(value, schemes=("https",), allow_remote_http=False):
     parsed = urllib.parse.urlsplit(value)
     if parsed.scheme not in schemes or not parsed.hostname or parsed.fragment:
         raise ValueError("invalid URL scheme or host")
-    if parsed.scheme == "http":
+    if parsed.scheme == "http" and not allow_remote_http:
         try:
             local = ipaddress.ip_address(parsed.hostname).is_loopback
         except ValueError:
@@ -40,7 +40,7 @@ class NoRedirect(urllib.request.HTTPRedirectHandler):
 
 
 def api_client(panel, username, password, ca_file):
-    parsed = safe_url(panel, ("https", "http"))
+    parsed = safe_url(panel, ("https", "http"), allow_remote_http=True)
     if parsed.username or parsed.password or parsed.query:
         raise ValueError("panel URL must not contain credentials or query")
     opener = urllib.request.build_opener(

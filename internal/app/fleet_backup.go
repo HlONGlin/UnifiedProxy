@@ -9,7 +9,9 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"net"
 	"net/http"
+	"net/url"
 	"os"
 	"path/filepath"
 	"strings"
@@ -211,6 +213,11 @@ type webDAVConfig struct {
 func webDAVRequest(ctx context.Context, method string, cfg webDAVConfig, checksum bool, body []byte) ([]byte, error) {
 	if err := fleet.ValidateControlURL(cfg.URL); err != nil {
 		return nil, err
+	}
+	// Backups carry full configuration and credentials, independently of fleet RPC transport.
+	parsed, _ := url.Parse(cfg.URL)
+	if parsed.Scheme == "http" && parsed.Hostname() != "localhost" && !net.ParseIP(parsed.Hostname()).IsLoopback() {
+		return nil, errors.New("WebDAV requires HTTPS (HTTP is allowed only on loopback)")
 	}
 	url := cfg.URL
 	if checksum {

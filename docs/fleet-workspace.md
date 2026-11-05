@@ -7,11 +7,13 @@
 1. 登录主机后进入“舰队管理”，点击“添加子服务器”。
 2. 填写容易辨认的名称，例如“香港入口”；**子服务器公网地址可留空**，接入后自动识别。需要指定域名或特定 IP 时再填写，用于生成客户端连接地址。
 3. 点击“创建并获取接入命令”。卡片立即出现，状态为“待接入”。
-4. 在弹窗确认**主机公网地址**，填写子服务器能够访问的 HTTPS 源站地址。这里不附加管理员面板路径；反向代理需转发 `/fleet/v1/`。
+4. 在弹窗确认**主机公网地址**，可直接填写子服务器能够访问的 `http://主机IP:端口`，也支持 HTTPS。这里不附加管理员面板路径；反向代理需转发 `/fleet/v1/`。HTTP 无需证书，按当前面板地址生成命令。
 5. 点击“复制一键接入命令”，在 Linux 子服务器以 **root** 粘贴整条命令并回车。命令已经包含脚本链接、主机信息和一次性 token，自动下载并校验节点程序，安装缺失的 Mihomo，绑定当前卡片并启动服务；无需再粘贴 token 或手动重启。
 6. 回到主机等待状态刷新，通常不超过 15 秒。在线后点击“管理节点”，即可打开对应节点的入站与用户界面。
 
 一键接入参考 UnifiedProxy v1.6.3 的“卡片生成命令、子主机执行后自动上线”流程，使用现有一次性令牌和签名身份。适用于运行 systemd 的 Linux；执行命令需要 Bash、curl 和 root。Debian/Ubuntu 或 RHEL 系可自动补齐缺少的工具。程序默认位于 `/usr/local/unifiedproxy-node/node`、数据位于 `/usr/local/unifiedproxy-node/data`；新安装的节点管理端口只监听回环地址，日常操作都在主机网页完成。
+
+例如主机面板为 `http://203.0.113.10:2053/admin/`，接入地址填写 `http://203.0.113.10:2053`。节点安装、签名接入、配置领取及独立心跳均支持 HTTP；公网 IP、局域网 IP、域名均可。HTTP 不加密传输，使用 HTTPS 可加密脚本下载及节点通信；HTTPS 脚本下载不允许降级到 HTTP。两种方式均保留公钥校验和防重放，但签名不能为 HTTP 下载的安装脚本提供传输保护。节点及 Mihomo 发布包仍通过 HTTPS 下载并校验 SHA256。
 
 脚本由当前主机的 `/fleet/v1/install.sh` 提供，不在下载 URL 中包含 token。正式主机优先安装与自身一致的节点版本；开发版本使用最新正式版。节点程序按发布校验和校验；缺少 Mihomo 时安装固定的 v1.19.33 并核对上游 SHA256。保留现有可用内核；已有配置在安装前备份，账号、入站和路径保留。同一卡片重复执行只重启现有服务；已绑定到其他卡片或主机时停止，需先明确退出或重绑，避免覆盖原有身份。紧急接管期间不会自动恢复托管。
 
@@ -75,14 +77,18 @@ go build -o dist/control ./cmd/control
 python3 scripts/acceptance/browser-smoke.py --binary dist/control
 
 # 使用真实 control/node 进程，下载资源和 systemctl 使用明确的本地适配器
-go build -ldflags '-X main.version=v1.6.13' -o dist/bootstrap/control ./cmd/control
-go build -ldflags '-X main.version=v1.6.13' -o dist/bootstrap/node ./cmd/node
+go build -ldflags '-X main.version=v1.6.14' -o dist/bootstrap/control ./cmd/control
+go build -ldflags '-X main.version=v1.6.14' -o dist/bootstrap/node ./cmd/node
 go build -o dist/design-audit/fixture-core ./internal/app/testdata/fleetcore
 python3 scripts/acceptance/node-bootstrap.py
+# 使用容器非回环 HTTP 地址，执行网页实际生成的命令并验证复制回退
+python3 scripts/acceptance/node-bootstrap.py --http --output dist/bootstrap-http
 go test ./...
 go vet ./...
 ```
 
-真实 systemd 的全新安装检查见 `scripts/acceptance/node-bootstrap-systemd.py`，只能在全新、可丢弃的 orca-linux systemd 容器 `/workspace` 中执行。该检查使用真实 systemd、TLS 主机、节点和固定版本 Mihomo；发布前的节点下载包由本地构建产物提供。不要在用户正在使用的服务器运行此验收脚本。
+真实 systemd 的全新安装检查见 `scripts/acceptance/node-bootstrap-systemd.py`，只能在全新、可丢弃的 orca-linux systemd 容器 `/workspace` 中执行。默认使用 TLS 主机，增加 `--http` 可使用容器非回环 HTTP 地址；均使用真实 systemd、节点和固定版本 Mihomo。发布前的节点下载包由本地构建产物提供，发布后增加 `--published` 可验证正式下载包。不要在用户正在使用的服务器运行此验收脚本。
 
 浏览器验收启动独立临时主机，使用真实登录、节点登记、令牌签发、模型发布、配额和备份接口；在线心跳与自动识别的界面显示使用明确的模拟数据，不代表已连接真实公网子服务器。另有 Go 集成测试验证真实签名心跳、长任务不中断上报、来源地址回退、身份校验及自动地址订阅。浏览器覆盖十一种现有语言的页面加载、五套配色的十种明暗组合、390px 手机布局、表单草稿保留、地址留空与手动覆盖、订阅范围和文字对比度。截图与结果写入 `dist/fleet-browser/`。
+
+2026-11-06，v1.6.14 发布前的 HTTP 直连验收：Go 全量测试、vet 与 fleet/agent/control 竞态检查通过；网页工作流 67 项、原基线 29 项通过，文字对比度无失败。网页实际命令在非回环 HTTP 地址下通过 13 项安装检查（含无安全上下文的复制回退），HTTPS 下通过 11 项。全新 systemd 容器的 6 项检查验证 HTTP 安装、真实 Mihomo 启动、独立心跳、自动公网 IP 和重复执行保留身份；此轮节点发布包使用本地构建夹具，Mihomo 为真实上游下载。结果分别位于 `/workspace/dist/bootstrap-http/`、`bootstrap-https/`、`fleet-http-browser/`、`fleet-http-baseline/`；systemd 检查在其临时容器的 `dist/bootstrap-systemd/` 留证后清理。以上为容器内实际进程验收，未代替公网多机现场验收。

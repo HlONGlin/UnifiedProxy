@@ -25,7 +25,7 @@ wire YAML 为 epoch 时点的稳定策略投影，实际应用用节点时钟和
 ## 签名通道
 
 已有 multi-control.json 时复用 Ed25519 私钥；新安装由同一身份初始化。
-控制 RPC 扩展同一面板 HTTPS 服务，路径 /fleet/v1/；Agent 每 15 秒短 RPC
+控制 RPC 扩展同一面板 HTTP/HTTPS 服务，路径 /fleet/v1/；Agent 每 15 秒短 RPC
 上报/领取，执行后立即继续。不引入 UP 原长轮询；poll.wait 必须为 0。
 
 Envelope 字段：version=1、sender、audience、timestamp（Unix 秒）、
@@ -34,6 +34,9 @@ nonce（48 位十六进制）、payload（JSON）、signature（base64）。
 请求 audience 为 POST + 空格 + 路径，响应为 response:<请求 nonce>，sender=control。
 允许 ±5 分钟偏差，控制端 nonce 先落盘再接受，重启后仍拒绝重放。
 Agent 钉住可信控制公钥，拒绝重定向。请求最大 16 MiB，状态/备份最大 64 MiB。
+控制 URL 允许公网、局域网及回环地址的 HTTP 或 HTTPS，拒绝其他协议、内嵌账号、
+查询参数和片段。HTTP 无需证书，不提供传输加密；签名只验证 RPC 身份与内容，
+不保护通过 HTTP 获取的安装脚本。HTTPS 脚本请求不接受降级重定向，发布包下载仍要求 HTTPS。
 
 POST /fleet/v1/enroll：token/publicKey/name，返回 nodeId/publicKey/protocol。
 poll：status（能力/OS/架构/版本/revision/digest/运行/流量），返回 tasks。

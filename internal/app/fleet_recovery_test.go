@@ -8,6 +8,7 @@ import (
 	"net/http/httptest"
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 
 	"github.com/hlonglin/unifiedproxy/internal/fleet"
@@ -156,6 +157,15 @@ func TestFleetWebDAVUploadDownloadAndChecksumRejection(t *testing.T) {
 	}
 	if _, err := webDAVRequest(context.Background(), "GET", webDAVConfig{URL: cfg.URL, Username: "wrong"}, false, nil); err == nil {
 		t.Fatal("unauthorized WebDAV accepted")
+	}
+}
+
+func TestFleetWebDAVStillRequiresTLSBeyondLoopback(t *testing.T) {
+	for _, address := range []string{"http://203.0.113.10/backup.json", "http://backup.example/backup.json", "http://[2001:db8::1]/backup.json"} {
+		_, err := webDAVRequest(context.Background(), "PUT", webDAVConfig{URL: address}, false, []byte("private backup"))
+		if err == nil || !strings.Contains(err.Error(), "WebDAV requires HTTPS") {
+			t.Fatalf("non-loopback HTTP backup must be rejected before sending: %v", err)
+		}
 	}
 }
 

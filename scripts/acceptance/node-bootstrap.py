@@ -3,7 +3,7 @@
 Downloads are supplied by local release fixtures. A systemctl adapter starts
 real node processes, so this checks installation and enrollment, not systemd itself.
 """
-import argparse, hashlib, http.cookiejar, json, os, re, shutil, socket
+import argparse, hashlib, http.cookiejar, ipaddress, json, os, re, shutil, socket
 import ssl, subprocess, tarfile, tempfile, time, urllib.request
 from pathlib import Path
 from playwright.sync_api import sync_playwright, expect
@@ -14,6 +14,7 @@ parser.add_argument('--control',default='dist/bootstrap/control')
 parser.add_argument('--node',default='dist/bootstrap/node')
 parser.add_argument('--core',default='dist/design-audit/fixture-core')
 parser.add_argument('--output',default='dist/bootstrap-acceptance')
+parser.add_argument('--http',action='store_true',help='Use the container non-loopback HTTP address, without TLS')
 args=parser.parse_args()
 control,node,core=[Path(p).resolve() for p in (args.control,args.node,args.core)]
 output=Path(args.output).resolve();output.mkdir(parents=True,exist_ok=True)
@@ -27,10 +28,13 @@ def free_port():
 with tempfile.TemporaryDirectory(prefix='node-bootstrap-',dir=output) as temp:
     root=Path(temp);cert=root/'cert.pem';key=root/'key.pem';data=root/'control-data'
     subprocess.run(['openssl','req','-x509','-newkey','rsa:2048','-nodes','-keyout',str(key),'-out',str(cert),'-days','1','-subj','/CN=localhost','-addext','subjectAltName=DNS:localhost,IP:127.0.0.1'],check=True,stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL)
-    origin=f'https://localhost:{free_port()}';base=origin+'/bootstrap'
-    subprocess.run([str(control),'configure','--data-dir',str(data),'--username','fixture','--password-stdin','--listen-ip','127.0.0.1','--port',origin.rsplit(':',1)[1],'--path','bootstrap','--cert',str(cert),'--key',str(key)],input='fixture-password',text=True,check=True,stdout=subprocess.DEVNULL)
+    host=socket.gethostbyname(socket.gethostname()) if args.http else 'localhost'
+    if args.http:assert not ipaddress.ip_address(host).is_loopback
+    origin=f'{"http" if args.http else "https"}://{host}:{free_port()}';base=origin+'/bootstrap'
+    tls=[] if args.http else ['--cert',str(cert),'--key',str(key)]
+    subprocess.run([str(control),'configure','--data-dir',str(data),'--username','fixture','--password-stdin','--listen-ip','0.0.0.0' if args.http else '127.0.0.1','--port',origin.rsplit(':',1)[1],'--path','bootstrap',*tls],input='fixture-password',text=True,check=True,stdout=subprocess.DEVNULL)
     context=ssl.create_default_context(cafile=str(cert))
-    opener=urllib.request.build_opener(urllib.request.HTTPSHandler(context=context),urllib.request.HTTPCookieProcessor(http.cookiejar.CookieJar()))
+    opener=urllib.request.build_opener(urllib.request.ProxyHandler({}),urllib.request.HTTPSHandler(context=context),urllib.request.HTTPCookieProcessor(http.cookiejar.CookieJar()))
     def api(path,body=None):
         request=urllib.request.Request(base+path,None if body is None else json.dumps(body).encode(),{'Content-Type':'application/json'})
         with opener.open(request,timeout=5) as response:value=json.load(response)
@@ -46,14 +50,12 @@ with tempfile.TemporaryDirectory(prefix='node-bootstrap-',dir=output) as temp:
     mapping=root/'downloads.json';mapping.write_text(json.dumps({release+fixture.name:str(fixture),release+checksum.name:str(checksum)}))
     commands=root/'commands';commands.mkdir()
     (commands/'curl').write_text('''#!/usr/bin/env python3
-import json,os,shutil,ssl,sys,urllib.request
-from pathlib import Path
-args=sys.argv[1:];url=next(v for v in args if v.startswith('https://'));dest=args[args.index('-o')+1]
+import json,os,shutil,sys
+args=sys.argv[1:];url=next(v for v in args if v.startswith(('http://','https://')));dest=args[args.index('-o')+1]
 if os.environ.get('UP_FAIL_DOWNLOAD')=='1':raise SystemExit(22)
 with open(os.environ['UP_DOWNLOADS']) as f:mapping=json.load(f)
 if url in mapping:shutil.copyfile(mapping[url],dest)
-else:
-    with urllib.request.urlopen(url,context=ssl.create_default_context(cafile=os.environ['SSL_CERT_FILE'])) as r:Path(dest).write_bytes(r.read())
+else:os.execv('/usr/bin/curl',['/usr/bin/curl']+args)
 ''')
     (commands/'systemctl').write_text('''#!/usr/bin/env python3
 import os,signal,subprocess,sys,time
@@ -86,7 +88,7 @@ raise SystemExit(1)
 ''')
     for command in commands.iterdir():command.chmod(0o755)
     install=root/'installed-node';install.mkdir();shutil.copyfile(core,install/'mihomo');(install/'mihomo').chmod(0o755)
-    env={**os.environ,'PATH':str(commands)+os.pathsep+os.environ['PATH'],'SSL_CERT_FILE':str(cert),'TMPDIR':str(root),'UP_DOWNLOADS':str(mapping),'UNIFIEDPROXY_FLEET_INSTALL_DIR':str(install),'UNIFIEDPROXY_SYSTEMD_UNIT_DIR':str(root/'units')}
+    env={**os.environ,'PATH':str(commands)+os.pathsep+os.environ['PATH'],'SSL_CERT_FILE':str(cert),'CURL_CA_BUNDLE':str(cert),'NO_PROXY':os.environ.get('NO_PROXY','')+','+host,'TMPDIR':str(root),'UP_DOWNLOADS':str(mapping),'UNIFIEDPROXY_FLEET_INSTALL_DIR':str(install),'UNIFIEDPROXY_SYSTEMD_UNIT_DIR':str(root/'units')}
     def execute(command,extra=None):return subprocess.run(['bash','-c',command],env={**env,**(extra or {})},capture_output=True,text=True,timeout=90)
     def wait_node(node_id):
         deadline=time.monotonic()+30
@@ -113,12 +115,20 @@ raise SystemExit(1)
                 expect(dialog.locator('[data-enrollment-node]')).to_be_visible()
                 node_id=dialog.locator('[data-enrollment-node]').get_attribute('data-enrollment-node');command=dialog.locator('code').first.inner_text()
                 check('Command pins the matching host release','--version '+"'"+version+"'" in command)
+                if args.http:
+                    check('Non-loopback HTTP panel needs no secure-context clipboard',not page.evaluate('window.isSecureContext') and not page.evaluate('Boolean(navigator.clipboard)'))
+                    page.evaluate("document.addEventListener('copy',()=>{const f=document.activeElement;window.upCopiedSelection=f.value.substring(f.selectionStart,f.selectionEnd);},{once:true})")
+                    dialog.get_by_role('button',name='复制一键接入命令',exact=True).click()
+                    expect(dialog.locator('.fleet-dialog-feedback')).to_have_text('一键接入命令已复制，到子服务器粘贴回车即可。')
+                    check('HTTP clipboard fallback copies the complete command',page.evaluate('window.upCopiedSelection')==command)
+                    page.screenshot(path=str(output/'http-enrollment.png'),full_page=True)
                 failed=execute(command,{'UP_FAIL_DOWNLOAD':'1'})
                 check('Script download failure stops before installation',failed.returncode!=0 and not (install/'node').exists())
                 result=execute(command)
                 if result.returncode:raise AssertionError(result.stdout+result.stderr)
                 view=wait_node(node_id)
                 check('Exact pasted UI command installs and enrolls a real node',view['configuredAddress']=='' and (install/'node').exists() and (install/'data/agent.json').exists())
+                check('Agent preserves the selected HTTP or HTTPS control origin',json.loads((install/'data/agent.json').read_text())['controlURL']==origin)
                 settings=json.loads((install/'data/state.json').read_text())['settings']
                 check('Fresh node panel listens on loopback',settings['panelListen'].startswith('127.0.0.1:'))
                 unit=(root/'units/unifiedproxy-node.service').read_text()

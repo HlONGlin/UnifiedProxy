@@ -9,7 +9,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"net"
 	"net/url"
 	"os"
 	"strconv"
@@ -173,18 +172,13 @@ func (g *ReplayGuard) Verify(e Envelope, public, sender, audience string, now ti
 
 func ValidateControlURL(raw string) error {
 	u, err := url.Parse(raw)
-	if err != nil || u.Host == "" || u.User != nil || u.RawQuery != "" || u.Fragment != "" {
+	if err != nil || u.Hostname() == "" || u.User != nil || u.RawQuery != "" || u.Fragment != "" {
 		return fmt.Errorf("invalid control URL")
 	}
-	if u.Scheme == "https" {
+	if u.Scheme == "https" || u.Scheme == "http" {
 		return nil
 	}
-	h := u.Hostname()
-	ip := net.ParseIP(h)
-	if u.Scheme == "http" && (h == "localhost" || (ip != nil && ip.IsLoopback())) {
-		return nil
-	}
-	return fmt.Errorf("control URL requires HTTPS (HTTP is allowed only on loopback)")
+	return fmt.Errorf("control URL requires HTTP or HTTPS")
 }
 
 func SafeName(name string) bool {

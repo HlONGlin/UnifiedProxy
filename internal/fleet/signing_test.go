@@ -64,12 +64,12 @@ func TestFleetIdentityAndDigest(t *testing.T) {
 	}
 }
 func TestFleetControlURL(t *testing.T) {
-	for _, u := range []string{"http://example.com", "https://user:secret@example.com", "file:///tmp/controller", "https://example.com?secret=x"} {
+	for _, u := range []string{"", "example.com", "http://:2053", "https://user:secret@example.com", "http://user:secret@example.com", "file:///tmp/controller", "ftp://example.com", "https://example.com?secret=x", "http://example.com?secret=x", "http://example.com#fragment"} {
 		if ValidateControlURL(u) == nil {
 			t.Errorf("accepted %s", u)
 		}
 	}
-	for _, u := range []string{"https://example.com", "http://127.0.0.1:9000", "http://[::1]:9000"} {
+	for _, u := range []string{"https://example.com", "http://example.com", "http://203.0.113.10:2053", "http://192.168.1.10:2053", "http://[2001:db8::1]:2053", "http://127.0.0.1:9000", "http://[::1]:9000"} {
 		if err := ValidateControlURL(u); err != nil {
 			t.Error(err)
 		}
