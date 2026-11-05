@@ -67,7 +67,7 @@ window.UPFleetWorkspace = function ({request, load, selectTarget, hostSettings, 
     if(!desired)return tr('尚未发布配置','No configuration published');
     return applied===desired?tr(`配置已同步 · 版本 ${applied}`,`In sync · revision ${applied}`):tr(`等待同步 · ${applied} → ${desired}`,`Awaiting sync · ${applied} → ${desired}`);
   }
-  async function manage(node,view='inbounds') {if(await selectTarget(node.id)){closeDialog();document.querySelector(`#nav [data-view="${view}"]`)?.click();if(view==='mihomo')document.querySelector('[data-mihomo-tab="outbounds"]')?.click();}}
+  async function manage(node,view='dashboard') {closeDialog();await selectTarget(node.id,view);}
   function steps(parent) {const list=el('ol',undefined,parent,{className:'fleet-steps'});for(const [title,hint] of [
     [tr('创建服务器卡片','Create a server card'),tr('填写名称，公网地址可留空自动识别','Enter a name; leave the public address blank for automatic detection')],
     [tr('在子服务器执行接入命令','Connect the child server'),tr('复制一条命令，自动安装、接入并启动','Copy one command to install, connect and start automatically')],
@@ -163,8 +163,11 @@ window.UPFleetWorkspace = function ({request, load, selectTarget, hostSettings, 
   }
   function renderCard(parent,node) {
     const card=el('article',undefined,parent,{className:'fleet-node-card'});card.dataset.nodeCard=node.id;
+    if(!node.revoked)card.onclick=event=>{if(!event.target.closest('a,button,input,label,summary,details'))manage(node);};
     const head=el('div',undefined,card,{className:'fleet-node-head'}),name=el('div',undefined,head);
-    el('h3',node.name||node.id,name,{className:'fleet-node-title'});const badge=el('span',stateText(node),name,{className:'fleet-node-state'});badge.dataset.state=state(node);badge.dataset.nodeState=node.id;
+    const title=el('h3',undefined,name,{className:'fleet-node-title'});
+    if(!node.revoked)el('a',node.name||node.id,title,{href:panelURL('nodes/'+encodeURIComponent(node.id)+'/'),className:'fleet-node-link'});else title.textContent=node.name||node.id;
+    const badge=el('span',stateText(node),name,{className:'fleet-node-state'});badge.dataset.state=state(node);badge.dataset.nodeState=node.id;
     const label=el('label',undefined,head,{className:'fleet-check'}),check=el('input',undefined,label,{type:'checkbox',className:'fleet-selected',checked:ui.selected.has(node.id),value:node.id,disabled:!!node.revoked,'aria-label':tr('选择 ','Select ')+node.name});check.onchange=()=>{check.checked?ui.selected.add(node.id):ui.selected.delete(node.id);renderCards();root.querySelector(`[data-node-card="${node.id}"] .fleet-selected`)?.focus();};
     el('p',node.address||tr('等待节点心跳自动识别公网地址','Waiting for a heartbeat to detect the public address'),card,{className:'fleet-node-address'});
     el('p',node.addressSource==='manual'?tr('手动指定地址','Manual address'):node.addressSource==='auto'?tr('自动识别地址','Automatically detected address'):tr('公网地址可留空，接入后自动识别','Public address is optional and detected after connection'),card,{className:'fleet-hint'});
@@ -181,7 +184,8 @@ window.UPFleetWorkspace = function ({request, load, selectTarget, hostSettings, 
     const main=button(state(node)==='pending'?tr('获取接入命令','Get enrollment command'):tr('管理节点','Manage node'),actions,()=>{const current=fleet.nodes.find(n=>n.id===node.id);if(current&&!current.revoked)return state(current)==='pending'?enroll(current):manage(current);},true);main.disabled=!!node.revoked;
     const more=details(card,tr('更多操作','More actions'));more.parentElement.classList.add('fleet-node-more');
     button(tr('编辑名称与地址','Edit name and address'),more,()=>editServer(node));
-    button(tr('入站与用户','Inbounds & users'),more,()=>manage(node)).disabled=!!node.revoked;
+    button(tr('进入仪表盘','Open dashboard'),more,()=>manage(node)).disabled=!!node.revoked;
+    button(tr('入站与用户','Inbounds & users'),more,()=>manage(node,'inbounds')).disabled=!!node.revoked;
     button(tr('出口与路由','Outbounds & routing'),more,()=>manage(node,'mihomo')).disabled=!!node.revoked;
     button(tr('重新生成接入信息','Generate enrollment info'),more,async()=>{ui.enrollment.delete(node.id);await enroll(node);});
     button(tr('发布当前配置','Publish configuration'),more,async()=>{await request('/nodes/'+node.id+'/publish',{});await load();output(tr('配置已发布，等待子服务器应用。','Configuration published; waiting for the child server to apply it.'));}).disabled=!!node.revoked;
@@ -226,6 +230,7 @@ window.UPFleetWorkspace = function ({request, load, selectTarget, hostSettings, 
     const list=root.querySelector('#fleet-tasks');if(!list)return;const opened=new Set(Array.from(list.querySelectorAll('details[open]')).map(d=>d.dataset.taskId));list.replaceChildren();
     const tasks=(fleet.tasks||[]).slice(-30).reverse();if(!tasks.length){empty(list,tr('还没有执行过任务','No tasks yet'),tr('提交巡检或批量操作后，会在这里显示进度。','Submitted checks and batch actions appear here.'));return;}
     const taskNames={'apply-state':tr('应用节点配置','Apply node configuration'),'purge':tr('停止服务并吊销节点','Stop services and revoke node'),'core-control':tr('控制代理内核','Control proxy core'),'traffic-reset':tr('重置流量','Reset traffic'),'vpngate-install':tr('安装 VPNGate 出口','Install VPNGate outbound'),'vpngate-reconnect':tr('重连 VPNGate','Reconnect VPNGate')};
+    taskNames['outbound-delay']=tr('测试出口延迟','Test outbound delay');
     for(const task of tasks){const box=el('details',undefined,list,{className:'fleet-task'});box.dataset.taskId=task.id;box.open=opened.has(task.id);const head=el('summary',undefined,box);el('strong',taskNames[task.kind]||t(task.kind),head);el('span',(fleet.nodes||[]).find(n=>n.id===task.nodeId)?.name||task.nodeId,head);
       const status=task.result?.status||task.status;el('span',({pending:tr('排队中','Queued'),queued:tr('排队中','Queued'),leased:tr('执行中','Running'),running:tr('执行中','Running'),succeeded:tr('已完成','Completed'),success:tr('已完成','Completed'),done:tr('已完成','Completed'),failed:tr('失败','Failed'),expired:tr('已过期','Expired'),unsupported:tr('节点不支持','Unsupported'),superseded:tr('已被新配置替代','Superseded'),cancelled:tr('已取消','Cancelled')})[status]||status,head,{className:'fleet-task-status'});el('time',formatTime(task.createdAt),head);
       if(task.result?.error)el('p',task.result.error,box,{className:'fleet-error'});el('pre',JSON.stringify(task.result||{status:task.status,attempts:task.attempts},null,2),box,{className:'fleet-result'});

@@ -24,7 +24,7 @@ type Heartbeat struct {
 
 var ErrUpgradePending = errors.New("verified upgrade is awaiting restart and health verification")
 
-var TaskKinds = []string{"apply-state", "collect-status", "test-egress", "kernel-switch", "geo-update", "cert-renew", "agent-upgrade", "purge", "core-control", "traffic-reset", "vpngate-install", "vpngate-reconnect"}
+var TaskKinds = []string{"apply-state", "collect-status", "test-egress", "kernel-switch", "geo-update", "cert-renew", "agent-upgrade", "purge", "core-control", "traffic-reset", "vpngate-install", "vpngate-reconnect", "outbound-delay"}
 
 type DesiredState struct {
 	NodeID       string          `json:"nodeId"`

@@ -321,7 +321,9 @@ func (a *App) importBackup(source multipart.File, replaceIdentity bool) (restore
 		return outcome, fmt.Errorf("备份中的 IPinfo Token 无效: %w", err)
 	}
 	restored.Settings.IPInfoTokenSet, restored.Settings.IPInfoTokenClear = false, false
-	if restored.Settings.Username == "" || restored.Settings.Password == "" || restored.Settings.APIAddress == "" {
+	// A fleet policy intentionally omits panel credentials. Restoring it into
+	// its isolated editor must not require or replace control authentication.
+	if restored.Settings.APIAddress == "" || (a.role != "editor" && (restored.Settings.Username == "" || restored.Settings.Password == "")) {
 		return outcome, fmt.Errorf("备份缺少必要的面板设置")
 	}
 	if err := validateSubscriptionServicePort(restored.Settings, restored.Inbounds); err != nil {

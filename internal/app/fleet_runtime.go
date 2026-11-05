@@ -67,6 +67,13 @@ func (n *nodeRuntime) Snapshot() fleet.Status {
 	n.mu.Unlock()
 	m.mu.Lock()
 	status.Running = m.runningLocked()
+	started := m.started
+	logs := append([]string(nil), m.logs...)
+	totals := m.state.Traffic
+	outboundTraffic := make(map[string]TrafficStats, len(m.state.OutboundTraffic))
+	for name, usage := range m.state.OutboundTraffic {
+		outboundTraffic[name] = usage
+	}
 	for _, in := range m.state.Inbounds {
 		status.Traffic[in.ID] = fleet.Usage{LegacyCombined: in.Traffic.LegacyCombined, AllTimeLegacyCombined: in.Traffic.AllTimeLegacyCombined, Up: in.Traffic.Up, Down: in.Traffic.Down, AllTimeUp: in.Traffic.AllTimeUp, AllTimeDown: in.Traffic.AllTimeDown}
 		for _, c := range in.Clients {
@@ -74,7 +81,45 @@ func (n *nodeRuntime) Snapshot() fleet.Status {
 		}
 	}
 	m.mu.Unlock()
-	status.Details, _ = json.Marshal(map[string]any{"system": collectSystemStats(m.dataDir), "coreVersion": m.coreVersion(), "vpngate": makeVPNGateView(m), "sidecars": sidecarStatus})
+	stats := collectSystemStats(m.dataDir)
+	appendCPUSample(time.Now(), stats.CPUPercent)
+	if status.Running && !started.IsZero() {
+		stats.CoreUptime = uint64(time.Since(started).Seconds())
+	}
+	stats.PanelUptime = uint64(time.Since(m.panelStarted).Seconds())
+	history := map[string][]cpuSample{}
+	for _, bucket := range []int{2, 30, 60, 120, 180, 300} {
+		history[fmt.Sprint(bucket)] = aggregateCPUSHistory(bucket, 60)
+	}
+	// Bound heartbeat details independently of configured log buffer size.
+	if len(logs) > 300 {
+		logs = logs[len(logs)-300:]
+	}
+	for i, line := range logs {
+		if len(line) > 2048 {
+			logs[i] = line[:2048]
+		}
+	}
+	details := map[string]any{"system": stats, "coreVersion": m.coreVersion(), "platform": runtime.GOOS, "startedAt": started, "logs": logs, "cpuHistory": history, "totals": totals, "outboundTraffic": outboundTraffic, "vpngate": makeVPNGateView(m), "sidecars": sidecarStatus}
+	if status.Running {
+		if traffic, err := m.coreGet("/traffic"); err == nil {
+			details["traffic"] = traffic
+		}
+		if connections, err := m.coreGet("/connections"); err == nil {
+			applyConnectionStats(&stats, connections)
+			details["system"] = stats
+			if snapshot, ok := connections.(map[string]any); ok {
+				if items, ok := snapshot["connections"].([]any); ok && len(items) > 200 {
+					snapshot["connections"] = items[:200]
+					snapshot["truncated"] = true
+				}
+			}
+			if encoded, err := json.Marshal(connections); err == nil && len(encoded) < 512<<10 {
+				details["connections"] = connections
+			}
+		}
+	}
+	status.Details, _ = json.Marshal(details)
 	return status
 }
 
@@ -436,7 +481,7 @@ func (n *nodeRuntime) healthy(ctx context.Context) error {
 	return errors.New("Mihomo health check failed")
 }
 func (n *nodeRuntime) Execute(ctx context.Context, t fleet.Task) (json.RawMessage, error) {
-	if t.Kind != "collect-status" && t.Kind != "test-egress" {
+	if t.Kind != "collect-status" && t.Kind != "test-egress" && t.Kind != "outbound-delay" {
 		if _, err := os.Stat(filepath.Join(n.manager.dataDir, "break-glass")); err == nil {
 			return nil, errors.New("node is in break-glass mode")
 		}
@@ -505,6 +550,21 @@ func (n *nodeRuntime) Execute(ctx context.Context, t fleet.Task) (json.RawMessag
 		return json.Marshal(n.Snapshot())
 	case "test-egress":
 		return n.testEgress(ctx, t.Payload)
+	case "outbound-delay":
+		r, _ := http.NewRequestWithContext(ctx, http.MethodPost, "/api/mihomo/outbound/delay", bytes.NewReader(t.Payload))
+		w := &captureResponse{header: make(http.Header)}
+		(&App{manager: n.manager}).handleMihomoOutboundDelay(w, r)
+		var result struct {
+			Data    json.RawMessage `json:"data"`
+			Message string          `json:"message"`
+		}
+		if err := json.Unmarshal(w.body.Bytes(), &result); err != nil {
+			return nil, err
+		}
+		if w.code >= 300 {
+			return nil, errors.New(result.Message)
+		}
+		return result.Data, nil
 	case "kernel-switch":
 		n.mu.Lock()
 		defer n.mu.Unlock()

@@ -53,7 +53,8 @@ with sync_playwright() as pw:
                             if process.poll() is not None:raise RuntimeError((output/(case+'.log')).read_text())
                             time.sleep(.1)
                         page.goto(base+'/login');page.locator('#username').fill('fixture');page.locator('#password').fill('fixture-password');page.locator('#login-button').click();page.wait_for_url(base+'/')
-                        page.wait_for_function('Boolean(app.state)')
+                        if role=='standalone':page.wait_for_function('Boolean(app.state)')
+                        else:expect(page.locator('.fleet-heading')).to_be_visible()
                         page.evaluate("upSetLang('zh-CN')")
                         capabilities=page.evaluate("({secure:isSecureContext,uuid:typeof crypto.randomUUID,clone:typeof structuredClone,random:typeof crypto.getRandomValues})")
                         check(case+': expected browser context',capabilities['secure']==(transport!='http') and capabilities['random']=='function')
@@ -65,8 +66,8 @@ with sync_playwright() as pw:
                             payload=response.json();return payload.get('data',payload)
                         if role=='control':
                             card=api('/api/fleet/nodes',{'name':'HTTP editor node','address':'203.0.113.10'})
-                            target=card['id'];page.reload();page.wait_for_function('Boolean(app.state)');page.locator('.fleet-target-control select').select_option(target)
-                            expect(page.locator('.fleet-target-control select')).to_have_value(target)
+                            target=card['id'];page.goto(base+'/nodes/'+target+'/');page.wait_for_function('Boolean(app.state)')
+                            expect(page.locator('html')).to_have_attribute('data-node-id',target)
                         page.locator('#nav [data-view=inbounds]').click()
                         page.locator('#add-inbound').click()
                         expect(page.locator('#inbound-form')).to_be_visible(timeout=5000)
@@ -93,10 +94,11 @@ with sync_playwright() as pw:
                         saved=api('/api/state')['state']['inbounds']
                         inbound=next(item for item in saved if item['name']=='HTTP VLESS')
                         check(case+': inbound and four valid UUID clients persist',len(inbound['clients'])==4 and all(uuid_pattern.fullmatch(c['uuid']) for c in inbound['clients']))
-                        with page.expect_request(lambda request:request.url==base+'/api/state') as initial_state:
+                        workspace=base+'/nodes/'+target if target else base
+                        with page.expect_request(lambda request:request.url==workspace+'/api/state') as initial_state:
                             page.reload()
                         if target:
-                            check(case+': first state request restores the selected node',initial_state.value.header_value('X-Fleet-Node')==target)
+                            check(case+': first state request restores the selected node','/nodes/'+target+'/api/state' in initial_state.value.url)
                             defaults=context.request.get(base+'/api/state').json()['data']['state']
                             check(case+': child edits leave host global inbounds intact',not defaults['inbounds'])
                         page.locator('#nav [data-view=inbounds]').click()

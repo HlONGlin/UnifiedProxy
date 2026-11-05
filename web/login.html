@@ -173,7 +173,7 @@
       error.textContent = '';
       loginButton.disabled = true;
       loginButton.textContent = lang.logging;
-      const body = { username: document.getElementById('username').value.trim(), password: passwordInput.value };
+      const body = { username: document.getElementById('username').value.trim(), password: passwordInput.value, next: new URLSearchParams(location.search).get('next') || '' };
       try {
         // 登录页可能被挂在自定义 URI 路径下，用相对地址请求，别写死站点根。
         const base = window.location.pathname.replace(/[^/]*$/, '');

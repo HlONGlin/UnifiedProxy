@@ -132,14 +132,16 @@ func (a *App) withFleetPanel(next http.Handler) http.Handler {
 
 func (a *App) remoteRoute(path string) bool {
 	switch path {
-	case "/api/state", "/api/inbounds", "/api/inbounds/import", "/api/clients", "/api/raw-config", "/api/config/download", "/api/traffic/reset", "/api/mihomo/settings", "/api/mihomo/outbound/parse", "/api/mihomo/warp", "/api/mihomo/vpngate", "/api/core/test", "/api/core/install", "/api/geofiles/update", "/api/core/logs", "/api/import/xray":
+	case "/api/state", "/api/config", "/api/backup", "/api/logs/download", "/api/subscriptions/token", "/api/inbounds", "/api/inbounds/import", "/api/clients", "/api/raw-config", "/api/config/download", "/api/traffic/reset", "/api/mihomo/settings", "/api/mihomo/outbound/parse", "/api/mihomo/warp", "/api/mihomo/vpngate", "/api/core/test", "/api/core/install", "/api/geofiles/update", "/api/core/logs", "/api/import/xray":
 		return true
 	case "/api/tools/uuid", "/api/tools/inbound-port", "/api/tools/subscription-path", "/api/tools/reality-keypair", "/api/tools/vless-encryption", "/api/tools/ech-keypair":
 		return true
 	case "/api/core/start", "/api/core/stop", "/api/core/restart", "/api/core/connections":
 		return true
+	case "/api/mihomo/outbound/delay":
+		return true
 	}
-	return strings.HasPrefix(path, "/api/mihomo/vpngate/") || strings.HasPrefix(path, "/api/mihomo/warp/")
+	return strings.HasPrefix(path, "/api/mihomo/vpngate/") || strings.HasPrefix(path, "/api/mihomo/warp/") || strings.HasPrefix(path, "/api/server/cpuHistory/") || strings.HasPrefix(path, "/api/node-tasks/")
 }
 
 func (f *fleetConsole) editor(id string) (*App, error) {
@@ -349,18 +351,37 @@ func (a *App) handleRemotePanel(w http.ResponseWriter, r *http.Request, id strin
 		return
 	}
 	if r.URL.Path == "/api/state" {
+		if r.Method != http.MethodGet {
+			writeJSON(w, 405, apiResponse{})
+			return
+		}
 		m := editor.manager
 		m.mu.Lock()
 		state := copyState(m.state)
 		m.mu.Unlock()
 		state.Settings = state.Settings.maskSecrets()
+		a.fleetSubscriptionView(&state)
+		state.LegacyMigrations = nil
+		state.WARP = nil
+		basics := effectiveMihomoBasics(state)
+		state.MihomoBasics = &basics
+		state.Traffic = TrafficTotals{}
 		n := f.store.Node(id)
 		for i := range state.Inbounds {
 			in := &state.Inbounds[i]
+			if u, ok := n.Status.Traffic[in.ID]; ok {
+				in.Traffic = fleetUsageStats(u)
+			}
+			state.Traffic.Up += in.Traffic.Up
+			state.Traffic.Down += in.Traffic.Down
+			state.Traffic.AllTimeUp += in.Traffic.AllTimeUp
+			state.Traffic.AllTimeDown += in.Traffic.AllTimeDown
+			state.Traffic.LegacyCombined += in.Traffic.LegacyCombined
+			state.Traffic.AllTimeLegacyCombined += in.Traffic.AllTimeLegacyCombined
 			for j := range in.Clients {
 				c := &in.Clients[j]
 				if u, ok := n.Status.Traffic[in.ID+":"+c.ID]; ok {
-					c.Traffic = TrafficStats{LegacyCombined: u.LegacyCombined, AllTimeLegacyCombined: u.AllTimeLegacyCombined, Up: u.Up, Down: u.Down, AllTimeUp: u.AllTimeUp, AllTimeDown: u.AllTimeDown}
+					c.Traffic = fleetUsageStats(u)
 					c.LastOnline = u.LastOnline
 				}
 			}
@@ -370,16 +391,39 @@ func (a *App) handleRemotePanel(w http.ResponseWriter, r *http.Request, id strin
 		if details == nil {
 			details = map[string]any{}
 		}
+		if totals, ok := details["totals"]; ok {
+			b, _ := json.Marshal(totals)
+			_ = json.Unmarshal(b, &state.Traffic)
+		}
+		if traffic, ok := details["outboundTraffic"]; ok {
+			b, _ := json.Marshal(traffic)
+			_ = json.Unmarshal(b, &state.OutboundTraffic)
+		}
 		details["state"] = state
 		details["running"] = n.Status.Running
 		details["version"] = n.Status.Version
 		details["fleetNode"] = n.ID
 		details["lastSeen"] = n.LastSeen
+		details["nodeName"] = n.Name
+		details["nodeAddress"] = n.EffectiveAddress()
+		details["online"] = n.Online(time.Now())
 		writeJSON(w, 200, apiResponse{OK: true, Data: details})
 		return
 	}
+	if a.remoteSnapshotResponse(w, r, id) {
+		return
+	}
+	if a.remoteTaskResponse(w, r, id, editor) {
+		return
+	}
+	if r.URL.Path == "/api/subscriptions/token" {
+		a.handleFleetNodeSubscriptionToken(w, r, editor)
+		return
+	}
 	handlers := map[string]http.HandlerFunc{
-		"/api/inbounds": editor.handleInbounds, "/api/inbounds/import": editor.handleInboundImport,
+		"/api/config": editor.handleConfig, "/api/backup": editor.handleBackup,
+		"/api/subscriptions/token": editor.handleSubscriptionToken,
+		"/api/inbounds":            editor.handleInbounds, "/api/inbounds/import": editor.handleInboundImport,
 		"/api/clients": editor.handleClients, "/api/raw-config": editor.handleRawConfig,
 		"/api/config/download": editor.handleConfigDownload, "/api/traffic/reset": editor.handleTrafficReset,
 		"/api/mihomo/settings": editor.handleMihomoSettings, "/api/mihomo/outbound/parse": editor.handleMihomoOutboundYAML,

@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="zh-CN" data-default-language="zh-CN" data-theme="light" data-color-theme="t0">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>UnifiedProxy | 舰队管理</title>
+  <link rel="icon" type="image/svg+xml" href="media/unifiedproxy.svg">
+  <link rel="stylesheet" href="static/themes.css">
+  <link rel="stylesheet" href="static/panel.css">
+  <link rel="stylesheet" href="static/components.css">
+  <link rel="stylesheet" href="static/workspace.css">
+  <link rel="stylesheet" href="static/polish.css">
+  <link rel="stylesheet" href="static/fleet.css">
+  <link rel="stylesheet" href="static/server-workspace.css">
+  <script src="static/runtime.js"></script>
+  <script src="static/appearance.js"></script>
+</head>
+<body class="fleet-portal">
+  <script src="static/icons.js"></script>
+  <script src="static/i18n-locales.js"></script>
+  <script src="static/i18n.js"></script>
+  <header class="fleet-portal-header">
+    <a class="fleet-brand" href="./"><img src="media/unifiedproxy.svg" alt="" width="32" height="32"><strong>UnifiedProxy</strong><span id="crumb">舰队管理</span></a>
+    <div class="fleet-portal-actions">
+      <label data-appearance-slot></label>
+      <button class="outline-btn" id="portal-mode" type="button" data-i18n="nav.theme">主题</button>
+      <a class="outline-btn" href="host/#settings" id="host-settings">主机设置</a>
+      <button class="outline-btn" type="button" id="portal-logout" data-i18n="nav.logOut">退出登录</button>
+    </div>
+  </header>
+  <main class="fleet-portal-main">
+    <section class="view active" id="view-fleet"><h1>舰队管理</h1><p class="fleet-load-status" role="status">正在连接舰队服务…</p></section>
+  </main>
+  <script>
+    function panelBase(){return location.pathname.replace(/[^/]*$/,'');}
+    function panelURL(path){return panelBase()+String(path||'').replace(/^\/+/,'');}
+    document.querySelector('#portal-mode').onclick=()=>UPTheme.setMode(UPTheme.mode==='dark'?'light':'dark');
+    document.querySelector('#portal-logout').onclick=async()=>{await fetch(panelURL('api/auth/logout'),{method:'POST'});location.href=panelURL('login');};
+    UPTheme.sync();
+  </script>
+  <script src="static/dialog.js"></script>
+  <script src="static/fleet-workspace.js"></script>
+  <script src="static/fleet.js"></script>
+</body>
+</html>

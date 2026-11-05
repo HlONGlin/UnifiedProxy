@@ -206,7 +206,7 @@ func (a *App) handleSubscriptionToken(w http.ResponseWriter, r *http.Request) {
 	}
 	a.manager.mu.Lock()
 	defer a.manager.mu.Unlock()
-	found := false
+	found := a.fleet != nil && a.manager.state.SubscriptionTokens[username] != ""
 	for _, client := range allStateClients(a.manager.state.Inbounds) {
 		if subscriptionUsername(client) == username {
 			found = true

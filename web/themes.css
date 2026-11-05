@@ -29,6 +29,8 @@
   --success-ink: #146c3a; --warning-ink: #8a4700; --danger-ink: #b91c1c;
   --latency-good: #1f9d55; --latency-mid: #d97706; --latency-bad: #dc2626; --latency-dead: #68738a;
   --semantic-overlay: #0a0f1c;
+  --dialog-overlay: rgb(10 15 28 / 42%);
+  --dialog-shadow: 0 20px 70px rgb(0 0 0 / 24%);
 }
 :root, [data-color-theme="t0"] {
   --canvas: #fafafa; --surface-1: #ffffff; --surface-2: #f2f2f2; --surface-3: #ebebeb; --surface-4: #dfdfdf;

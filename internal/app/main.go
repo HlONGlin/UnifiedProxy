@@ -1134,7 +1134,7 @@ func (a *App) panelRoutes(serveSubscriptions bool) http.Handler {
 	mux.HandleFunc("/api/import/xray", a.auth(a.handleXrayImport))
 	mux.HandleFunc("/api/fleet", a.auth(a.handleFleet))
 	mux.HandleFunc("/api/fleet/", a.auth(a.handleFleet))
-	handler := a.withPanelPath(a.withFleetPanel(mux))
+	handler := a.withPanelPath(a.withFleetWorkspace(a.withFleetPanel(mux)))
 	if serveSubscriptions {
 		return logging(a.withFleetTransport(a.withPeerNetwork(a.withSubscriptions(handler))))
 	}
@@ -1158,12 +1158,16 @@ func (a *App) handleIndex(w http.ResponseWriter, r *http.Request) {
 		http.Redirect(w, r, a.manager.panelPath()+"login", http.StatusFound)
 		return
 	}
+	if a.fleet != nil {
+		a.serveWorkspacePage(w, "web/fleet.html", "portal", "")
+		return
+	}
 	a.serveLocalizedPage(w, "web/index.html")
 }
 
 func (a *App) handleLoginPage(w http.ResponseWriter, r *http.Request) {
 	if a.isLoggedIn(r) {
-		http.Redirect(w, r, a.manager.panelPath(), http.StatusFound)
+		http.Redirect(w, r, a.loginDestination(r), http.StatusFound)
 		return
 	}
 	a.serveLocalizedPage(w, "web/login.html")
@@ -1219,14 +1223,18 @@ func (a *App) handleMedia(w http.ResponseWriter, r *http.Request) {
 // Language 替换进 <html data-default-language>：页面是静态资源，没有模板引擎，而
 // localStorage 还空着的浏览器只能靠这个属性决定首屏语言。
 func (a *App) serveLocalizedPage(w http.ResponseWriter, name string) {
+	a.serveWorkspacePage(w, name, "", "")
+}
+
+func (a *App) serveWorkspacePage(w http.ResponseWriter, name, workspace, nodeID string) {
 	page, err := webFS.ReadFile(name)
 	if err != nil {
 		http.NotFound(w, nil)
 		return
 	}
 	text := strings.Replace(string(page), `data-default-language="zh-CN"`, `data-default-language="`+a.lang()+`"`, 1)
-	if name == "web/index.html" && a.role != "" {
-		text = strings.Replace(text, "<html ", `<html data-fleet-role="`+a.role+`" `, 1)
+	if a.role != "" {
+		text = strings.Replace(text, "<html ", `<html data-fleet-role="`+a.role+`" data-workspace="`+workspace+`" data-node-id="`+nodeID+`" `, 1)
 	}
 	a.writeAsset(w, []byte(themedPage(text, a.uiTheme())), "text/html; charset=utf-8")
 }
@@ -1261,7 +1269,7 @@ func (a *App) handleLogin(w http.ResponseWriter, r *http.Request) {
 		writeJSON(w, http.StatusMethodNotAllowed, apiResponse{Message: "method not allowed"})
 		return
 	}
-	var input struct{ Username, Password string }
+	var input struct{ Username, Password, Next string }
 	if err := decodeJSON(r, &input); err != nil {
 		writeJSON(w, http.StatusBadRequest, apiResponse{Message: "invalid request"})
 		return
@@ -1283,7 +1291,6 @@ func (a *App) handleLogin(w http.ResponseWriter, r *http.Request) {
 	a.upgradePasswordHash(input.Password)
 	// Scoping the cookie to the panel prefix keeps it out of every other path on
 	// the port, and makes changing the prefix invalidate the browser's session.
-	base := a.manager.panelPath()
 	minutes := a.sessionMaxAgeMinutes()
 	token, err := a.startSession(time.Duration(minutes) * time.Minute)
 	if err != nil {
@@ -1291,7 +1298,7 @@ func (a *App) handleLogin(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	a.setSessionCookie(w, r, token, minutes*60)
-	writeJSON(w, http.StatusOK, apiResponse{OK: true, Data: map[string]string{"redirect": base}})
+	writeJSON(w, http.StatusOK, apiResponse{OK: true, Data: map[string]string{"redirect": a.workspaceDestination(input.Next)}})
 }
 
 // upgradePasswordHash re-hashes a correct password stored with weaker parameters.

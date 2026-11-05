@@ -421,7 +421,14 @@
     button.disabled=true;delayResults.set(name,'Testing');
     renderOutbounds();
     try{
-      const result=await api('/api/mihomo/outbound/delay',{method:'POST',body:JSON.stringify({name})});
+      let result=await api('/api/mihomo/outbound/delay',{method:'POST',body:JSON.stringify({name})});
+      if(result.kind==='outbound-delay'&&result.id){
+        const taskID=result.id,deadline=Date.now()+65000;
+        while(!result.result&&Date.now()<deadline){await new Promise(resolve=>setTimeout(resolve,1000));result=await api('/api/node-tasks/'+encodeURIComponent(taskID));if(['expired','cancelled'].includes(result.status))throw new Error(result.status);}
+        if(!result.result)throw new Error((window.upGetLang?.()||'zh-CN').startsWith('zh')?'等待子服务器响应超时，请查看舰队任务记录。':'Timed out waiting for the server; see fleet task history.');
+        if(result.result.status!=='success')throw new Error(result.result.error||result.result.status);
+        result=result.result.data;
+      }
       delayResults.set(name,result.delay+' ms');
     }catch(error){delayResults.set(name,error.message);}finally{if(currentTab==='outbounds')renderOutbounds();}
   }

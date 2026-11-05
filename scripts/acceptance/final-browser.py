@@ -66,7 +66,7 @@ def main():
    with sync_playwright() as pw:
     browser=pw.chromium.launch(headless=True,args=['--no-sandbox']);ctx=browser.new_context(viewport={'width':1440,'height':1000},permissions=['clipboard-read','clipboard-write']);page=ctx.new_page();page.on('pageerror',lambda e:errors.append(str(e)))
     page.goto(url+'/login',wait_until='networkidle');page.locator('#username').fill('fixture');page.locator('#password').fill('wrong-password');page.locator('#login-button').click();page.wait_for_timeout(400);check('F01 invalid credentials rejected',page.locator('.error').inner_text().strip()!='')
-    page.locator('#password').fill('fixture-password');page.locator('#login-button').click();page.wait_for_url(url+'/');page.wait_for_load_state('networkidle');check('F01 real login',page.locator('#nav').is_visible())
+    page.locator('#password').fill('fixture-password');page.locator('#login-button').click();page.wait_for_url(url+'/');page.wait_for_load_state('networkidle');check('F01 real login',page.locator('#view-fleet' if args.fleet else '#nav').is_visible())
     for locale in ['zh-CN','zh-TW','en','ja','ru','fa','vi','es','tr','uk','pt-BR']:
      page.evaluate('(v)=>upSetLang(v)',locale);check('F01/F02 locale '+locale,page.get_attribute('html','lang')==locale)
     page.evaluate("upSetLang('zh-CN')");page.evaluate("UPTheme.setColor('t4');UPTheme.setMode('dark')");page.reload(wait_until='networkidle');check('F02 palette persists after reload',page.get_attribute('html','data-color-theme')=='t4' and page.get_attribute('html','data-theme')=='dark')
@@ -86,7 +86,7 @@ def main():
      if args.login_only:
       login_context=browser.new_context(viewport={'width':1440,'height':1000});login=login_context.new_page();login.on('pageerror',lambda e:errors.append(str(e)));login.goto(url+'/login',wait_until='networkidle');check('F01 unauthenticated login form '+palette+'-'+mode,login.locator('#login-button').is_visible());login.evaluate('([p,m])=>{UPTheme.setColor(p);UPTheme.setMode(m)}',[palette,mode]);shot(login,folder,'login');login.set_viewport_size({'width':390,'height':844});shot(login,folder,'mobile-login');login_context.close();continue
      if args.fleet:
-      page.locator('[data-view=fleet]').click();page.locator('.fleet-node-card').first.wait_for();page.evaluate("document.querySelector('.app').scrollTop=0");shot(page,folder,'fleet');page.set_viewport_size({'width':390,'height':844});shot(page,folder,'mobile-fleet');check('F28 fleet mobile fits viewport',page.evaluate('document.documentElement.scrollWidth<=innerWidth+1'));page.set_viewport_size({'width':1440,'height':1000})
+      page.goto(url+'/',wait_until='networkidle');page.locator('.fleet-node-card').first.wait_for();page.evaluate("window.scrollTo(0,0)");shot(page,folder,'fleet');page.set_viewport_size({'width':390,'height':844});shot(page,folder,'mobile-fleet');check('F28 fleet mobile fits viewport',page.evaluate('document.documentElement.scrollWidth<=innerWidth+1'));page.set_viewport_size({'width':1440,'height':1000})
       for tab,name in [('advanced','fleet-model'),('maintenance','fleet-certificates'),('backup','fleet-backup'),('tasks','fleet-tasks')]:
        page.locator('[data-fleet-tab='+tab+']').click()
        if tab=='advanced':
@@ -104,7 +104,7 @@ def main():
      page.set_viewport_size({'width':390,'height':844});close_all(page);page.evaluate("setView('dashboard')");shot(page,folder,'mobile-dashboard');page.evaluate("setView('inbounds')");shot(page,folder,'mobile-inbounds');page.set_viewport_size({'width':1440,'height':1000})
      login_context=browser.new_context(viewport={'width':1440,'height':1000});login=login_context.new_page();login.on('pageerror',lambda e:errors.append(str(e)));login.goto(url+'/login',wait_until='networkidle');check('F01 unauthenticated login form '+palette+'-'+mode,login.locator('#login-button').is_visible());login.evaluate('([p,m])=>{UPTheme.setColor(p);UPTheme.setMode(m)}',[palette,mode]);shot(login,folder,'login');login.set_viewport_size({'width':390,'height':844});shot(login,folder,'mobile-login');login_context.close()
      subscription_screens(ctx,url,folder,palette,mode,tokens)
-    page.emulate_media(reduced_motion='reduce');check('F36 reduced motion zero',page.evaluate("getComputedStyle(document.querySelector('#refresh')).transitionDuration.split(',').every(s=>parseFloat(s)===0)"));check('No uncaught browser errors',not errors,errors);browser.close()
+    page.emulate_media(reduced_motion='reduce');check('F36 reduced motion zero',page.evaluate("getComputedStyle(document.querySelector('#refresh,.fleet-toolbar button')).transitionDuration.split(',').every(s=>parseFloat(s)===0)"));check('No uncaught browser errors',not errors,errors);browser.close()
   finally:os.killpg(server.pid,signal.SIGTERM);server.wait(timeout=10)
  failures=[{'theme':r['theme'],'surface':r['surface'],**f} for r in contrast for f in r['failures']];(OUT/'contrast-failures.json').write_text(json.dumps(failures,ensure_ascii=False,indent=2));check('All measured text meets contrast thresholds',not failures,failures[:5]);check('T2 fluorescent area below two percent',all(d['fluorescent_pixel_share']<.02 for d in discipline if d['theme'].startswith('t2')))
  result={'checks':checks,'operations':operations,'screenshots':shots,'contrasts':contrast,'discipline':discipline,'errors':errors}
