@@ -36,7 +36,7 @@ UnifiedProxy встановлюється в `/usr/local/m-ui`, дані збе�
 
 `m-ui update` оновлює UnifiedProxy зі збереженням усіх налаштувань. Перед оновленням створюється знімок каталогу даних у `data/backups/`; зберігаються три останні знімки.
 
-У релізах є `m-ui-linux-<architecture>.tar.gz` для `386`, `amd64`, `arm64`, `armv5`, `armv6`, `armv7` і `s390x`, а також `m-ui-windows-amd64.zip`.
+Релізи UnifiedProxy містять `unifiedproxy-linux-<architecture>.tar.gz` для `386`, `amd64`, `arm64`, `armv5`, `armv6`, `armv7` і `s390x`, а також `unifiedproxy-windows-amd64.zip`; назва служби й команди керування зберігає сумісність із `m-ui`.
 
 <details>
 <summary>Docker</summary>

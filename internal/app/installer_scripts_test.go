@@ -34,6 +34,48 @@ func TestInstallerTLSVariablesAreInitializedBeforeUse(t *testing.T) {
 	}
 }
 
+func TestInstallerAndReleaseWorkflowUseUnifiedProxyPackageNames(t *testing.T) {
+	installer, err := os.ReadFile("install.sh")
+	if err != nil {
+		t.Fatal(err)
+	}
+	workflow, err := os.ReadFile(".github/workflows/release.yml")
+	if err != nil {
+		t.Fatal(err)
+	}
+	installerText := string(installer)
+	workflowText := string(workflow)
+	for _, required := range []string{
+		`unifiedproxy-linux-${ARCH}.tar.gz`,
+		`unifiedproxy-linux-${ARCH}`,
+		`m-ui-linux-${ARCH}.tar.gz`,
+		`has no UnifiedProxy Linux package`,
+	} {
+		if !strings.Contains(installerText, required) {
+			t.Fatalf("install.sh is missing package lookup %q", required)
+		}
+	}
+	for _, required := range []string{
+		`unifiedproxy-linux-${asset}`,
+		`dist/unifiedproxy-windows-amd64.zip`,
+		`unifiedproxy.exe`,
+		`dist/unifiedproxy-linux-amd64 version`,
+	} {
+		if !strings.Contains(workflowText, required) {
+			t.Fatalf("release workflow is missing UnifiedProxy package configuration %q", required)
+		}
+	}
+	for _, legacy := range []string{
+		`local output="m-ui-linux-${asset}"`,
+		`windows_archive="dist/m-ui-windows-amd64.zip"`,
+		`reported_version="$(./dist/m-ui-linux-amd64 version)"`,
+	} {
+		if strings.Contains(workflowText, legacy) {
+			t.Fatalf("release workflow still publishes legacy product asset naming: %s", legacy)
+		}
+	}
+}
+
 func TestManagementScriptKeepsMenuChoicesLocal(t *testing.T) {
 	management, err := os.ReadFile("scripts/m-ui.sh")
 	if err != nil {

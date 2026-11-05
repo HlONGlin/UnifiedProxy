@@ -46,7 +46,7 @@ UnifiedProxy در `/usr/local/m-ui` نصب می‌شود و داده‌هایش 
 
 `m-ui update` با حفظ همهٔ تنظیمات UnifiedProxy را به‌روز می‌کند. پیش از به‌روزرسانی، از پوشهٔ داده در `data/backups/` تصویر لحظه‌ای می‌گیرد و ۳ نسخهٔ آخر را نگه می‌دارد.
 
-هر انتشار شامل `m-ui-linux-<architecture>.tar.gz` برای `386`، `amd64`، `arm64`، `armv5`، `armv6`، `armv7` و `s390x` و همچنین `m-ui-windows-amd64.zip` است.
+انتشارهای UnifiedProxy شامل `unifiedproxy-linux-<architecture>.tar.gz` برای معماری‌های `386`، `amd64`، `arm64`، `armv5`، `armv6`، `armv7` و `s390x` و نیز `unifiedproxy-windows-amd64.zip` هستند؛ نام سازگار سرویس و فرمان مدیریت همچنان `m-ui` است.
 
 <details>
 <summary>داکر</summary>

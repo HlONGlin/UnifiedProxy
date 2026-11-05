@@ -36,7 +36,7 @@ UnifiedProxy `/usr/local/m-ui` dizinine kurulur ve verilerini `/usr/local/m-ui/d
 
 `m-ui update`, tüm ayarları koruyarak UnifiedProxy'yi günceller. Güncellemeden önce veri dizininin anlık görüntüsünü `data/backups/` içine alır ve en yeni 3 tanesini saklar.
 
-Her sürümde `386`, `amd64`, `arm64`, `armv5`, `armv6`, `armv7` ve `s390x` için `m-ui-linux-<architecture>.tar.gz` ile `m-ui-windows-amd64.zip` bulunur.
+UnifiedProxy sürümlerinde `386`, `amd64`, `arm64`, `armv5`, `armv6`, `armv7` ve `s390x` için `unifiedproxy-linux-<architecture>.tar.gz` ile `unifiedproxy-windows-amd64.zip` bulunur; hizmet ve yönetim komutu uyumlu `m-ui` adını korur.
 
 <details>
 <summary>Docker</summary>

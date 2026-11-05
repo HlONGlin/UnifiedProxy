@@ -64,7 +64,7 @@ Build from this repository by default. The release workflow can publish `ghcr.io
 
 </details>
 
-Existing installations use `m-ui update`. It snapshots data into `data/backups/` before updating and keeps the newest three snapshots. An existing Mihomo core is retained unless `--update-mihomo` is supplied. Release archives include `m-ui-linux-<architecture>.tar.gz` for `386`, `amd64`, `arm64`, `armv5`, `armv6`, `armv7` and `s390x`, plus `m-ui-windows-amd64.zip`.
+Existing installations use `m-ui update`. It snapshots data into `data/backups/` before updating and keeps the newest three snapshots. An existing Mihomo core is retained unless `--update-mihomo` is supplied. UnifiedProxy releases provide `unifiedproxy-linux-<architecture>.tar.gz` for `386`, `amd64`, `arm64`, `armv5`, `armv6`, `armv7` and `s390x`, plus `unifiedproxy-windows-amd64.zip`; the service and management command retain the compatible `m-ui` name.
 
 <a id="workspace"></a>
 

@@ -64,7 +64,7 @@ docker compose logs m-ui
 
 </details>
 
-已有部署运行 `m-ui update`，更新前自动在 `data/backups/` 创建数据快照，保留最近 3 份。安装器保留已有 Mihomo 内核；显式传入 `--update-mihomo` 才替换。发布包提供 `386`、`amd64`、`arm64`、`armv5`、`armv6`、`armv7`、`s390x` 的 `m-ui-linux-<architecture>.tar.gz`，以及 `m-ui-windows-amd64.zip`。
+已有部署运行 `m-ui update`，更新前自动在 `data/backups/` 创建数据快照，保留最近 3 份。安装器保留已有 Mihomo 内核；显式传入 `--update-mihomo` 才替换。UnifiedProxy 发布包提供 `unifiedproxy-linux-<architecture>.tar.gz`（`386`、`amd64`、`arm64`、`armv5`、`armv6`、`armv7`、`s390x`）及 `unifiedproxy-windows-amd64.zip`；系统服务和管理命令继续使用 `m-ui` 兼容名称。
 
 <a id="workspace"></a>
 

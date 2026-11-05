@@ -66,7 +66,7 @@ jobs:
             local asset="$1"
             local goarch="$2"
             local goarm="${3:-}"
-            local output="m-ui-linux-${asset}"
+            local output="unifiedproxy-linux-${asset}"
             local archive="${GITHUB_WORKSPACE}/dist/${output}.tar.gz"
 
             export GOARCH="$goarch"
@@ -77,7 +77,7 @@ jobs:
               unset GOARM || true
             fi
 
-            echo "Building ${output}..."
+            echo "Building UnifiedProxy ${output}..."
 
             go build \
               -trimpath \
@@ -107,7 +107,7 @@ jobs:
           build_one "armv7" "arm" "7"
           build_one "s390x" "s390x"
 
-          echo "Building m-ui-windows-amd64..."
+          echo "Building unifiedproxy-windows-amd64..."
 
           export GOOS=windows
           export GOARCH=amd64
@@ -117,15 +117,15 @@ jobs:
           go build \
             -trimpath \
             -ldflags="-s -w -X main.version=${GITHUB_REF_NAME}" \
-            -o "dist/m-ui.exe" \
+            -o "dist/unifiedproxy.exe" \
             .
 
           (
             cd dist
-            zip -9 "m-ui-windows-amd64.zip" "m-ui.exe"
+            zip -9 "unifiedproxy-windows-amd64.zip" "unifiedproxy.exe"
           )
 
-          rm "dist/m-ui.exe"
+          rm "dist/unifiedproxy.exe"
 
           for role in control node; do
             go build -trimpath -ldflags="-s -w -X main.version=${GITHUB_REF_NAME}" -o "dist/${role}-windows-amd64.exe" "./cmd/$role"
@@ -139,13 +139,13 @@ jobs:
           set -euo pipefail
 
           assets=(
-            "m-ui-linux-386"
-            "m-ui-linux-amd64"
-            "m-ui-linux-arm64"
-            "m-ui-linux-armv5"
-            "m-ui-linux-armv6"
-            "m-ui-linux-armv7"
-            "m-ui-linux-s390x"
+            "unifiedproxy-linux-386"
+            "unifiedproxy-linux-amd64"
+            "unifiedproxy-linux-arm64"
+            "unifiedproxy-linux-armv5"
+            "unifiedproxy-linux-armv6"
+            "unifiedproxy-linux-armv7"
+            "unifiedproxy-linux-s390x"
           )
 
           for asset in "${assets[@]}"; do
@@ -165,7 +165,7 @@ jobs:
             fi
           done
 
-          windows_archive="dist/m-ui-windows-amd64.zip"
+          windows_archive="dist/unifiedproxy-windows-amd64.zip"
 
           if [[ ! -s "$windows_archive" ]]; then
             echo "Missing or empty archive: $windows_archive"
@@ -174,7 +174,7 @@ jobs:
 
           windows_contents="$(unzip -Z1 "$windows_archive")"
 
-          if [[ "$windows_contents" != "m-ui.exe" ]]; then
+          if [[ "$windows_contents" != "unifiedproxy.exe" ]]; then
             echo "Unexpected contents in $windows_archive:"
             echo "$windows_contents"
             exit 1
@@ -182,7 +182,7 @@ jobs:
 
           unzip -tq "$windows_archive"
 
-          reported_version="$(./dist/m-ui-linux-amd64 version)"
+          reported_version="$(./dist/unifiedproxy-linux-amd64 version)"
 
           if [[ "$reported_version" != "$GITHUB_REF_NAME" ]]; then
             echo "Incorrect embedded version."

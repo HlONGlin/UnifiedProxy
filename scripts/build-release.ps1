@@ -36,11 +36,11 @@ try {
         $asset, $architecture, $armVersion = $target
         $env:GOARCH = $architecture
         if ($armVersion) { $env:GOARM = $armVersion } else { Remove-Item Env:GOARM -ErrorAction SilentlyContinue }
-        $binary = "dist\m-ui-linux-$asset"
+        $binary = "dist\unifiedproxy-linux-$asset"
         $archive = "$binary.tar.gz"
         go build -trimpath "-ldflags=$linkerFlags" -o $binary .
         if ($LASTEXITCODE -ne 0) { throw "build failed: $asset" }
-        tar -czf $archive -C dist "m-ui-linux-$asset"
+        tar -czf $archive -C dist "unifiedproxy-linux-$asset"
         if ($LASTEXITCODE -ne 0) { throw "package failed: $asset" }
         Write-Host "Built $archive"
     }

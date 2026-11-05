@@ -24,13 +24,13 @@ SSL_MODE=""; SSL_DOMAIN=""; SSL_IP=""; SSL_CERT=""; SSL_KEY=""; NO_SSL=0; SSL_ME
 NO_BACKUP=0; BACKUP_KEEP=3; BACKUP_PATH=""
 TEMP_DIR=""
 
-info() { echo -e "${green}[m-ui]${plain} $*"; }
-warn() { echo -e "${yellow}[m-ui]${plain} $*"; }
-die() { echo -e "${red}[m-ui] ERROR:${plain} $*" >&2; exit 1; }
+info() { echo -e "${green}[UnifiedProxy]${plain} $*"; }
+warn() { echo -e "${yellow}[UnifiedProxy]${plain} $*"; }
+die() { echo -e "${red}[UnifiedProxy] ERROR:${plain} $*" >&2; exit 1; }
 
 usage() {
     cat <<'EOF'
-Install or update m-ui on Linux.
+Install or update UnifiedProxy on Linux.
 
 Usage:
   bash install.sh [options]
@@ -42,7 +42,7 @@ Options:
   --password PASSWORD     Login password (default: random 16-character value)
   --listen-ip IP          Panel listen IP (default: 0.0.0.0)
   --version TAG           Install a release tag, for example v0.1.0
-  --update                Update m-ui and preserve all existing data/settings
+  --update                Update UnifiedProxy and preserve all existing data/settings
   --mihomo-version TAG    Install a specific Mihomo release
   --update-mihomo         Replace an existing Mihomo core
   --skip-mihomo           Do not install Mihomo when it is missing
@@ -296,7 +296,7 @@ issue_domain_certificate() {
         # ACME requires stopping the panel for the standalone challenge. Always
         # bring it back even when applying the certificate or restarting fails.
         restart_panel_service >/dev/null 2>&1 || true
-        warn "certificate was issued, but m-ui TLS configuration failed"
+        warn "certificate was issued, but UnifiedProxy TLS configuration failed"
         return 1
     fi
 }
@@ -322,7 +322,7 @@ issue_ip_certificate() {
     chmod 0644 "$cert"; chmod 0600 "$key"
     if ! configure_panel_tls "$cert" "$key" "$address"; then
         restart_panel_service >/dev/null 2>&1 || true
-        warn "IP certificate was issued, but m-ui TLS configuration failed"
+        warn "IP certificate was issued, but UnifiedProxy TLS configuration failed"
         return 1
     fi
 }
@@ -369,7 +369,7 @@ configure_tls() {
 validate_config_value() {
     if [[ $PORT_SET -eq 1 ]]; then
         [[ "$PORT" =~ ^[0-9]+$ ]] && ((PORT >= 1 && PORT <= 65535)) || die "panel port must be between 1 and 65535"
-        [[ "$PORT" -ne 12080 && "$PORT" -ne 9093 ]] || die "panel port ${PORT} is reserved by m-ui defaults"
+        [[ "$PORT" -ne 12080 && "$PORT" -ne 9093 ]] || die "panel port ${PORT} is reserved by UnifiedProxy defaults"
         if [[ ! -f "$DATA_DIR/state.json" ]] && port_in_use "$PORT"; then
             die "port ${PORT} is already in use"
         fi
@@ -430,35 +430,42 @@ download_mui() {
     if [[ -n "${MUI_BINARY_PATH:-}" ]]; then
         [[ -f "$MUI_BINARY_PATH" ]] || die "MUI_BINARY_PATH does not exist"
         cp "$MUI_BINARY_PATH" "$destination"; chmod 0755 "$destination"
-        "$destination" version >/dev/null 2>&1 || die "MUI_BINARY_PATH is not a runnable m-ui binary"
+        "$destination" version >/dev/null 2>&1 || die "MUI_BINARY_PATH is not a runnable UnifiedProxy binary"
         return
     fi
     local json="${TEMP_DIR}/m-ui-release.json" tag="" url="" candidate
-    local asset="m-ui-linux-${ARCH}.tar.gz"
+    local asset="unifiedproxy-linux-${ARCH}.tar.gz"
+    local legacy_asset="m-ui-linux-${ARCH}.tar.gz"
     if fetch_release_json "$REPO" "$VERSION" "$json"; then
         tag="$(release_tag_from_json "$json")"; [[ -n "$tag" ]] || die "GitHub release did not contain a tag"
         while IFS= read -r candidate; do
             local base="${candidate##*/}"
             [[ "$base" == "$asset" ]] && { url="$candidate"; break; }
         done < <(asset_urls_from_json "$json")
-        [[ -n "$url" ]] || die "release ${tag} has no m-ui Linux asset for ${ARCH}; expected ${asset}"
+        if [[ -z "$url" ]]; then
+            while IFS= read -r candidate; do
+                local base="${candidate##*/}"
+                [[ "$base" == "$legacy_asset" ]] && { url="$candidate"; asset="$legacy_asset"; break; }
+            done < <(asset_urls_from_json "$json")
+        fi
+        [[ -n "$url" ]] || die "release ${tag} has no UnifiedProxy Linux package for ${ARCH}; expected ${asset}. This release may predate UnifiedProxy packaging"
     else
         warn "the GitHub API did not answer (often its hourly limit for this IP address); looking the release up on github.com instead"
-        tag="$(release_tag_without_api "$REPO" "$VERSION")" || die "could not fetch m-ui release information from GitHub; check the network or set MUI_GITHUB_PROXY"
+        tag="$(release_tag_without_api "$REPO" "$VERSION")" || die "could not fetch UnifiedProxy release information from GitHub; check the network or set MUI_GITHUB_PROXY"
         url="https://github.com/${REPO}/releases/download/${tag}/${asset}"
     fi
-    info "Downloading m-ui ${tag} for ${ARCH}..."
+    info "Downloading UnifiedProxy ${tag} for ${ARCH}..."
     local archive="${TEMP_DIR}/${asset}" unpack="${TEMP_DIR}/m-ui-unpack" source=""
-    curl -fL --retry 3 --connect-timeout 10 "$(github_url "$url")" -o "$archive" || die "m-ui download failed"
+    curl -fL --retry 3 --connect-timeout 10 "$(github_url "$url")" -o "$archive" || die "UnifiedProxy download failed"
     mkdir -p "$unpack"
     tar -xzf "$archive" -C "$unpack" || die "could not extract ${asset}"
-    source="$(find "$unpack" -type f \( -name m-ui -o -name "m-ui-linux-${ARCH}" \) -print -quit)"
-    [[ -n "$source" && -f "$source" ]] || die "m-ui release archive did not contain the expected binary"
+    source="$(find "$unpack" -type f \( -name m-ui -o -name "m-ui-linux-${ARCH}" -o -name "unifiedproxy-linux-${ARCH}" \) -print -quit)"
+    [[ -n "$source" && -f "$source" ]] || die "UnifiedProxy release archive did not contain the expected binary"
     [[ "$source" == "$destination" ]] || cp "$source" "$destination"
     chmod 0755 "$destination"
     local reported_version
-    reported_version="$("$destination" version 2>/dev/null)" || die "downloaded m-ui binary could not run on this machine"
-    [[ -n "$reported_version" ]] || die "downloaded m-ui binary did not report a version"
+    reported_version="$("$destination" version 2>/dev/null)" || die "downloaded UnifiedProxy binary could not run on this machine"
+    [[ -n "$reported_version" ]] || die "downloaded UnifiedProxy binary did not report a version"
 }
 
 download_mihomo() {
@@ -560,7 +567,7 @@ install_service() {
         systemctl enable m-ui >/dev/null
         systemctl restart m-ui
         sleep 1
-        systemctl is-active --quiet m-ui || { systemctl status m-ui --no-pager || true; die "m-ui service failed to start"; }
+        systemctl is-active --quiet m-ui || { systemctl status m-ui --no-pager || true; die "UnifiedProxy service failed to start"; }
         echo systemd
     elif command -v rc-service >/dev/null 2>&1; then
         install_repo_file deploy/m-ui.openrc "$OPENRC_UNIT" 0755
@@ -580,13 +587,13 @@ trap 'rm -rf "$TEMP_DIR"' EXIT
 new_install=0; [[ -f "$DATA_DIR/state.json" ]] || new_install=1
 
 if [[ $SSL_MENU -eq 1 ]]; then
-    [[ $new_install -eq 0 && -x "$BIN_PATH" ]] || die "m-ui is not installed in ${INSTALL_DIR}"
+    [[ $new_install -eq 0 && -x "$BIN_PATH" ]] || die "UnifiedProxy is not installed in ${INSTALL_DIR}"
     configure_tls || die "TLS certificate setup failed"
     exit 0
 fi
 
 if [[ $new_install -eq 1 ]]; then
-    [[ $UPDATE_ONLY -eq 0 ]] || die "m-ui is not installed; run the installer without --update"
+    [[ $UPDATE_ONLY -eq 0 ]] || die "UnifiedProxy is not installed; run the installer without --update"
     [[ $PORT_SET -eq 1 ]] || { PORT="$(random_port)"; PORT_SET=1; }
     [[ $PATH_SET -eq 1 ]] || { PANEL_PATH="$(random_alnum 16)"; PATH_SET=1; }
     [[ $USERNAME_SET -eq 1 ]] || { USERNAME="$(random_alnum 14)"; USERNAME_SET=1; }
@@ -607,7 +614,7 @@ state_json_ok() {
 }
 if [[ $new_install -eq 0 ]] && ! state_json_ok "$DATA_DIR/state.json"; then
     if state_json_ok "$DATA_DIR/state.json.bak"; then
-        warn "${DATA_DIR}/state.json is empty or damaged; m-ui will restore it from state.json.bak"
+        warn "${DATA_DIR}/state.json is empty or damaged; UnifiedProxy will restore it from state.json.bak"
     else
         die "${DATA_DIR}/state.json is empty or damaged and there is no usable state.json.bak. Restore it from a snapshot in ${BACKUP_DIR} or a panel backup before updating; to start over instead, move it away and run the installer again"
     fi
@@ -653,7 +660,7 @@ if [[ $new_install -eq 1 || ${#configure_args[@]} -gt 3 ]]; then
         [[ -n "$old_core" ]] && cp "$old_core" "$CORE_PATH"
         restart_panel_service >/dev/null 2>&1 || true
         [[ -n "$BACKUP_PATH" ]] && warn "data snapshot from before this attempt: ${BACKUP_PATH}"
-        die "m-ui configuration failed; previous binaries were restored when available"
+        die "UnifiedProxy configuration failed; previous binaries were restored when available"
     }
 fi
 
@@ -697,7 +704,7 @@ if [[ "$current_tls" == enabled ]]; then
 fi
 
 echo
-info "m-ui installation completed (${init_system})"
+info "UnifiedProxy installation completed (${init_system})"
 echo -e "${green}Access URL:${plain} ${access_scheme}://${access_host}:${current_port}${current_path}"
 echo -e "${green}Username:${plain}   ${current_user}"
 if [[ $new_install -eq 1 || $PASSWORD_SET -eq 1 ]]; then echo -e "${green}Password:${plain}   ${PASSWORD}"

@@ -36,7 +36,7 @@ UnifiedProxy 安裝在 `/usr/local/m-ui`，資料儲存在 `/usr/local/m-ui/data
 
 `m-ui update` 會升級 UnifiedProxy 並保留全部設定。更新前會把資料目錄快照到 `data/backups/`，保留最近 3 份。
 
-Release 提供 `386`、`amd64`、`arm64`、`armv5`、`armv6`、`armv7` 和 `s390x` 的 `m-ui-linux-<architecture>.tar.gz`，以及 `m-ui-windows-amd64.zip`。
+UnifiedProxy Release 提供 `unifiedproxy-linux-<architecture>.tar.gz`（`386`、`amd64`、`arm64`、`armv5`、`armv6`、`armv7`、`s390x`）和 `unifiedproxy-windows-amd64.zip`；系統服務與管理指令保留相容的 `m-ui` 名稱。
 
 <details>
 <summary>Docker</summary>

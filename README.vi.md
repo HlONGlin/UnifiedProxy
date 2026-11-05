@@ -36,7 +36,7 @@ UnifiedProxy được cài vào `/usr/local/m-ui`, dữ liệu nằm trong `/usr
 
 `m-ui update` nâng cấp UnifiedProxy và giữ nguyên mọi cài đặt. Trước khi cập nhật, nó chụp nhanh thư mục dữ liệu vào `data/backups/` và giữ 3 bản mới nhất.
 
-Mỗi bản phát hành có `m-ui-linux-<architecture>.tar.gz` cho `386`, `amd64`, `arm64`, `armv5`, `armv6`, `armv7` và `s390x`, cùng với `m-ui-windows-amd64.zip`.
+Gói UnifiedProxy dùng tên `unifiedproxy-linux-<architecture>.tar.gz` cho `386`, `amd64`, `arm64`, `armv5`, `armv6`, `armv7`, `s390x` và `unifiedproxy-windows-amd64.zip`; dịch vụ và lệnh quản lý tiếp tục dùng tên tương thích `m-ui`.
 
 <details>
 <summary>Docker</summary>
