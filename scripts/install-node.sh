@@ -4,7 +4,7 @@ set +x
 set -Eeuo pipefail
 umask 077
 
-control=""; control_key=""; node_id=""; version="latest"; token_stdin=0; replace_existing=0; replace_binding=0
+control=""; control_key=""; node_id=""; version="latest"; token_stdin=0; replace_existing=0; replace_binding=0; already_enrolled=0
 install_dir="${UNIFIEDPROXY_FLEET_INSTALL_DIR:-/usr/local/unifiedproxy-node}"
 work_dir=""; token=""; restart_on_failure=0; lock_fd=""
 info() { printf '[UnifiedProxy] %s\n' "$*"; }
@@ -86,27 +86,26 @@ PY
   if [[ $binding_status -eq 0 ]]; then
     if [[ -f "$data_dir/break-glass" ]]; then die 'Emergency takeover is active. Resume fleet management explicitly before restarting.'; fi
     token=""
-    systemctl enable unifiedproxy-node
-    systemctl restart unifiedproxy-node
-    systemctl is-active --quiet unifiedproxy-node || die 'Node startup failed; inspect journalctl -u unifiedproxy-node.'
-    info 'This card is already enrolled. Service restarted; return to the host panel.'
-    exit 0
+    already_enrolled=1
+    info 'This card matches the existing Fleet binding. The node will be updated while its identity and local data are preserved.'
+  elif [[ $binding_status -eq 1 ]]; then
+    info 'This server is already bound to another host.'
+    info "Current binding: $(python3 -c 'import json,sys; print(json.load(open(sys.argv[1])).get("controlURL", "unknown"))' "$data_dir/agent.json" 2>/dev/null || printf 'unreadable')"
+    info "Requested binding: $control"
+    if [[ $replace_existing -ne 1 ]]; then
+      [[ -r /dev/tty ]] || die 'No interactive terminal is available. Re-run with --replace-existing only if you intend to erase this node data and bind it to the new host.'
+      printf '\n[1] Keep the current binding and cancel (default)\n[2] Erase local node data and bind to the new host\nSelect 1 or 2: ' >/dev/tty
+      IFS= read -r choice </dev/tty || die 'Could not read the replacement choice; existing data was retained.'
+      [[ "$choice" == 2 ]] || die 'Existing binding kept; no node data was changed.'
+      printf 'Type REPLACE to erase all local node data and backups: ' >/dev/tty
+      IFS= read -r confirmation </dev/tty || die 'Could not read confirmation; existing data was retained.'
+      [[ "$confirmation" == REPLACE ]] || die 'Replacement not confirmed; existing data was retained.'
+    fi
+    replace_binding=1
+    [[ ! -L "$install_dir/backups" ]] || die 'Refusing to replace a symlinked node backups directory.'
+  else
+    die 'The existing enrollment file is invalid; existing data was retained for manual recovery.'
   fi
-  [[ $binding_status -eq 1 ]] || die 'The existing enrollment file is invalid; existing data was retained for manual recovery.'
-  info 'This server is already bound to another host.'
-  info "Current binding: $(python3 -c 'import json,sys; print(json.load(open(sys.argv[1])).get("controlURL", "unknown"))' "$data_dir/agent.json" 2>/dev/null || printf 'unreadable')"
-  info "Requested binding: $control"
-  if [[ $replace_existing -ne 1 ]]; then
-    [[ -r /dev/tty ]] || die 'No interactive terminal is available. Re-run with --replace-existing only if you intend to erase this node data and bind it to the new host.'
-    printf '\n[1] Keep the current binding and cancel (default)\n[2] Erase local node data and bind to the new host\nSelect 1 or 2: ' >/dev/tty
-    IFS= read -r choice </dev/tty || die 'Could not read the replacement choice; existing data was retained.'
-    [[ "$choice" == 2 ]] || die 'Existing binding kept; no node data was changed.'
-    printf 'Type REPLACE to erase all local node data and backups: ' >/dev/tty
-    IFS= read -r confirmation </dev/tty || die 'Could not read confirmation; existing data was retained.'
-    [[ "$confirmation" == REPLACE ]] || die 'Replacement not confirmed; existing data was retained.'
-  fi
-  replace_binding=1
-  [[ ! -L "$install_dir/backups" ]] || die 'Refusing to replace a symlinked node backups directory.'
 fi
 
 case "$(uname -m)" in
@@ -200,9 +199,17 @@ if [[ ! -f "$data_dir/state.json" ]]; then
 else
   "$install_dir/node" configure --data-dir "$data_dir" --core-path "$core_path" >/dev/null
 fi
-printf '%s' "$token" | "$install_dir/node" agent join --data-dir "$data_dir" --control "$control" --control-key "$control_key" --token-stdin
-token=""
+if [[ $already_enrolled -eq 0 ]]; then
+  printf '%s' "$token" | "$install_dir/node" agent join --data-dir "$data_dir" --control "$control" --control-key "$control_key" --token-stdin
+  token=""
+else
+  info 'Existing Fleet identity and binding were kept; the new enrollment token was not used.'
+fi
 systemctl restart unifiedproxy-node
 systemctl is-active --quiet unifiedproxy-node || die 'Node startup failed; inspect journalctl -u unifiedproxy-node.'
 restart_on_failure=0
-info 'Installed, enrolled and started. Return to the host panel and wait for its heartbeat.'
+if [[ $already_enrolled -eq 1 ]]; then
+  info 'Node updated and started. Return to the host panel and wait for its heartbeat.'
+else
+  info 'Installed, enrolled and started. Return to the host panel and wait for its heartbeat.'
+fi

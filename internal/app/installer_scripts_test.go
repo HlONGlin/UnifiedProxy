@@ -130,7 +130,7 @@ func TestBashScriptsParse(t *testing.T) {
 	if err != nil {
 		t.Skip("bash is not installed on this host")
 	}
-	command := exec.Command(bash, "-n", "install.sh", "scripts/unifiedproxy.sh", "docker/entrypoint.sh")
+	command := exec.Command(bash, "-n", "install.sh", "scripts/unifiedproxy.sh", "scripts/install-node.sh", "docker/entrypoint.sh")
 	if output, err := command.CombinedOutput(); err != nil {
 		t.Fatalf("shell syntax check failed: %v\n%s", err, output)
 	}

@@ -88,7 +88,7 @@ else:os.execv('/usr/bin/curl',['/usr/bin/curl']+args)
             check('Heartbeat continues and auto public IP resolves',view['lastSeen']!=before and bool(view.get('seenIP')) and view['addressSource']=='auto')
             original=(install/'data/agent-identity.json').read_bytes()
             result=subprocess.run(['bash','-c',command],env=env,text=True,capture_output=True,timeout=60)
-            check('Repeating the same command keeps the real enrollment',result.returncode==0 and (install/'data/agent-identity.json').read_bytes()==original)
+            check('Repeating the same command installs the requested node version and keeps its enrollment',result.returncode==0 and 'Downloading UnifiedProxy' in result.stdout and (install/'data/agent-identity.json').read_bytes()==original)
         finally:
             subprocess.run(['systemctl','stop','unifiedproxy-node','unifiedproxy-node-recovery.timer'],stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL)
             subprocess.run(['systemctl','unset-environment','SSL_CERT_FILE'],stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL)
