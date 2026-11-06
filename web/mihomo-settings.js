@@ -14,6 +14,7 @@
 
   let draft={outbounds:[],routingRules:[],basics:defaultBasics()},dirty=false,currentTab='basics',editingOutbound='',editingRule='',outboundMode='form',outboundBusy=false,editingOriginal=null;
   let outboundFormChanged=false,outboundYAMLCached=false;
+  let stateSignature='';
 
   function freshID(prefix){return prefix+'-'+upRandomUUID().replaceAll('-','').slice(0,12);}
   function ensureFinalMatch(){
@@ -22,10 +23,13 @@
   function syncFromState(){
     if(dirty)return;
     const state=app.state?.state||{};
+    const signature=JSON.stringify([state.outbounds,state.routingRules,state.mihomoBasics,state.settings?.mode,state.settings?.logLevel,state.outboundTraffic]);
+    if(signature===stateSignature)return;
+    stateSignature=signature;
     draft={outbounds:clone(state.outbounds||[])||[],routingRules:clone(state.routingRules||[])||[],basics:{...defaultBasics(),...clone(state.mihomoBasics||{}),mode:state.settings?.mode||'rule',logLevel:state.settings?.logLevel||'info'}};
     fillBasicsForm();
     ensureFinalMatch();
-    render();
+    if(app.currentView==='mihomo')render();
   }
   function markDirty(){dirty=true;root.classList.add('mihomo-dirty');syncButtons();render();}
   function syncButtons(){
