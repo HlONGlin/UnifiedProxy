@@ -2262,11 +2262,15 @@ UnifiedProxy 界面多语言核心（简体中文 / 繁體中文 / English / 日
 
   var lang = 'zh-CN';
   var SUPPORTED_LANGUAGES = ['zh-CN', 'zh-TW', 'en', 'ja', 'ru', 'fa', 'vi', 'es', 'tr', 'uk', 'pt-BR'];
+  var languagePreference = null;
 
   function upGetLang() {
     var stored = null;
     try { stored = localStorage.getItem('up-language'); } catch (e) {}
-    var value = stored || document.documentElement.getAttribute('data-default-language') || 'zh-CN';
+    var defaultLanguage = document.documentElement.getAttribute('data-default-language');
+    // Fleet pages share the control's language; a node's draft or stale cache
+    // must not change the language when moving between workspaces.
+    var value = languagePreference || (document.documentElement.dataset.workspace ? defaultLanguage : stored || defaultLanguage) || 'zh-CN';
     return SUPPORTED_LANGUAGES.indexOf(value) >= 0 ? value : 'zh-CN';
   }
 
@@ -2368,6 +2372,7 @@ UnifiedProxy 界面多语言核心（简体中文 / 繁體中文 / English / 日
 
   function upSetLang(value) {
     var next = SUPPORTED_LANGUAGES.indexOf(value) >= 0 ? value : 'zh-CN';
+    languagePreference = next;
     try { localStorage.setItem('up-language', next); } catch (e) {}
     lang = next;
     upApply(document);
@@ -2383,11 +2388,20 @@ UnifiedProxy 界面多语言核心（简体中文 / 繁體中文 / English / 日
   // Text that page scripts build before DOMContentLoaded (tool button titles,
   // for example) must already be in the chosen language, not zh-CN.
   lang = upGetLang();
+  if (document.documentElement.dataset.workspace) {
+    try { localStorage.setItem('up-language', lang); } catch (e) {}
+  }
 
   function boot() {
     lang = upGetLang();
     upApply(document);
     window.dispatchEvent(new Event('up-langchange'));
+    // Other DOMContentLoaded handlers populate controls and restore the view.
+    // Localize those additions before revealing the first workspace frame.
+    requestAnimationFrame(function () {
+      upApply(document);
+      if (window.upFinishLanguageBoot) window.upFinishLanguageBoot();
+    });
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot);
   else boot();

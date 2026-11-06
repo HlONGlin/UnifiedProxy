@@ -27,6 +27,8 @@ window.UPServerWorkspace=function(){
     fleetButton.hidden=true;
   }
   function render(){
+    switcherLabel.textContent=tr('切换节点','Switch node');
+    select.setAttribute('aria-label',switcherLabel.textContent);
     back.textContent=tr('← 返回舰队','← Back to fleet');
     fleetButton.innerHTML=SF('multi-control','nav-icon')+'<span>'+tr('返回舰队','Back to fleet')+'</span>';
     const data=typeof app==='object'?app.state:null;

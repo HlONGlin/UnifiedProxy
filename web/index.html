@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="zh-CN" data-default-language="zh-CN" data-theme="light" data-color-theme="t0">
+<html lang="zh-CN" data-default-language="zh-CN" data-i18n-page data-theme="light" data-color-theme="t0">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -768,8 +768,8 @@
     setupSubscriptionPortUI();
     setupCrossPanelSubscriptionPathUI();
     setupSubscriptionClientsUI();
-    // 语言：面板设置里的 language 是权威值，localStorage 只是本地缓存；两者不一致时立即切换并广播。
-    function applyLanguagePreference(value){const target=['zh-CN','zh-TW','en','ja','ru','fa','vi','es','tr','uk','pt-BR'].includes(value)?value:'zh-CN';try{if(typeof upGetAppliedLang==='function'&&upGetAppliedLang()!==target)upSetLang(target);else localStorage.setItem('up-language',target);}catch{}}
+    // 语言由主机面板统一管理；节点草稿中的 language 不改变管理界面的语言。
+    function applyLanguagePreference(value){if(document.documentElement.dataset.workspace==='node')return;const target=['zh-CN','zh-TW','en','ja','ru','fa','vi','es','tr','uk','pt-BR'].includes(value)?value:'zh-CN';try{if(typeof upGetAppliedLang==='function'&&upGetAppliedLang()!==target)upSetLang(target);else localStorage.setItem('up-language',target);}catch{}}
     // upApply 已经把静态文案换好，这里只重跑由 JS 生成的动态内容。
     function refreshLanguageUI(){
       const safe=fn=>{try{fn();}catch(error){console.error(error);}};
