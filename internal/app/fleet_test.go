@@ -40,6 +40,72 @@ func fleetAuthRequest(method, path string, body []byte) *http.Request {
 	return r
 }
 
+func TestFleetRevokedNodeCardsCanBeDeletedIndividuallyAndInBatch(t *testing.T) {
+	a := fleetTestApp(t)
+	first, err := a.fleet.store.AddNode("first", "first.example")
+	if err != nil {
+		t.Fatal(err)
+	}
+	second, err := a.fleet.store.AddNode("second", "second.example")
+	if err != nil {
+		t.Fatal(err)
+	}
+	third, err := a.fleet.store.AddNode("third", "third.example")
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, node := range []*control.Node{first, second, third} {
+		editor, editorErr := a.fleet.editor(node.ID)
+		if editorErr != nil {
+			err = editorErr
+			t.Fatal(err)
+		}
+		editor.manager.mu.Lock()
+		err = editor.manager.saveLocked()
+		editor.manager.mu.Unlock()
+		if err != nil {
+			t.Fatal(err)
+		}
+	}
+	h := a.routes()
+	w := httptest.NewRecorder()
+	h.ServeHTTP(w, fleetAuthRequest(http.MethodDelete, "/api/fleet/nodes/"+first.ID, nil))
+	if w.Code != http.StatusBadRequest || a.fleet.store.Node(first.ID) == nil {
+		t.Fatal("active node deletion was not rejected", w.Code, w.Body.String())
+	}
+	if err = a.fleet.store.Revoke(first.ID); err != nil {
+		t.Fatal(err)
+	}
+	w = httptest.NewRecorder()
+	h.ServeHTTP(w, fleetAuthRequest(http.MethodDelete, "/api/fleet/nodes/"+first.ID, nil))
+	if w.Code != http.StatusOK || a.fleet.store.Node(first.ID) != nil {
+		t.Fatal("single-node deletion failed", w.Code, w.Body.String())
+	}
+	if err = a.fleet.store.Revoke(second.ID); err != nil {
+		t.Fatal(err)
+	}
+	if err = a.fleet.store.Revoke(third.ID); err != nil {
+		t.Fatal(err)
+	}
+	w = httptest.NewRecorder()
+	body, err := json.Marshal(map[string][]string{"nodes": {second.ID, third.ID}})
+	if err != nil {
+		t.Fatal(err)
+	}
+	h.ServeHTTP(w, fleetAuthRequest(http.MethodDelete, "/api/fleet/nodes", body))
+	if w.Code != http.StatusOK {
+		t.Fatal("batch delete failed", w.Code, w.Body.String())
+	}
+	if a.fleet.store.Node(second.ID) != nil || a.fleet.store.Node(third.ID) != nil {
+		t.Fatal("deleted node cards remain in the registry")
+	}
+	for _, node := range []*control.Node{first, second, third} {
+		if _, err = os.Stat(filepath.Join(a.manager.dataDir, "fleet-nodes", node.ID, "state.json")); !os.IsNotExist(err) {
+			t.Fatal("deleted node draft remains", node.ID, err)
+		}
+	}
+}
+
 func TestFleetPanelAuthenticationAndManagedWriterLock(t *testing.T) {
 	a := fleetTestApp(t)
 	h := a.routes()

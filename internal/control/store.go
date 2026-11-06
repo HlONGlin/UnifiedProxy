@@ -301,6 +301,83 @@ func (s *Store) Revoke(id string) error {
 	}
 	return err
 }
+
+// DeleteRevokedNodes permanently removes revoked node records and their
+// node-scoped credentials and tasks. Active rollout history is marked failed
+// and adjusted so the remaining store stays valid after deletion.
+func (s *Store) DeleteRevokedNodes(ids []string) error {
+	if len(ids) == 0 || len(ids) > 500 {
+		return errors.New("select 1-500 revoked nodes")
+	}
+	seen := make(map[string]bool, len(ids))
+	for _, id := range ids {
+		if !fleet.SafeName(id) || seen[id] {
+			return errors.New("invalid or duplicate node ID")
+		}
+		seen[id] = true
+	}
+	err := s.change(func(d *diskState) error {
+		for _, id := range ids {
+			n := d.Nodes[id]
+			if n == nil {
+				return errors.New("unknown node")
+			}
+			if !n.Revoked {
+				return errors.New("revoke node access before deleting its record")
+			}
+		}
+		for _, id := range ids {
+			for rolloutID, rollout := range d.Rollouts {
+				contains := false
+				nodes := make([]string, 0, len(rollout.Nodes))
+				tasks := make([]string, 0, len(rollout.Tasks))
+				for i, nodeID := range rollout.Nodes {
+					if nodeID == id {
+						contains = true
+						if i < len(rollout.Tasks) {
+							delete(d.Tasks, rollout.Tasks[i])
+						}
+						continue
+					}
+					nodes = append(nodes, nodeID)
+					if i < len(rollout.Tasks) {
+						tasks = append(tasks, rollout.Tasks[i])
+					}
+				}
+				if !contains {
+					continue
+				}
+				if rollout.Status == "canary" || rollout.Status == "running" {
+					rollout.Status = "failed"
+				}
+				if len(nodes) == 0 || len(tasks) == 0 {
+					delete(d.Rollouts, rolloutID)
+					continue
+				}
+				rollout.Nodes = nodes
+				rollout.Tasks = tasks
+			}
+			for taskID, task := range d.Tasks {
+				if task.NodeID == id {
+					delete(d.Tasks, taskID)
+				}
+			}
+			for hash, token := range d.Tokens {
+				if token.NodeID == id {
+					delete(d.Tokens, hash)
+				}
+			}
+			delete(d.Nodes, id)
+			audit(d, "node-deleted", id)
+		}
+		return nil
+	})
+	if err == nil {
+		s.notify()
+	}
+	return err
+}
+
 func (s *Store) Node(id string) *Node {
 	s.mu.Lock()
 	defer s.mu.Unlock()

@@ -79,6 +79,72 @@ func TestRevokedNodeRequiresExplicitRestoreBeforeTokenIssue(t *testing.T) {
 	}
 }
 
+func TestDeleteRevokedNodesIsAtomicAndRemovesNodeScopedData(t *testing.T) {
+	dir := t.TempDir()
+	s, err := Open(dir)
+	if err != nil {
+		t.Fatal(err)
+	}
+	active, err := s.AddNode("active", "active.example")
+	if err != nil {
+		t.Fatal(err)
+	}
+	revoked, err := s.AddNode("revoked", "revoked.example")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err = s.IssueToken("pending", revoked.ID); err != nil {
+		t.Fatal(err)
+	}
+	if _, err = s.Enqueue(revoked.ID, "collect-status", "delete-node", nil, time.Hour); err != nil {
+		t.Fatal(err)
+	}
+	for _, node := range []*Node{active, revoked} {
+		if err = s.UpdateStatus(node.ID, fleet.Status{Capabilities: []string{"collect-status"}}); err != nil {
+			t.Fatal(err)
+		}
+	}
+	if _, err = s.Rollout([]string{active.ID, revoked.ID}, "collect-status", nil); err != nil {
+		t.Fatal(err)
+	}
+	if err = s.Revoke(revoked.ID); err != nil {
+		t.Fatal(err)
+	}
+	if err = s.DeleteRevokedNodes([]string{active.ID, revoked.ID}); err == nil {
+		t.Fatal("mixed active and revoked deletion was accepted")
+	}
+	if s.Node(active.ID) == nil || s.Node(revoked.ID) == nil {
+		t.Fatal("failed batch deletion changed the store")
+	}
+	if err = s.DeleteRevokedNodes([]string{revoked.ID}); err != nil {
+		t.Fatal(err)
+	}
+	if s.Node(revoked.ID) != nil || s.Node(active.ID) == nil {
+		t.Fatal("node deletion affected the wrong records")
+	}
+	rollouts := s.Rollouts()
+	if len(rollouts) != 1 || rollouts[0].Status != "failed" || len(rollouts[0].Nodes) != 1 || rollouts[0].Nodes[0] != active.ID {
+		t.Fatal("rollout history was not kept valid after node deletion", rollouts)
+	}
+	s.mu.Lock()
+	for _, task := range s.disk.Tasks {
+		if task.NodeID == revoked.ID {
+			s.mu.Unlock()
+			t.Fatal("deleted node task was retained")
+		}
+	}
+	for _, token := range s.disk.Tokens {
+		if token.NodeID == revoked.ID {
+			s.mu.Unlock()
+			t.Fatal("deleted node token was retained")
+		}
+	}
+	s.mu.Unlock()
+	if _, err = Open(dir); err != nil {
+		t.Fatalf("store became invalid after deletion: %v", err)
+	}
+}
+
 func TestFleetTaskLeaseIdempotencyAndRestart(t *testing.T) {
 	dir := t.TempDir()
 	s, err := Open(dir)

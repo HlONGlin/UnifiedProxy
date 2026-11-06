@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"log"
 	"net"
 	"net/http"
 	"os"
@@ -553,6 +554,21 @@ func (a *App) handleFleet(w http.ResponseWriter, r *http.Request) {
 		}
 		respond(nil, f.store.RevokeToken(p.Token))
 	case "nodes":
+		if r.Method == http.MethodDelete {
+			var p struct {
+				Nodes []string `json:"nodes"`
+			}
+			if err := decodeJSON(r, &p); err != nil {
+				respond(nil, err)
+				return
+			}
+			if err := a.deleteFleetNodeRecords(p.Nodes); err != nil {
+				respond(nil, err)
+				return
+			}
+			respond(map[string]any{"deleted": p.Nodes}, nil)
+			return
+		}
 		if r.Method != "POST" {
 			writeJSON(w, 405, apiResponse{})
 			return
@@ -672,6 +688,14 @@ func (a *App) handleFleet(w http.ResponseWriter, r *http.Request) {
 				respond(nil, f.store.UpdateNode(id, p.Name, p.Address))
 				return
 			}
+			if r.Method == http.MethodDelete {
+				if err := a.deleteFleetNodeRecords([]string{id}); err != nil {
+					respond(nil, err)
+					return
+				}
+				respond(map[string]string{"deleted": id}, nil)
+				return
+			}
 		}
 		if len(parts) != 3 || r.Method != "POST" {
 			writeJSON(w, 405, apiResponse{})
@@ -757,6 +781,24 @@ func (a *App) handleFleet(w http.ResponseWriter, r *http.Request) {
 			http.NotFound(w, r)
 		}
 	}
+}
+
+func (a *App) deleteFleetNodeRecords(ids []string) error {
+	f := a.fleet
+	f.mu.Lock()
+	if err := f.store.DeleteRevokedNodes(ids); err != nil {
+		f.mu.Unlock()
+		return err
+	}
+	for _, id := range ids {
+		delete(f.editors, id)
+		dir := filepath.Join(f.dataDir, "fleet-nodes", id)
+		if err := os.Remove(filepath.Join(dir, "state.json")); err != nil && !errors.Is(err, os.ErrNotExist) {
+			log.Printf("remove deleted fleet node draft %s: %v", id, err)
+		}
+	}
+	f.mu.Unlock()
+	return a.refreshFleetSubscriptions()
 }
 
 func (a *App) handleNodeFleet(w http.ResponseWriter, r *http.Request) {

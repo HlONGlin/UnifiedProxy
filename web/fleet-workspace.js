@@ -132,7 +132,7 @@ window.UPFleetWorkspace = function ({request, load, selectTarget, hostSettings, 
   }
   function render(data) {
     fleet=data;root.classList.add('fleet-workspace');root.replaceChildren();
-    for(const id of ui.selected)if(!fleet.nodes.some(n=>n.id===id&&!n.revoked))ui.selected.delete(id);
+    for(const id of ui.selected)if(!fleet.nodes.some(n=>n.id===id))ui.selected.delete(id);
     const heading=el('div',undefined,root,{className:'fleet-heading'}),text=el('div',undefined,heading);
     el('span','UNIFIEDPROXY / FLEET',text,{className:'eyebrow'});el('h2',t('title'),text);
     el('p',tr('一个主机面板，管理所有子服务器的代理配置。','One host panel for every child server and its proxy settings.'),text,{className:'fleet-hint'});
@@ -156,8 +156,8 @@ window.UPFleetWorkspace = function ({request, load, selectTarget, hostSettings, 
     const tools=el('div',undefined,content,{className:'fleet-list-tools'});
     const search=field(tools,tr('搜索服务器','Search servers'),ui.query,'search');search.placeholder=tr('名称、地址或节点 ID','Name, address or node ID');search.id='fleet-search';search.oninput=()=>{ui.query=search.value;renderCards();};
     const filter=pick(tools,tr('连接状态','Connection status'),[['all',tr('全部状态','All states')],['online',t('online')],['pending',tr('待接入','Awaiting connection')],['offline',t('offline')],['revoked',tr('已吊销','Revoked')]],ui.filter);filter.id='fleet-filter';filter.onchange=()=>{ui.filter=filter.value;renderCards();};
-    const choose=el('label',undefined,tools,{className:'fleet-check'}),all=el('input',undefined,choose,{type:'checkbox',id:'fleet-select-all'});el('span',tr('选择当前列表','Select visible servers'),choose);all.onchange=()=>{for(const n of filtered())if(!n.revoked){if(all.checked)ui.selected.add(n.id);else ui.selected.delete(n.id);}renderCards();};
-    const batch=el('div',undefined,content,{className:'fleet-selection',id:'fleet-selection',hidden:true});el('span','',batch,{id:'fleet-selection-count'});button(t('batch'),batch,()=>go('tasks'),true);button(tr('清除选择','Clear selection'),batch,()=>{ui.selected.clear();renderCards();});
+    const choose=el('label',undefined,tools,{className:'fleet-check'}),all=el('input',undefined,choose,{type:'checkbox',id:'fleet-select-all'});el('span',tr('选择当前列表','Select visible servers'),choose);all.onchange=()=>{for(const n of filtered()){if(all.checked)ui.selected.add(n.id);else ui.selected.delete(n.id);}renderCards();};
+    const batch=el('div',undefined,content,{className:'fleet-selection',id:'fleet-selection',hidden:true});el('span','',batch,{id:'fleet-selection-count'});const batchTasks=button(t('batch'),batch,()=>go('tasks'),true);batchTasks.dataset.fleetBatchTasks='';const deleteSelected=button(tr('删除已吊销项','Delete revoked'),batch,deleteSelectedRevoked);deleteSelected.classList.add('fleet-danger');deleteSelected.dataset.fleetDeleteSelected='';button(tr('清除选择','Clear selection'),batch,()=>{ui.selected.clear();renderCards();});
     el('div',undefined,content,{className:'fleet-cards',id:'fleet-cards'});renderCards();
   }
   function filtered(data=fleet){const q=ui.query.trim().toLowerCase();return (data.nodes||[]).filter(n=>(ui.filter==='all'||state(n)===ui.filter)&&(!q||[n.name,n.address,n.id].some(v=>String(v||'').toLowerCase().includes(q))));}
@@ -165,16 +165,26 @@ window.UPFleetWorkspace = function ({request, load, selectTarget, hostSettings, 
     const cards=root.querySelector('#fleet-cards');if(!cards)return;cards.replaceChildren();
     const nodes=filtered();for(const node of nodes)renderCard(cards,node);
     if(!nodes.length&&fleet.nodes.length)empty(cards,tr('没有匹配的服务器','No matching servers'),tr('试试其他名称或清除状态筛选。','Try a different search or connection filter.'));
-    const count=ui.selected.size;root.querySelector('#fleet-selection').hidden=!count;root.querySelector('#fleet-selection-count').textContent=tr(`已选择 ${count} 台服务器`,`${count} servers selected`);
-    const available=nodes.filter(n=>!n.revoked),all=root.querySelector('#fleet-select-all');all.checked=available.length>0&&available.every(n=>ui.selected.has(n.id));all.indeterminate=!all.checked&&available.some(n=>ui.selected.has(n.id));
+    const selected=(fleet.nodes||[]).filter(n=>ui.selected.has(n.id)),count=selected.length,taskCount=selected.filter(n=>!n.revoked).length,revokedCount=selected.filter(n=>n.revoked).length;root.querySelector('#fleet-selection').hidden=!count;root.querySelector('#fleet-selection-count').textContent=tr('已选择 '+count+' 台（'+taskCount+' 台可批量操作，'+revokedCount+' 台已吊销）',count+' selected ('+taskCount+' available for tasks, '+revokedCount+' revoked)');const taskButton=root.querySelector('[data-fleet-batch-tasks]'),deleteButton=root.querySelector('[data-fleet-delete-selected]');taskButton.textContent=tr('批量操作 ('+taskCount+')','Batch actions ('+taskCount+')');taskButton.disabled=taskCount===0;deleteButton.textContent=tr('删除已吊销项 ('+revokedCount+')','Delete revoked ('+revokedCount+')');deleteButton.disabled=revokedCount===0;const all=root.querySelector('#fleet-select-all');all.checked=nodes.length>0&&nodes.every(n=>ui.selected.has(n.id));all.indeterminate=!all.checked&&nodes.some(n=>ui.selected.has(n.id));
   }
+  async function deleteFleetNodes(ids) {
+    const targets=(fleet.nodes||[]).filter(n=>ids.includes(n.id)&&n.revoked);if(!targets.length)return;
+    const names=targets.map(n=>n.name||n.id),shown=names.slice(0,5).join('、'),more=names.length>5?tr(' 等 '+(names.length-5)+' 台',' and '+(names.length-5)+' more'):'';
+    const warning=tr('将永久删除 '+targets.length+' 张已吊销卡片（'+shown+more+'）及主机保存的节点草稿。删除后主机无法再向这些子服务器发送吊销清理指令；尚未收到指令的离线服务器可能仍保留并运行原配置。确定继续？','Permanently delete '+targets.length+' revoked server card(s) ('+shown+more+') and the host’s saved drafts? The host can no longer send these servers the cleanup instruction. An offline server that has not received it may keep running its existing configuration. Continue?');
+    if(!await upConfirm(warning,{danger:true}))return;
+    if(targets.length===1)await request('/nodes/'+encodeURIComponent(targets[0].id),{},'DELETE');
+    else await request('/nodes',{nodes:targets.map(n=>n.id)},'DELETE');
+    for(const node of targets)ui.selected.delete(node.id);
+    await load();output(tr('已删除 '+targets.length+' 张服务器卡片。','Deleted '+targets.length+' server card(s).'));
+  }
+  function deleteSelectedRevoked(){return deleteFleetNodes(Array.from(ui.selected));}
   function renderCard(parent,node) {
     const card=el('article',undefined,parent,{className:'fleet-node-card'});card.dataset.nodeCard=node.id;
     const head=el('div',undefined,card,{className:'fleet-node-head'}),name=el('div',undefined,head);
     const title=el('h3',undefined,name,{className:'fleet-node-title'});
     title.textContent=node.name||node.id;
     const badge=el('span',stateText(node),name,{className:'fleet-node-state'});badge.dataset.state=state(node);badge.dataset.nodeState=node.id;
-    const label=el('label',undefined,head,{className:'fleet-check'}),check=el('input',undefined,label,{type:'checkbox',className:'fleet-selected',checked:ui.selected.has(node.id),value:node.id,disabled:!!node.revoked,'aria-label':tr('选择 ','Select ')+node.name});check.onchange=()=>{check.checked?ui.selected.add(node.id):ui.selected.delete(node.id);renderCards();root.querySelector(`[data-node-card="${node.id}"] .fleet-selected`)?.focus();};
+    const label=el('label',undefined,head,{className:'fleet-check'}),check=el('input',undefined,label,{type:'checkbox',className:'fleet-selected',checked:ui.selected.has(node.id),value:node.id,'aria-label':tr('选择 ','Select ')+node.name});check.onchange=()=>{check.checked?ui.selected.add(node.id):ui.selected.delete(node.id);renderCards();root.querySelector(`[data-node-card="${node.id}"] .fleet-selected`)?.focus();};
     el('p',node.address||tr('等待节点心跳自动识别公网地址','Waiting for a heartbeat to detect the public address'),card,{className:'fleet-node-address'});
     el('p',node.addressSource==='manual'?tr('手动指定地址','Manual address'):node.addressSource==='auto'?tr('自动识别地址','Automatically detected address'):tr('公网地址可留空，接入后自动识别','Public address is optional and detected after connection'),card,{className:'fleet-hint'});
     const facts=el('dl',undefined,card,{className:'fleet-node-facts'});
@@ -198,6 +208,7 @@ window.UPFleetWorkspace = function ({request, load, selectTarget, hostSettings, 
     button(tr('发布当前配置','Publish configuration'),more,async()=>{await request('/nodes/'+node.id+'/publish',{});await load();output(tr('配置已发布，等待子服务器应用。','Configuration published; waiting for the child server to apply it.'));}).disabled=!!node.revoked;
     button(tr('高级配置','Advanced configuration'),more,()=>{ui.modelID=node.id;go('advanced');}).disabled=!!node.revoked;
     const revoke=button(tr('吊销接入权限','Revoke access'),more,async()=>{if(await upConfirm(tr(`吊销“${node.name}”的接入权限？它将停止接收主机配置。子服务器下次连上主机会停止并删除已下载的 Mihomo、Sidecar 和 VPNGate，并清空该节点的配置、证书、流量和接入数据。安装目录以外的程序不会删除。应急接管中的节点不会自动清空。`,`Revoke access for “${node.name}”? It will stop receiving host configuration. The next time the child server connects, it stops and deletes the downloaded Mihomo, Sidecar, and VPNGate programs, then clears that node's configuration, certificates, traffic, and enrollment data. Programs outside the install directory are kept. A node in emergency takeover is not cleared automatically.`),{danger:true})){await request('/nodes/'+node.id+'/revoke',{});ui.selected.delete(node.id);await load();output(tr('接入权限已吊销。子服务器会停止并删除已下载的代理程序，并清空本地数据。','Access revoked. The child server will stop and delete its downloaded proxy programs, then clear its local data.'));}});revoke.classList.add('fleet-danger');revoke.disabled=!!node.revoked;
+    if(node.revoked){const remove=button(tr('删除服务器卡片','Delete server card'),more,()=>deleteFleetNodes([node.id]));remove.classList.add('fleet-danger');}
   }
   function renderTasks(content) {
     const box=block(content,t('batch'),tr('先在“子服务器”选择目标，再选择操作。普通巡检不需要填写 JSON。','Select servers in the Servers tab, then choose an action. Routine checks need no JSON.'));
