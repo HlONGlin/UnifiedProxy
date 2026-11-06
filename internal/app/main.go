@@ -630,12 +630,14 @@ type State struct {
 
 type CoreManager struct {
 	maintenanceMu      sync.Mutex
+	coreMu             sync.Mutex
 	fleetApplying      bool
 	remote             bool // control-side editors render models without running a local core
 	mu                 sync.Mutex
 	warpMu             sync.Mutex
 	warpClient         *warpClient
 	cmd                *exec.Cmd
+	coreDone           chan struct{}
 	started            time.Time
 	panelStarted       time.Time
 	logs               []string
@@ -1612,16 +1614,14 @@ func (a *App) coreAction(w http.ResponseWriter, r *http.Request, action string) 
 		writeJSON(w, http.StatusMethodNotAllowed, apiResponse{Message: "method not allowed"})
 		return
 	}
-	var err error
-	switch action {
-	case "start":
-		err = a.manager.startCore()
-	case "stop":
-		err = a.manager.stopCore()
-	case "restart":
-		err = a.manager.restartCore()
+	if a.nodeRuntime != nil {
+		a.nodeRuntime.mu.Lock()
+		defer a.nodeRuntime.mu.Unlock()
+	} else if a.standalone != nil {
+		a.standalone.runtime.mu.Lock()
+		defer a.standalone.runtime.mu.Unlock()
 	}
-	if err != nil {
+	if err := a.manager.controlCore(action); err != nil {
 		writeJSON(w, http.StatusBadRequest, apiResponse{Message: a.tr(err.Error())})
 		return
 	}
@@ -4620,7 +4620,18 @@ func (m *CoreManager) actualConfig() ([]byte, error) {
 }
 
 func (m *CoreManager) startCore() error {
+	m.coreMu.Lock()
+	defer m.coreMu.Unlock()
+	return m.startCoreLocked()
+}
+
+func (m *CoreManager) startCoreLocked() error {
 	if m.remote {
+		return nil
+	}
+	if stopped, err := m.coreStopped(); err != nil {
+		return err
+	} else if stopped {
 		return nil
 	}
 	config, err := m.renderConfig()
@@ -4661,7 +4672,8 @@ func (m *CoreManager) startCore() error {
 	if err := cmd.Start(); err != nil {
 		return err
 	}
-	m.cmd, m.started = cmd, time.Now()
+	done := make(chan struct{})
+	m.cmd, m.coreDone, m.started = cmd, done, time.Now()
 	m.addLogLocked("Mihomo 已启动")
 	go m.captureLogs(stdout)
 	go m.captureLogs(stderr)
@@ -4673,6 +4685,7 @@ func (m *CoreManager) startCore() error {
 			m.cmd = nil
 		}
 		m.mu.Unlock()
+		close(done)
 	}()
 	return nil
 }
@@ -4700,31 +4713,47 @@ func (m *CoreManager) validateConfig() error {
 }
 
 func (m *CoreManager) stopCore() error {
+	m.coreMu.Lock()
+	defer m.coreMu.Unlock()
+	return m.stopCoreLocked()
+}
+
+func (m *CoreManager) stopCoreLocked() error {
 	m.mu.Lock()
-	defer m.mu.Unlock()
 	if !m.runningLocked() {
+		m.mu.Unlock()
 		return nil
 	}
-	cmd := m.cmd
-	m.cmd = nil
+	cmd, done := m.cmd, m.coreDone
 	if err := cmd.Process.Kill(); err != nil && !errors.Is(err, os.ErrProcessDone) {
-		m.cmd = cmd
+		m.mu.Unlock()
 		return err
 	}
+	m.cmd = nil
 	m.addLogLocked("Mihomo 已停止")
 	_ = m.saveLocked()
+	m.mu.Unlock()
+	if done != nil {
+		<-done
+	}
 	return nil
 }
 
 func (m *CoreManager) restartCore() error {
-	if err := m.stopCore(); err != nil {
+	m.coreMu.Lock()
+	defer m.coreMu.Unlock()
+	if stopped, err := m.coreStopped(); err != nil {
+		return err
+	} else if stopped {
+		return nil
+	}
+	if err := m.stopCoreLocked(); err != nil {
 		return err
 	}
-	time.Sleep(150 * time.Millisecond)
-	return m.startCore()
+	return m.startCoreLocked()
 }
 
-func (m *CoreManager) runningLocked() bool { return m.cmd != nil && m.cmd.ProcessState == nil }
+func (m *CoreManager) runningLocked() bool { return m.cmd != nil }
 
 func (m *CoreManager) coreVersion() string {
 	if m.remote {

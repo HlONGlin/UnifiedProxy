@@ -72,6 +72,8 @@ Existing installations use `unifiedproxy update`. It snapshots data into `data/b
 
 Use the fleet view to find a node, then work with its inbounds, clients, routes and operations. These captures show the current interface with Chinese demo data.
 
+Inbound and client switches wait for the node to apply configuration before reporting success. Disabling an inbound also disconnects its existing sessions. A manually stopped Mihomo core remains stopped across configuration changes and node service restarts. Update both the host and nodes to v1.6.17 for the complete behavior.
+
 ![UnifiedProxy fleet workspace](./media/screenshots/unifiedproxy/fleet.png)
 
 <details>

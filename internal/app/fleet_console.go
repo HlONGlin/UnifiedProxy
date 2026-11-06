@@ -62,7 +62,8 @@ func (a *App) withFleetTransport(next http.Handler) http.Handler {
 				a.manager.mu.Lock()
 				running := a.manager.runningLocked()
 				a.manager.mu.Unlock()
-				if !running || sidecarError != "" {
+				stopped, stateErr := a.manager.coreStopped()
+				if stateErr != nil || (!running && !stopped) || sidecarError != "" {
 					http.Error(w, "runtime unhealthy", http.StatusServiceUnavailable)
 					return
 				}
@@ -456,12 +457,17 @@ func (a *App) handleRemotePanel(w http.ResponseWriter, r *http.Request, id strin
 	captured := &captureResponse{header: make(http.Header)}
 	handler(captured, r)
 	if captured.code < 300 && r.Method != "GET" && r.Method != "HEAD" && !strings.HasPrefix(r.URL.Path, "/api/tools/") {
-		if _, err = f.publish(id, editor, nil); err != nil {
-			writeJSON(w, 400, apiResponse{Message: "draft saved but publish failed: " + err.Error()})
+		desired, publishErr := f.publish(id, editor, nil)
+		if publishErr != nil {
+			writeJSON(w, 400, apiResponse{Message: "draft saved but publish failed: " + publishErr.Error()})
 			return
 		}
 		if err = a.refreshFleetSubscriptions(); err != nil {
 			writeJSON(w, 500, apiResponse{Message: err.Error()})
+			return
+		}
+		if r.URL.Path == "/api/inbounds" || r.URL.Path == "/api/clients" {
+			writeJSON(w, 200, apiResponse{OK: true, Data: map[string]any{"fleetTask": f.policyTask(id, desired)}})
 			return
 		}
 	}

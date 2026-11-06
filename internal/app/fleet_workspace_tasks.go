@@ -9,6 +9,25 @@ import (
 	"github.com/hlonglin/unifiedproxy/internal/fleet"
 )
 
+func (f *fleetConsole) policyTask(id string, desired *fleet.DesiredState) *fleet.Task {
+	node := f.store.Node(id)
+	if node.Status.Revision == desired.Revision && node.Status.Digest == desired.Digest {
+		return nil
+	}
+	tasks := f.store.Tasks()
+	for i := len(tasks) - 1; i >= 0; i-- {
+		task := tasks[i]
+		if task.NodeID != id || task.Kind != "apply-state" {
+			continue
+		}
+		var state fleet.DesiredState
+		if json.Unmarshal(task.Payload, &state) == nil && state.Revision == desired.Revision && state.Digest == desired.Digest {
+			return task
+		}
+	}
+	return nil
+}
+
 func (a *App) remoteTaskResponse(w http.ResponseWriter, r *http.Request, id string, editor *App) bool {
 	if strings.HasPrefix(r.URL.Path, "/api/node-tasks/") {
 		if r.Method != http.MethodGet {

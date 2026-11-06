@@ -249,6 +249,12 @@ func (a *Agent) run(ctx context.Context, interval time.Duration, discover func(c
 				for _, t := range response.Tasks {
 					taskCtx, cancel := context.WithTimeout(ctx, 10*time.Minute)
 					result := a.Process(taskCtx, t)
+					// Publish the actual runtime state before the panel sees completion.
+					if (t.Kind == "core-control" || t.Kind == "apply-state") && result.Status == "success" {
+						if reportErr := a.Report(taskCtx); reportErr != nil {
+							log.Printf("fleet core status: %v", reportErr)
+						}
+					}
 					cancel()
 					if result.Status == "pending-restart" {
 						err = fleet.ErrUpgradePending

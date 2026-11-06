@@ -191,6 +191,10 @@ func (n *nodeRuntime) Apply(ctx context.Context, desired fleet.DesiredState) err
 	if err := desired.Validate(); err != nil {
 		return err
 	}
+	stopped, err := m.coreStopped()
+	if err != nil {
+		return err
+	}
 	if n.applied != nil && n.applied.NodeID == desired.NodeID {
 		if desired.Revision < n.applied.Revision {
 			return errors.New("stale desired-state revision")
@@ -373,13 +377,18 @@ func (n *nodeRuntime) Apply(ctx context.Context, desired fleet.DesiredState) err
 	if err != nil {
 		return rollback(err)
 	}
-	if !running {
+	if !running && !stopped {
 		if err = m.startCore(); err != nil {
 			return rollback(err)
 		}
 	}
-	if err = n.healthy(ctx); err != nil {
-		return rollback(err)
+	if !stopped {
+		if err = n.healthy(ctx); err != nil {
+			return rollback(err)
+		}
+		if err = n.closeRestrictedSessions(ctx, old, incoming); err != nil {
+			return rollback(err)
+		}
 	}
 	if err = fleet.WriteJSON(filepath.Join(m.dataDir, "applied-state.json"), desired); err != nil {
 		return rollback(err)
@@ -496,12 +505,21 @@ func (n *nodeRuntime) Execute(ctx context.Context, t fleet.Task) (json.RawMessag
 			return nil, err
 		}
 		switch p.Action {
-		case "start":
-			return nil, n.manager.startCore()
-		case "stop":
-			return nil, n.manager.stopCore()
-		case "restart":
-			return nil, n.manager.restartCore()
+		case "start", "stop", "restart":
+			n.mu.Lock()
+			defer n.mu.Unlock()
+			if err := n.manager.controlCore(p.Action); err != nil {
+				return nil, err
+			}
+			if p.Action != "stop" {
+				if err := n.healthy(ctx); err != nil {
+					return nil, err
+				}
+			}
+			n.manager.mu.Lock()
+			running := n.manager.runningLocked()
+			n.manager.mu.Unlock()
+			return json.Marshal(map[string]bool{"running": running})
 		case "validate":
 			return nil, n.validate(ctx, filepath.Join(n.manager.dataDir, "config.yaml"))
 		case "close-connections":
