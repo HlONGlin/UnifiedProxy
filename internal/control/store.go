@@ -159,6 +159,9 @@ func (s *Store) IssueToken(name, nodeID string) (string, error) {
 		if nodeID != "" && d.Nodes[nodeID] == nil {
 			return errors.New("unknown target node")
 		}
+		if nodeID != "" && d.Nodes[nodeID].Revoked {
+			return errors.New("node access is revoked; restore access before issuing an enrollment token")
+		}
 		for k, v := range d.Tokens {
 			if time.Now().After(v.ExpiresAt) {
 				delete(d.Tokens, k)
@@ -180,6 +183,25 @@ func (s *Store) RevokeToken(token string) error {
 		audit(d, "token-revoked", "")
 		return nil
 	})
+}
+
+// Restore clears the administrative access block without changing the node
+// identity or its desired configuration. The existing node identity can
+// reconnect after restoration.
+func (s *Store) RestoreNode(id string) error {
+	err := s.change(func(d *diskState) error {
+		n := d.Nodes[id]
+		if n == nil {
+			return errors.New("unknown node")
+		}
+		n.Revoked = false
+		audit(d, "node-restored", id)
+		return nil
+	})
+	if err == nil {
+		s.notify()
+	}
+	return err
 }
 
 func (s *Store) Enroll(e fleet.Enrollment) (*Node, error) {

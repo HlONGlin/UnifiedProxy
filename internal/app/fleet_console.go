@@ -690,6 +690,8 @@ func (a *App) handleFleet(w http.ResponseWriter, r *http.Request) {
 			respond(state, err)
 		case "revoke":
 			respond(nil, f.store.Revoke(id))
+		case "restore":
+			respond(nil, f.store.RestoreNode(id))
 		case "publish":
 			f.mu.Lock()
 			editor, err := f.editor(id)

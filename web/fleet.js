@@ -97,7 +97,7 @@
   function output(data,error=false){if(role==='control'&&workspace){workspace.output(data,error);return;}const el=section.querySelector('#fleet-output');if(el){el.textContent=typeof data==='string'?data:JSON.stringify(data,null,2);el.classList.toggle('fleet-error',error);}}
   function input(label,parent,type='text'){const box=element('label',t(label)+' ',parent);return element('input',undefined,box,{type});}
   async function selectTarget(value,view='dashboard'){
-    location.href=panelURL('nodes/'+encodeURIComponent(value)+'/')+'#'+view;
+    location.href=panelURL('nodes/'+encodeURIComponent(value)+'/')+(view&&view!=='dashboard'?'#'+view:'');
     return false;
   }
   async function load(){

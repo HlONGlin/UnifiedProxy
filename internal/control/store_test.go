@@ -58,6 +58,27 @@ func TestFleetTokenSingleUseExpiryAndHashOnly(t *testing.T) {
 		t.Fatal("expired token accepted")
 	}
 }
+
+func TestRevokedNodeRequiresExplicitRestoreBeforeTokenIssue(t *testing.T) {
+	s, err := Open(t.TempDir())
+	if err != nil {
+		t.Fatal(err)
+	}
+	n := enrollTest(t, s)
+	if err := s.Revoke(n.ID); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := s.IssueToken("blocked", n.ID); err == nil {
+		t.Fatal("revoked node received an enrollment token")
+	}
+	if err := s.RestoreNode(n.ID); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := s.IssueToken("restored", n.ID); err != nil {
+		t.Fatalf("restored node could not receive a token: %v", err)
+	}
+}
+
 func TestFleetTaskLeaseIdempotencyAndRestart(t *testing.T) {
 	dir := t.TempDir()
 	s, err := Open(dir)
