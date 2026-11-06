@@ -100,8 +100,19 @@ func (c *Client) request(ctx context.Context, path, sender string, payload, out 
 	if err = c.replay.Verify(response, c.Config.ControlKey, "control", "response:"+e.Nonce, time.Now()); err != nil {
 		return err
 	}
+	var marker struct {
+		Error string `json:"error"`
+		Wipe  bool   `json:"wipe"`
+	}
+	if json.Unmarshal(response.Payload, &marker) == nil && marker.Error == "access-revoked" && marker.Wipe {
+		return ErrAccessRevoked
+	}
 	return json.Unmarshal(response.Payload, out)
 }
+
+// ErrAccessRevoked means the controller signed a revocation telling this node to
+// stop proxy processes and delete its data directory.
+var ErrAccessRevoked = errors.New("fleet access revoked")
 
 func Enroll(ctx context.Context, dir, url, key, token, name string) (Config, error) {
 	if err := fleet.ValidateControlURL(url); err != nil {

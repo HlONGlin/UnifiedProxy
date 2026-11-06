@@ -29,6 +29,7 @@ type nodeRuntime struct {
 	applied      *fleet.DesiredState
 	sidecars     *agent.Sidecars
 	sidecarError string
+	cleared      bool
 }
 type applyTransaction struct {
 	State   State               `json:"state"`
@@ -184,6 +185,9 @@ func (n *nodeRuntime) restore(tx applyTransaction) error {
 func (n *nodeRuntime) Apply(ctx context.Context, desired fleet.DesiredState) error {
 	n.mu.Lock()
 	defer n.mu.Unlock()
+	if n.cleared {
+		return errors.New("node access revoked")
+	}
 	m := n.manager
 	if _, err := os.Stat(filepath.Join(m.dataDir, "break-glass")); err == nil {
 		return errors.New("node is in break-glass mode")
@@ -415,6 +419,10 @@ func (n *nodeRuntime) supervise(ctx context.Context) {
 			continue
 		}
 		n.mu.Lock()
+		if n.cleared {
+			n.mu.Unlock()
+			continue
+		}
 		if n.applied != nil {
 			job, cancel := context.WithTimeout(ctx, 2*time.Minute)
 			err := n.sidecars.Provision(job, n.applied.Sidecars)
@@ -624,6 +632,20 @@ func (n *nodeRuntime) Execute(ctx context.Context, t fleet.Task) (json.RawMessag
 	default:
 		return nil, fmt.Errorf("unsupported task %s", t.Kind)
 	}
+}
+
+// WipeProcesses stops Mihomo, sidecars, and VPNGate, and refuses later core starts.
+func (n *nodeRuntime) WipeProcesses(context.Context) error {
+	n.manager.HaltRuntime()
+	n.mu.Lock()
+	n.cleared = true
+	n.applied = nil
+	n.mu.Unlock()
+	if n.sidecars != nil {
+		n.sidecars.Stop()
+	}
+	n.manager.stopVPNGateTasks()
+	return n.manager.stopCore()
 }
 
 func (n *nodeRuntime) testEgress(ctx context.Context, payload json.RawMessage) (json.RawMessage, error) {

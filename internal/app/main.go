@@ -27,6 +27,7 @@ import (
 	"strconv"
 	"strings"
 	"sync"
+	"sync/atomic"
 	"syscall"
 	"time"
 
@@ -654,6 +655,7 @@ type CoreManager struct {
 	// it, so a save can tell that `unifiedproxy configure` changed the file meanwhile.
 	stateDigest     [sha256.Size]byte
 	enforcedClients map[string]bool
+	runtimeHalted   atomic.Bool
 	// External Traffic Inform 攒下的增量，按 3x-ui 的节奏批量上报。
 	externalTrafficInbounds map[string]externalInboundTraffic
 	externalTrafficClients  map[string]externalClientTraffic
@@ -4620,13 +4622,19 @@ func (m *CoreManager) actualConfig() ([]byte, error) {
 }
 
 func (m *CoreManager) startCore() error {
+	if m.runtimeHalted.Load() {
+		return nil
+	}
 	m.coreMu.Lock()
 	defer m.coreMu.Unlock()
 	return m.startCoreLocked()
 }
 
+// HaltRuntime permanently refuses to start the proxy core in this process.
+func (m *CoreManager) HaltRuntime() { m.runtimeHalted.Store(true) }
+
 func (m *CoreManager) startCoreLocked() error {
-	if m.remote {
+	if m.remote || m.runtimeHalted.Load() {
 		return nil
 	}
 	if stopped, err := m.coreStopped(); err != nil {
@@ -4740,8 +4748,14 @@ func (m *CoreManager) stopCoreLocked() error {
 }
 
 func (m *CoreManager) restartCore() error {
+	if m.runtimeHalted.Load() {
+		return nil
+	}
 	m.coreMu.Lock()
 	defer m.coreMu.Unlock()
+	if m.runtimeHalted.Load() {
+		return nil
+	}
 	if stopped, err := m.coreStopped(); err != nil {
 		return err
 	} else if stopped {

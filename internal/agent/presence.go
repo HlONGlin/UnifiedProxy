@@ -2,6 +2,7 @@ package agent
 
 import (
 	"context"
+	"errors"
 	"io"
 	"log"
 	"net/http"
@@ -93,6 +94,10 @@ func (a *Agent) heartbeatLoop(ctx context.Context, interval time.Duration) {
 		var out map[string]bool
 		err = client.request(reportCtx, "/fleet/v1/heartbeat", cfg.NodeID, fleet.Heartbeat{PublicIP: a.address()}, &out)
 		cancel()
+		if errors.Is(err, ErrAccessRevoked) {
+			a.wipeRevokedAccess()
+			return
+		}
 		if err != nil && ctx.Err() == nil {
 			log.Printf("fleet heartbeat: %v", err)
 		}

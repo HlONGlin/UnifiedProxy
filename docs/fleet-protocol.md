@@ -40,7 +40,7 @@ Agent 钉住可信控制公钥，拒绝重定向。请求最大 16 MiB，状态/
 
 POST /fleet/v1/enroll：token/publicKey/name，返回 nodeId/publicKey/protocol。
 poll：status（能力/OS/架构/版本/revision/digest/运行/流量），返回 tasks。
-report：状态；result：taskId/status/error/data。重绑/吊销后原公钥不能继续操作。
+report：状态；result：taskId/status/error/data。重绑后原公钥不能继续操作。吊销后，原公钥的下一次有效签名请求会收到主机签名的 `access-revoked`/`wipe` 响应；节点停止代理进程，删除安装目录内已下载的 Mihomo、Sidecar 和 VPNGate，清空数据目录内容，并以状态码 0 退出。安装目录以外的程序保留。无效签名仍返回不含清空指令的 401。
 
 `GET/HEAD /fleet/v1/install.sh` 提供随主机二进制嵌入的公开、无凭据安装脚本，
 不消费 token，不回显请求参数，不需要管理员 cookie；其他方法返回 405，节点不暴露此入口。

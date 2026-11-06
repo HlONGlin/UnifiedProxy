@@ -187,7 +187,15 @@ func (a *App) initializeFleet(ctx context.Context, dir string) error {
 	if err != nil {
 		return err
 	}
-	a.fleetStart = func() { go worker.Run(ctx) }
+	a.fleetStart = func() {
+		go func() {
+			worker.Run(ctx)
+			// Exit 0 so Restart=on-failure does not bring the proxy back after a wipe.
+			if worker.RevokedLocally() {
+				os.Exit(0)
+			}
+		}()
+	}
 	go func() { <-ctx.Done(); n.sidecars.Stop() }()
 	return nil
 }

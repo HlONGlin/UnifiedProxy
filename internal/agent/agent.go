@@ -8,7 +8,9 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"strings"
 	"sync"
+	"sync/atomic"
 	"time"
 
 	"github.com/hlonglin/unifiedproxy/internal/fleet"
@@ -38,6 +40,9 @@ type Agent struct {
 	journal   Journal
 	addressMu sync.RWMutex
 	publicIP  string
+	wipeOnce  sync.Once
+	stopped   chan struct{}
+	revoked   atomic.Bool
 }
 
 func New(dir string, runtime Runtime) (*Agent, error) {
@@ -45,7 +50,7 @@ func New(dir string, runtime Runtime) (*Agent, error) {
 	if err != nil {
 		return nil, err
 	}
-	a := &Agent{Dir: dir, Runtime: runtime, Client: &Client{Config: cfg}, journal: Journal{Receipts: map[string]*Receipt{}}}
+	a := &Agent{Dir: dir, Runtime: runtime, Client: &Client{Config: cfg}, journal: Journal{Receipts: map[string]*Receipt{}}, stopped: make(chan struct{})}
 	err = fleet.ReadJSON(filepath.Join(dir, "agent-receipts.json"), &a.journal)
 	if err != nil && !errors.Is(err, os.ErrNotExist) {
 		return nil, err
@@ -240,10 +245,8 @@ func (a *Agent) run(ctx context.Context, interval time.Duration, discover func(c
 			err = a.Client.request(ctx, "/fleet/v1/poll", cfg.NodeID, fleet.Poll{Status: a.snapshot()}, &response)
 			if err == nil {
 				if len(response.Tasks) == 0 {
-					select {
-					case <-ctx.Done():
+					if !a.wait(ctx, fleet.HeartbeatInterval) {
 						return
-					case <-time.After(fleet.HeartbeatInterval):
 					}
 				}
 				for _, t := range response.Tasks {
@@ -271,16 +274,16 @@ func (a *Agent) run(ctx context.Context, interval time.Duration, discover func(c
 			}
 		}
 		if err != nil {
+			if errors.Is(err, ErrAccessRevoked) {
+				a.wipeRevokedAccess()
+				return
+			}
 			if ctx.Err() != nil {
 				return
 			}
 			log.Printf("fleet connection: %v (retry in %s)", err, backoff)
-			timer := time.NewTimer(backoff)
-			select {
-			case <-ctx.Done():
-				timer.Stop()
+			if !a.wait(ctx, backoff) {
 				return
-			case <-timer.C:
 			}
 			backoff *= 2
 			if backoff > 30*time.Second {
@@ -290,6 +293,207 @@ func (a *Agent) run(ctx context.Context, interval time.Duration, discover func(c
 			backoff = time.Second
 		}
 	}
+}
+
+func (a *Agent) wait(ctx context.Context, d time.Duration) bool {
+	timer := time.NewTimer(d)
+	defer timer.Stop()
+	select {
+	case <-ctx.Done():
+		return false
+	case <-a.stopped:
+		return false
+	case <-timer.C:
+		return true
+	}
+}
+
+// RevokedLocally reports that this process already accepted a signed revocation
+// and attempted to stop proxies and delete local data.
+func (a *Agent) RevokedLocally() bool { return a.revoked.Load() }
+
+func (a *Agent) wipeRevokedAccess() {
+	a.wipeOnce.Do(func() {
+		defer close(a.stopped)
+		a.revoked.Store(true)
+		log.Printf("fleet access revoked; stopping proxy processes and deleting node data")
+		ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
+		defer cancel()
+		if wiper, ok := a.Runtime.(interface {
+			WipeProcesses(context.Context) error
+		}); ok && wiper != nil {
+			if err := wiper.WipeProcesses(ctx); err != nil {
+				log.Printf("fleet revoke stop processes: %v", err)
+			}
+		}
+		// Read the core path before the data directory is removed.
+		if err := removeDownloadedRuntimes(a.Dir); err != nil {
+			log.Printf("fleet revoke remove runtimes: %v", err)
+		}
+		if err := wipeManagedDir(a.Dir); err != nil {
+			log.Printf("fleet revoke wipe data: %v", err)
+		}
+	})
+}
+
+// removeDownloadedRuntimes deletes Mihomo, Sidecar and VPNGate files that the
+// node installer downloaded. Mihomo may live beside the data directory. Sidecar
+// and VPNGate files live inside it. A core path outside the install directory
+// is left alone.
+func removeDownloadedRuntimes(dataDir string) error {
+	abs, err := filepath.Abs(dataDir)
+	if err != nil {
+		return err
+	}
+	abs = filepath.Clean(abs)
+	info, err := os.Lstat(abs)
+	if err != nil {
+		return err
+	}
+	if info.Mode()&os.ModeSymlink != 0 || !info.IsDir() {
+		return errors.New("refusing to remove runtimes outside a real data directory")
+	}
+	installDir := filepath.Dir(abs)
+	if installDir == abs {
+		return errors.New("refusing to remove runtimes from a filesystem root")
+	}
+	var first error
+	remember := func(err error) {
+		if err != nil && first == nil {
+			first = err
+		}
+	}
+	for _, name := range []string{"caddy-naive", "shadow-tls", "ssserver"} {
+		for _, suffix := range []string{"", ".exe", ".source.json"} {
+			remember(removeRegularFile(filepath.Join(abs, "bin", name+suffix)))
+		}
+	}
+	remember(removeDirInside(abs, filepath.Join(abs, "vpngate")))
+	seen := map[string]bool{}
+	candidates := []string{}
+	if core := configuredCorePath(filepath.Join(abs, "state.json")); core != "" {
+		candidates = append(candidates, core, core+".new")
+	}
+	for _, name := range []string{"mihomo", "mihomo.exe", "mihomo.new"} {
+		candidates = append(candidates, filepath.Join(installDir, name), filepath.Join(installDir, "core", name))
+	}
+	for _, candidate := range candidates {
+		cleaned, err := filepath.Abs(candidate)
+		if err != nil {
+			remember(err)
+			continue
+		}
+		cleaned = filepath.Clean(cleaned)
+		if seen[cleaned] || !mihomoFileName(cleaned) || !pathInside(installDir, cleaned) {
+			seen[cleaned] = true
+			continue
+		}
+		seen[cleaned] = true
+		remember(removeRegularFile(cleaned))
+	}
+	return first
+}
+
+func configuredCorePath(statePath string) string {
+	var state struct {
+		Settings struct {
+			CorePath string `json:"corePath"`
+		} `json:"settings"`
+	}
+	if fleet.ReadJSON(statePath, &state) != nil {
+		return ""
+	}
+	return strings.TrimSpace(state.Settings.CorePath)
+}
+
+func mihomoFileName(path string) bool {
+	switch strings.ToLower(filepath.Base(path)) {
+	case "mihomo", "mihomo.exe", "mihomo.new":
+		return true
+	default:
+		return false
+	}
+}
+
+func pathInside(root, target string) bool {
+	root = filepath.Clean(root)
+	target = filepath.Clean(target)
+	rel, err := filepath.Rel(root, target)
+	if err != nil || rel == "." || filepath.IsAbs(rel) {
+		return false
+	}
+	return !strings.HasPrefix(rel, "..")
+}
+
+func removeRegularFile(path string) error {
+	info, err := os.Lstat(path)
+	if errors.Is(err, os.ErrNotExist) {
+		return nil
+	}
+	if err != nil {
+		return err
+	}
+	if info.IsDir() {
+		return errors.New("refusing to remove a directory as a runtime binary")
+	}
+	return os.Remove(path)
+}
+
+func removeDirInside(root, path string) error {
+	abs, err := filepath.Abs(path)
+	if err != nil {
+		return err
+	}
+	abs = filepath.Clean(abs)
+	if !pathInside(root, abs) {
+		return errors.New("refusing to remove a runtime directory outside the data directory")
+	}
+	info, err := os.Lstat(abs)
+	if errors.Is(err, os.ErrNotExist) {
+		return nil
+	}
+	if err != nil {
+		return err
+	}
+	if info.Mode()&os.ModeSymlink != 0 || !info.IsDir() {
+		return errors.New("refusing to remove a runtime path that is not a real directory")
+	}
+	return os.RemoveAll(abs)
+}
+
+// wipeManagedDir removes the contents of the node data directory. It refuses
+// the filesystem root and a symlinked directory so a bad path cannot escape.
+func wipeManagedDir(dir string) error {
+	abs, err := filepath.Abs(dir)
+	if err != nil {
+		return err
+	}
+	abs = filepath.Clean(abs)
+	info, err := os.Lstat(abs)
+	if err != nil {
+		return err
+	}
+	if info.Mode()&os.ModeSymlink != 0 || !info.IsDir() {
+		return errors.New("refusing to wipe a symlink or non-directory")
+	}
+	if filepath.Dir(abs) == abs {
+		return errors.New("refusing to wipe a filesystem root")
+	}
+	entries, err := os.ReadDir(abs)
+	if err != nil {
+		return err
+	}
+	var first error
+	for _, entry := range entries {
+		name := entry.Name()
+		if name == "." || name == ".." || strings.ContainsAny(name, `/\`) {
+			continue
+		}
+		if err := os.RemoveAll(filepath.Join(abs, name)); err != nil && first == nil {
+			first = err
+		}
+	}
+	return first
 }
 
 func (a *Agent) Report(ctx context.Context) error {

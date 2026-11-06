@@ -62,8 +62,15 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	n := s.Store.Node(e.Sender)
-	if n == nil || n.Revoked || s.replay.Verify(e, n.PublicKey, n.ID, audience, time.Now()) != nil {
+	// Verify the signature before revealing revocation. A valid signature on a
+	// revoked node gets a signed wipe instruction; bad signatures stay a generic 401
+	// so a network attacker cannot trick a node into deleting itself.
+	if n == nil || n.PublicKey == "" || s.replay.Verify(e, n.PublicKey, n.ID, audience, time.Now()) != nil {
 		jsonResponse(w, 401, map[string]string{"error": "invalid or revoked identity, expired signature, or replay"})
+		return
+	}
+	if n.Revoked {
+		s.reply(w, e, map[string]any{"error": "access-revoked", "wipe": true})
 		return
 	}
 	switch strings.TrimPrefix(r.URL.Path, "/fleet/v1/") {
