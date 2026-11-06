@@ -87,6 +87,7 @@ window.UPFleetWorkspace = function ({request, load, selectTarget, hostSettings, 
   function showEnrollment(node,info) {
     const body=modal(tr(`接入子服务器 · ${node.name}`,`Connect server · ${node.name}`),tr('这张卡片已创建。接下来在子服务器终端完成接入，主机页面会自动更新在线状态。','The card is ready. Complete enrollment in the child server terminal; this page updates automatically.'));
     body.dataset.enrollmentNode=node.id;
+    el('p',tr('如果子服务器已绑定其他主机，终端会询问是否覆盖。确认覆盖将永久删除该服务器的节点数据和本地备份；原主机的卡片需在原主机上手动删除。','If the child server is bound to another host, the terminal will ask whether to replace it. Confirming permanently deletes its node data and local backups; remove the old card from the original host separately.'),body,{className:'fleet-callout'});
     const quote=value=>"'"+String(value).replaceAll("'","'\"'\"'")+"'";
     el('p',tr('在 Linux 子服务器以 root 执行。命令已包含一次性 token，会自动安装节点与缺失的 Mihomo、完成接入并启动服务。','Run as root on the Linux child server. The command includes its one-time token and installs the node and missing Mihomo core, enrolls and starts the service.'),body,{className:'fleet-callout'});
     const origin=field(body,tr('主机公网地址','Host public URL'),location.origin,'url',tr('支持 http://IP:端口 或 HTTPS 地址，无需先配置证书。不附加面板路径；反向代理需转发 /fleet/v1/。','Use http://IP:port or an HTTPS origin. No certificate is required for HTTP. Omit the panel path; reverse proxies must forward /fleet/v1/.'));origin.required=true;

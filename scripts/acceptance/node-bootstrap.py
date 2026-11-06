@@ -4,7 +4,7 @@ Downloads are supplied by local release fixtures. A systemctl adapter starts
 real node processes, so this checks installation and enrollment, not systemd itself.
 """
 import argparse, hashlib, http.cookiejar, ipaddress, json, os, re, shutil, socket
-import ssl, subprocess, tarfile, tempfile, time, urllib.request
+import shlex, ssl, subprocess, tarfile, tempfile, time, urllib.request
 from pathlib import Path
 from playwright.sync_api import sync_playwright, expect
 
@@ -53,6 +53,7 @@ with tempfile.TemporaryDirectory(prefix='node-bootstrap-',dir=output) as temp:
 import json,os,shutil,sys
 args=sys.argv[1:];url=next(v for v in args if v.startswith(('http://','https://')));dest=args[args.index('-o')+1]
 if os.environ.get('UP_FAIL_DOWNLOAD')=='1':raise SystemExit(22)
+if os.environ.get('UP_FAIL_RELEASE')=='1' and '/releases/download/' in url:raise SystemExit(22)
 with open(os.environ['UP_DOWNLOADS']) as f:mapping=json.load(f)
 if url in mapping:shutil.copyfile(mapping[url],dest)
 else:os.execv('/usr/bin/curl',['/usr/bin/curl']+args)
@@ -141,6 +142,53 @@ raise SystemExit(1)
                 bad=command.replace(node_id,foreign['id'])
                 result=execute(bad)
                 check('An existing enrollment cannot be replaced by another card',result.returncode!=0 and identity==(install/'data/agent-identity.json').read_bytes() and json.loads((install/'data/agent.json').read_text())['nodeId']==node_id)
+                old_agent=json.loads((install/'data/agent.json').read_text())
+                stale_marker=install/'data/host-a-leftover';stale_marker.write_text('must be removed during explicit replacement')
+                old_backup=install/'backups'/'host-a-backup.tar.gz';old_backup.parent.mkdir(parents=True,exist_ok=True);old_backup.write_text('host A data')
+                second_data=root/'second-control-data';second_origin=f'{origin.rsplit(":",1)[0]}:{free_port()}';second_base=second_origin+'/bootstrap'
+                subprocess.run([str(control),'configure','--data-dir',str(second_data),'--username','fixture','--password-stdin','--listen-ip','0.0.0.0' if args.http else '127.0.0.1','--port',second_origin.rsplit(':',1)[1],'--path','bootstrap',*tls],input='fixture-password',text=True,check=True,stdout=subprocess.DEVNULL)
+                with (root/'second-control.log').open('w') as second_log:
+                    second_process=subprocess.Popen([str(control),'serve','--data-dir',str(second_data)],stdout=second_log,stderr=second_log)
+                    try:
+                        for _ in range(100):
+                            try:opener.open(second_base+'/login',timeout=1).close();break
+                            except Exception:time.sleep(.1)
+                        second_opener=urllib.request.build_opener(urllib.request.ProxyHandler({}),urllib.request.HTTPSHandler(context=context),urllib.request.HTTPCookieProcessor(http.cookiejar.CookieJar()))
+                        def second_api(path,body=None):
+                            request=urllib.request.Request(second_base+path,None if body is None else json.dumps(body).encode(),{'Content-Type':'application/json'})
+                            with second_opener.open(request,timeout=5) as response:value=json.load(response)
+                            assert value.get('ok'),value
+                            return value.get('data')
+                        second_api('/api/auth/login',{'username':'fixture','password':'fixture-password'})
+                        second_card=second_api('/api/fleet/nodes',{'name':'replacement node','address':''});second_info=second_api('/api/fleet/tokens',{'nodeId':second_card['id']})
+                        q=shlex.quote;protocols='=http,https' if args.http else '=https'
+                        def command_for(url,key,token_value,target_id,replace=False):
+                            value='( set -euo pipefail; up_install_script="$(mktemp)"; trap \'rm -f "$up_install_script"\' EXIT; curl -fsSL --proto '+q(protocols)+' --proto-redir '+q(protocols)+' --connect-timeout 10 --max-time 60 '+q(url+'/fleet/v1/install.sh')+' -o "$up_install_script"; printf \'%s\' '+q(token_value)+' | bash "$up_install_script" --control '+q(url)+' --control-key '+q(key)+' --token-stdin --node-id '+q(target_id)+' --version '+q(version)
+                            return value+(' --replace-existing' if replace else '')+' )'
+                        second_command=command_for(second_origin,second_info['controlKey'],second_info['token'],second_card['id'])
+                        failed=execute(second_command,{'UP_FAIL_DOWNLOAD':'1'})
+                        check('Replacement download failure preserves host A enrollment and data',failed.returncode!=0 and json.loads((install/'data/agent.json').read_text())==old_agent and stale_marker.exists() and old_backup.exists())
+                        cancelled=execute(second_command)
+                        check('Non-interactive replacement defaults to preserving host A data',cancelled.returncode!=0 and json.loads((install/'data/agent.json').read_text())==old_agent and stale_marker.exists())
+                        pty_command='bash -c '+shlex.quote(second_command)
+                        cancelled=subprocess.run(['script','-q','-e','-c',pty_command,'/dev/null'],input='1\n',env=env,capture_output=True,text=True,timeout=90)
+                        check('Terminal cancellation preserves the existing binding',cancelled.returncode!=0 and 'Select 1 or 2' in cancelled.stdout and json.loads((install/'data/agent.json').read_text())==old_agent and stale_marker.exists())
+                        failed=execute(command_for(second_origin,second_info['controlKey'],second_info['token'],second_card['id'],True),{'UP_FAIL_RELEASE':'1'})
+                        check('Release download failure preserves the existing binding and backups',failed.returncode!=0 and json.loads((install/'data/agent.json').read_text())==old_agent and stale_marker.exists() and old_backup.exists())
+                        replacement=subprocess.run(['script','-q','-e','-c',pty_command,'/dev/null'],input='2\nREPLACE\n',env=env,capture_output=True,text=True,timeout=90)
+                        if replacement.returncode:raise AssertionError(replacement.stdout+replacement.stderr)
+                        second_view=next((n for n in second_api('/api/fleet')['nodes'] if n['id']==second_card['id']),None)
+                        deadline=time.monotonic()+30
+                        while time.monotonic()<deadline and not (second_view and second_view['online'] and second_view['status']['version']==version):
+                            time.sleep(.2);second_view=next((n for n in second_api('/api/fleet')['nodes'] if n['id']==second_card['id']),None)
+                        new_agent=json.loads((install/'data/agent.json').read_text())
+                        check('Confirmed replacement clears host A data and binds a fresh node identity',new_agent['controlURL']==second_origin and new_agent['nodeId']==second_card['id'] and (install/'data/agent-identity.json').read_bytes()!=identity and not stale_marker.exists() and not old_backup.parent.exists())
+                        check('Replacement node reports online to host B',bool(second_view and second_view['online'] and second_view['status']['version']==version))
+                        old_last_seen=next(n for n in api('/api/fleet')['nodes'] if n['id']==node_id)['lastSeen']
+                        time.sleep(2)
+                        first_view=next(n for n in api('/api/fleet')['nodes'] if n['id']==node_id)
+                        check('Host A stops receiving heartbeats after replacement',first_view['lastSeen']==old_last_seen)
+                    finally:second_process.terminate();second_process.wait(timeout=15)
                 legacy=root/'existing-standalone';legacy.mkdir()
                 subprocess.run([str(node),'configure','--data-dir',str(legacy/'data'),'--username','existing-admin','--password-stdin','--listen-ip','127.0.0.1','--port',str(free_port()),'--path','keep-existing-path','--core-path',str(core)],input='keep-existing-password',text=True,check=True,stdout=subprocess.DEVNULL)
                 previous=json.loads((legacy/'data/state.json').read_text())['settings']

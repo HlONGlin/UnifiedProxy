@@ -4,9 +4,9 @@ set +x
 set -Eeuo pipefail
 umask 077
 
-control=""; control_key=""; node_id=""; version="latest"; token_stdin=0
+control=""; control_key=""; node_id=""; version="latest"; token_stdin=0; replace_existing=0; replace_binding=0
 install_dir="${UNIFIEDPROXY_FLEET_INSTALL_DIR:-/usr/local/unifiedproxy-node}"
-work_dir=""; token=""; restart_on_failure=0
+work_dir=""; token=""; restart_on_failure=0; lock_fd=""
 info() { printf '[UnifiedProxy] %s\n' "$*"; }
 die() { printf '[UnifiedProxy] ERROR: %s\n' "$*" >&2; exit 1; }
 cleanup() {
@@ -27,7 +27,8 @@ while [[ $# -gt 0 ]]; do
       esac
       shift 2 ;;
     --token-stdin) token_stdin=1; shift ;;
-    -h|--help) echo 'Usage: install-node.sh --control HTTP_OR_HTTPS_URL --control-key PUBLIC_KEY --node-id ID --token-stdin [--version TAG]'; exit 0 ;;
+    --replace-existing) replace_existing=1; shift ;;
+    -h|--help) echo 'Usage: install-node.sh --control HTTP_OR_HTTPS_URL --control-key PUBLIC_KEY --node-id ID --token-stdin [--version TAG] [--replace-existing]'; exit 0 ;;
     *) die "Unknown option: $1" ;;
   esac
 done
@@ -40,6 +41,12 @@ token="$(head -c 4097)"
 [[ -n "$token" && ${#token} -le 4096 && "$token" =~ ^[a-fA-F0-9]+$ ]] || die 'Invalid or missing enrollment token. Generate a fresh command in the host panel.'
 command -v systemctl >/dev/null || die 'This automatic installer requires systemd; use manual enrollment for Docker or other init systems.'
 systemctl show-environment >/dev/null 2>&1 || die 'systemd is not running on this host.'
+[[ ! -L "$install_dir" ]] || die 'Refusing to use a symlinked node installation directory.'
+mkdir -p "$install_dir"
+command -v flock >/dev/null || die 'The flock command is required to serialize node enrollment.'
+[[ ! -L "$install_dir/.enrollment.lock" ]] || die 'Refusing to use a symlinked enrollment lock.'
+exec {lock_fd}>"$install_dir/.enrollment.lock"
+flock -n "$lock_fd" || die 'Another node enrollment is already in progress.'
 
 missing=0
 for dependency in curl python3 sha256sum tar gzip xz install openssl; do command -v "$dependency" >/dev/null || missing=1; done
@@ -61,22 +68,45 @@ if not url.hostname or url.username or url.password or url.query or url.fragment
 if len(base64.b64decode(sys.argv[2],validate=True))!=32: raise SystemExit('Invalid control public key.')
 PY
 
-# Never detach or overwrite an enrollment belonging to another server card.
+# Re-running the same enrollment is safe. Rebinding requires an explicit choice.
 data_dir="$install_dir/data"
 if [[ -f "$data_dir/agent.json" ]]; then
+  [[ ! -L "$data_dir" ]] || die 'Refusing to replace a symlinked node data directory.'
+  set +e
   python3 - "$data_dir/agent.json" "$node_id" "$control_key" "$control" <<'PY'
 import json, sys
-with open(sys.argv[1]) as f: cfg=json.load(f)
-if (cfg.get('nodeId'),cfg.get('controlKey'),cfg.get('controlURL','').rstrip('/')) != tuple(sys.argv[2:]):
-    raise SystemExit('This server is already enrolled elsewhere. Existing data was retained; leave/rebind explicitly before connecting another card.')
+try:
+    with open(sys.argv[1]) as f: cfg=json.load(f)
+except Exception:
+    raise SystemExit(2)
+raise SystemExit(0 if (cfg.get('nodeId'),cfg.get('controlKey'),cfg.get('controlURL','').rstrip('/')) == tuple(sys.argv[2:]) else 1)
 PY
-  if [[ -f "$data_dir/break-glass" ]]; then die 'Emergency takeover is active. Resume fleet management explicitly before restarting.'; fi
-  token=""
-  systemctl enable unifiedproxy-node
-  systemctl restart unifiedproxy-node
-  systemctl is-active --quiet unifiedproxy-node || die 'Node startup failed; inspect journalctl -u unifiedproxy-node.'
-  info 'This card is already enrolled. Service restarted; return to the host panel.'
-  exit 0
+  binding_status=$?
+  set -e
+  if [[ $binding_status -eq 0 ]]; then
+    if [[ -f "$data_dir/break-glass" ]]; then die 'Emergency takeover is active. Resume fleet management explicitly before restarting.'; fi
+    token=""
+    systemctl enable unifiedproxy-node
+    systemctl restart unifiedproxy-node
+    systemctl is-active --quiet unifiedproxy-node || die 'Node startup failed; inspect journalctl -u unifiedproxy-node.'
+    info 'This card is already enrolled. Service restarted; return to the host panel.'
+    exit 0
+  fi
+  [[ $binding_status -eq 1 ]] || die 'The existing enrollment file is invalid; existing data was retained for manual recovery.'
+  info 'This server is already bound to another host.'
+  info "Current binding: $(python3 -c 'import json,sys; print(json.load(open(sys.argv[1])).get("controlURL", "unknown"))' "$data_dir/agent.json" 2>/dev/null || printf 'unreadable')"
+  info "Requested binding: $control"
+  if [[ $replace_existing -ne 1 ]]; then
+    [[ -r /dev/tty ]] || die 'No interactive terminal is available. Re-run with --replace-existing only if you intend to erase this node data and bind it to the new host.'
+    printf '\n[1] Keep the current binding and cancel (default)\n[2] Erase local node data and bind to the new host\nSelect 1 or 2: ' >/dev/tty
+    IFS= read -r choice </dev/tty || die 'Could not read the replacement choice; existing data was retained.'
+    [[ "$choice" == 2 ]] || die 'Existing binding kept; no node data was changed.'
+    printf 'Type REPLACE to erase all local node data and backups: ' >/dev/tty
+    IFS= read -r confirmation </dev/tty || die 'Could not read confirmation; existing data was retained.'
+    [[ "$confirmation" == REPLACE ]] || die 'Replacement not confirmed; existing data was retained.'
+  fi
+  replace_binding=1
+  [[ ! -L "$install_dir/backups" ]] || die 'Refusing to replace a symlinked node backups directory.'
 fi
 
 case "$(uname -m)" in
@@ -114,7 +144,7 @@ chmod 755 "$work_dir/node"
 
 # Reuse an existing core. Fresh nodes get the same pinned core as the Docker image.
 core_path="$install_dir/mihomo"
-if [[ -f "$data_dir/state.json" ]]; then
+if [[ $replace_binding -eq 0 && -f "$data_dir/state.json" ]]; then
   saved_core="$(python3 -c 'import json,sys; print(json.load(open(sys.argv[1])).get("settings",{}).get("corePath", ""))' "$data_dir/state.json")"
   [[ ! -x "$saved_core" ]] || core_path="$saved_core"
 fi
@@ -141,7 +171,16 @@ if [[ ! -x "$core_path" ]]; then
   "$work_dir/mihomo" -v >/dev/null
 fi
 
-if systemctl is-active --quiet unifiedproxy-node; then
+if [[ $replace_binding -eq 1 ]]; then
+  restart_on_failure=0
+  systemctl stop unifiedproxy-node || die 'Could not stop the existing node service; existing data was retained.'
+  [[ ! -L "$data_dir" ]] || die 'Refusing to remove a symlinked node data directory.'
+  [[ ! -L "$install_dir/backups" ]] || die 'Refusing to remove a symlinked node backups directory.'
+  rm -rf -- "$data_dir" "$install_dir/backups"
+  mkdir -m 700 -- "$data_dir"
+  info 'Old host binding, node settings, inbounds, client data, identities and local backups were erased.'
+  info 'The old host will retain its node card as offline until it is removed there.'
+elif systemctl is-active --quiet unifiedproxy-node; then
   restart_on_failure=1
   systemctl stop unifiedproxy-node
 fi
