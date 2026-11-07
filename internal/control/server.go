@@ -58,7 +58,7 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			jsonResponse(w, 403, map[string]string{"error": err.Error()})
 			return
 		}
-		s.reply(w, e, fleet.EnrollmentResponse{NodeID: n.ID, PublicKey: s.Store.Identity.Public(), Protocol: fleet.ProtocolVersion})
+		s.reply(w, e, fleet.EnrollmentResponse{NodeID: n.ID, PublicKey: s.Store.Identity.Public(), EncryptionPublicKey: n.EncryptionPublicKey, Protocol: fleet.ProtocolVersion})
 		return
 	}
 	n := s.Store.Node(e.Sender)

@@ -251,7 +251,7 @@ window.UPFleetWorkspace = function ({request, load, selectTarget, hostSettings, 
     const list=root.querySelector('#fleet-tasks');if(!list)return;const opened=new Set(Array.from(list.querySelectorAll('details[open]')).map(d=>d.dataset.taskId));list.replaceChildren();
     const tasks=(fleet.tasks||[]).slice(-30).reverse();if(!tasks.length){empty(list,tr('还没有执行过任务','No tasks yet'),tr('提交巡检或批量操作后，会在这里显示进度。','Submitted checks and batch actions appear here.'));return;}
     const taskNames={'apply-state':tr('应用节点配置','Apply node configuration'),'purge':tr('停止服务并吊销节点','Stop services and revoke node'),'core-control':tr('控制代理内核','Control proxy core'),'traffic-reset':tr('重置流量','Reset traffic'),'vpngate-install':tr('安装 VPNGate 出口','Install VPNGate outbound'),'vpngate-reconnect':tr('重连 VPNGate','Reconnect VPNGate')};
-    taskNames['cert-issue']=tr('在子服务器申请证书','Issue certificate on child server');taskNames['cert-renew']=tr('续期子服务器证书','Renew child server certificate');
+    taskNames['cert-issue']=tr('在子服务器申请证书','Issue certificate on child server');taskNames['cert-renew']=tr('续期子服务器证书','Renew child server certificate');taskNames['cert-bind']=tr('绑定子服务器证书','Bind child server certificate');taskNames['cert-credentials']=tr('加密保存 Cloudflare 凭据','Save encrypted Cloudflare credentials');
     taskNames['outbound-delay']=tr('测试出口延迟','Test outbound delay');
     for(const task of tasks){const box=el('details',undefined,list,{className:'fleet-task'});box.dataset.taskId=task.id;box.open=opened.has(task.id);const head=el('summary',undefined,box);el('strong',taskNames[task.kind]||t(task.kind),head);el('span',(fleet.nodes||[]).find(n=>n.id===task.nodeId)?.name||task.nodeId,head);
       const status=task.result?.status||task.status;el('span',({pending:tr('排队中','Queued'),queued:tr('排队中','Queued'),leased:tr('执行中','Running'),running:tr('执行中','Running'),succeeded:tr('已完成','Completed'),success:tr('已完成','Completed'),done:tr('已完成','Completed'),failed:tr('失败','Failed'),expired:tr('已过期','Expired'),unsupported:tr('节点不支持','Unsupported'),superseded:tr('已被新配置替代','Superseded'),cancelled:tr('已取消','Cancelled')})[status]||status,head,{className:'fleet-task-status'});el('time',formatTime(task.createdAt),head);
@@ -278,50 +278,88 @@ window.UPFleetWorkspace = function ({request, load, selectTarget, hostSettings, 
     const credentials=()=>({url:davURL.value,username:user.value,password:pass.value});button(t('uploadBackup'),dav,async()=>output(await request('/backup',{action:'upload',webdav:credentials()})));button(tr('从 WebDAV 恢复','Restore from WebDAV'),dav,async()=>{if(await upConfirm(tr('从远程备份替换当前舰队数据？','Replace current fleet data with the remote backup?'),{danger:true})){output(await request('/backup',{action:'download',webdav:credentials()}));await load();}});
   }
   function renderCertificates(content) {
-    const nodes=(fleet.nodes||[]).filter(node=>!node.revoked),box=block(content,tr('子服务器证书','Child server certificates'),tr('证书和 ACME 凭据保存在所选子服务器本地。HTTP 验证需要开放 80 端口；Cloudflare DNS 验证要求在该子服务器服务环境中预先配置 CF_Token。','Certificates and ACME credentials stay on the selected child server. HTTP validation needs port 80 open. Cloudflare DNS validation requires CF_Token to be configured in that server service environment.'));
+    const nodes=(fleet.nodes||[]).filter(node=>!node.revoked),box=block(content,tr('子服务器证书','Child server certificates'),tr('证书、Cloudflare 凭据和自动续期配置只保存在所选子服务器。申请证书不需要先创建 TLS 入站；签发后可再绑定。Cloudflare 凭据在浏览器中先加密，再以密文发送。','Certificates, Cloudflare credentials, and renewal settings stay on the selected child server. You can issue a certificate before creating a TLS inbound, then bind it afterward. Cloudflare credentials are encrypted in the browser before they are sent.'));
     if(!nodes.length){empty(box,tr('暂无可用子服务器','No child servers available'),tr('添加并接入子服务器后，可在这里单独申请和续期证书。','Add and connect a child server to manage its certificates here.'));return;}
     const nodeOptions=[['',tr('选择子服务器…','Select a child server…')],...nodes.map(node=>[node.id,node.name])];
     const server=pick(box,tr('子服务器','Child server'),nodeOptions,nodes[0].id),fields=el('div',undefined,box,{className:'fleet-two-columns'});
-    const target=pick(fields,tr('TLS 入站','TLS inbound'),[['',tr('正在读取…','Loading…')]],'');
+    const target=pick(fields,tr('绑定到 TLS 入站（可选）','Bind to TLS inbound (optional)'),[['',tr('稍后绑定','Bind later')]],'');
     const name=field(fields,tr('证书名称','Certificate name'));
     const domain=field(fields,tr('证书域名','Certificate domain'));
-    const dns=pick(fields,tr('验证方式','Challenge'),[['',tr('HTTP 验证（需开放 80 端口）','HTTP challenge (port 80 required)')],['dns_cf',tr('Cloudflare DNS（凭据在子服务器配置）','Cloudflare DNS (credentials configured on child)')]],'');
+    const dns=pick(fields,tr('验证方式','Challenge'),[['',tr('HTTP 验证（需开放 80 端口）','HTTP challenge (port 80 required)')],['dns_cf',tr('Cloudflare DNS','Cloudflare DNS')]],'');
     const autoWrap=el('label',undefined,fields,{className:'fleet-check fleet-certificate-auto'}),automatic=el('input',undefined,autoWrap,{type:'checkbox',checked:true});el('span',tr('自动续期','Renew automatically'),autoWrap);
+    const dnsFields=el('div',undefined,box,{className:'fleet-two-columns'}),dnsToken=field(dnsFields,tr('Cloudflare API Token','Cloudflare API token'),'','password',tr('仅加密下发并保存在所选子服务器。','Encrypted for delivery and stored on the selected child server.'));dnsToken.autocomplete='new-password';
+    const dnsAccount=field(dnsFields,tr('Cloudflare Account ID','Cloudflare Account ID'));
+    const dnsZone=field(dnsFields,tr('Cloudflare Zone ID','Cloudflare Zone ID'));
+    const credentialState=el('p',tr('尚未保存 Cloudflare 凭据','Cloudflare credentials are not saved'),box,{className:'fleet-hint'});
     const feedback=el('div',undefined,box,{className:'fleet-certificate-list'});
-    let targetItems=[],generation=0;
+    const bindFields=el('div',undefined,box,{className:'fleet-two-columns'}),certificateChoice=pick(bindFields,tr('已签发证书','Issued certificate'),[['',tr('选择证书…','Select a certificate…')]],''),bindButton=button(tr('绑定到所选 TLS 入站','Bind to selected TLS inbound'),bindFields,async()=>{
+      if(!server.value||!certificateChoice.value||!target.value)throw new Error(tr('请选择证书、子服务器和 TLS 入站。','Select a certificate, child server, and TLS inbound.'));
+      const result=await request('/nodes/'+encodeURIComponent(server.value)+'/certificates/bind',{name:certificateChoice.value,inboundId:target.value});output(result);if(result.publishError)output(tr('绑定任务已排队，但配置发布失败：','The bind task was queued, but publishing the configuration failed: ')+result.publishError,true);
+    },true);
+    let targetItems=[],generation=0,currentNode=null,saveCredentials;
     const refresh=button(tr('刷新子服务器证书','Refresh child certificates'),box,async()=>{await refreshNode();});
+    function base64Bytes(value){return Uint8Array.from(atob(value),character=>character.charCodeAt(0));}
+    function base64String(value){let binary='';for(const byte of value)binary+=String.fromCharCode(byte);return btoa(binary);}
+    function newTaskID(){return Array.from(crypto.getRandomValues(new Uint8Array(24))).map(value=>value.toString(16).padStart(2,'0')).join('');}
+    async function encryptCredentials(nodeID,publicKey,taskID,credentials){
+      if(!globalThis.crypto?.subtle)throw new Error(tr('当前浏览器不支持安全凭据加密。','This browser does not support secure credential encryption.'));
+      try{
+        const subtle=globalThis.crypto.subtle,encoder=new TextEncoder(),ephemeral=await subtle.generateKey({name:'X25519'},true,['deriveBits']),recipient=await subtle.importKey('raw',base64Bytes(publicKey),{name:'X25519'},false,[]),shared=await subtle.deriveBits({name:'X25519',public:recipient},ephemeral.privateKey,256),salt=await subtle.digest('SHA-256',encoder.encode('UnifiedProxy-fleet-secret-salt-v1\n'+nodeID)),hkdf=await subtle.importKey('raw',shared,'HKDF',false,['deriveKey']),key=await subtle.deriveKey({name:'HKDF',hash:'SHA-256',salt,info:encoder.encode('UnifiedProxy-fleet-secret-key-v1\n'+taskID+'\ncert-credentials')},hkdf,{name:'AES-GCM',length:256},false,['encrypt']),nonce=crypto.getRandomValues(new Uint8Array(12)),aad=encoder.encode('UnifiedProxy-fleet-secret-v1\n'+nodeID+'\n'+taskID+'\ncert-credentials'),ciphertext=await subtle.encrypt({name:'AES-GCM',iv:nonce,additionalData:aad,tagLength:128},key,encoder.encode(JSON.stringify(credentials))),ephemeralPublic=await subtle.exportKey('raw',ephemeral.publicKey);
+        return {version:1,ephemeralPublicKey:base64String(new Uint8Array(ephemeralPublic)),nonce:base64String(nonce),ciphertext:base64String(new Uint8Array(ciphertext))};
+      }catch(error){throw new Error(tr('浏览器无法使用 X25519 加密凭据，请更新浏览器后重试。','The browser could not encrypt credentials with X25519. Update the browser and try again.'));}
+    }
     async function refreshNode(){
-      const version=++generation;targetItems=[];target.replaceChildren();el('option',tr('正在读取…','Loading…'),target,{value:''});feedback.replaceChildren();
-      if(!server.value){el('option',tr('先选择子服务器','Select a child server first'),target,{value:''});return;}
+      const version=++generation;currentNode=null;targetItems=[];target.replaceChildren();el('option',tr('正在读取…','Loading…'),target,{value:''});certificateChoice.replaceChildren();el('option',tr('选择证书…','Select a certificate…'),certificateChoice,{value:''});feedback.replaceChildren();
+      if(!server.value){el('option',tr('先选择子服务器','Select a child server first'),target,{value:''});credentialState.textContent=tr('先选择子服务器','Select a child server first');return;}
       let detail;
       try{detail=await request('/nodes/'+encodeURIComponent(server.value));}catch(error){if(version===generation){target.replaceChildren();el('option',error.message,target,{value:''});}throw error;}
       if(version!==generation||server.value!==detail.id)return;
+      currentNode=detail;
       const model=detail.draft||detail.desired?.model||{};
       targetItems=(model.inbounds||[]).filter(item=>!item.reality?.enabled&&(item.tls||['hysteria2','hysteria2-realm','tuic','trusttunnel'].includes(String(item.type).toLowerCase())));
-      target.replaceChildren();el('option',tr('选择 TLS 入站…','Select a TLS inbound…'),target,{value:''});
+      target.replaceChildren();el('option',tr('稍后绑定','Bind later'),target,{value:''});
       for(const item of targetItems)el('option',(item.name||item.type||item.id)+(item.port?' · '+item.port:'')+' · '+item.id,target,{value:item.id});
-      if(!targetItems.length)el('option',tr('此子服务器没有可绑定的 TLS 入站','No TLS inbounds on this server'),target,{value:''});
-      const caps=detail.status?.capabilities||[];
+      const caps=detail.status?.capabilities||[],encryptionPublicKey=detail.encryptionPublicKey||detail.status?.encryptionPublicKey||'';
+      submit.disabled=!caps.includes('cert-issue');
       if(!caps.includes('cert-issue'))el('p',tr('请先升级此子服务器，再使用本地证书管理。','Upgrade this child server to enable local certificate management.'),feedback,{className:'fleet-hint'});
+      const canSaveCredentials=caps.includes('cert-credentials')&&!!encryptionPublicKey;
+      saveCredentials.disabled=!canSaveCredentials;
+      credentialState.textContent=detail.status?.details?.cloudflareCredentialsConfigured?tr('Cloudflare 凭据已保存在此子服务器。','Cloudflare credentials are saved on this child server.'):canSaveCredentials?tr('尚未保存 Cloudflare 凭据','Cloudflare credentials are not saved'):tr('升级子服务器后即可安全保存 Cloudflare 凭据。','Upgrade the child server to securely save Cloudflare credentials.');
       const certs=detail.status?.details?.managedCertificates||[];
-      if(!certs.length)empty(feedback,tr('此子服务器尚无托管证书','No managed certificates on this server'),tr('申请后，证书文件、私钥和续期配置只保存在此子服务器。','Issued certificate files, private keys and renewal settings stay on this server.'));
       for(const cert of certs){
+        el('option',cert.name+' · '+cert.domain,certificateChoice,{value:cert.name});
         const row=el('div',undefined,feedback,{className:'fleet-certificate-item'}),meta=el('div',undefined,row,{className:'fleet-certificate-meta'});
         el('strong',cert.name,meta);el('span',cert.domain+' · '+tr('到期','Expires')+' '+(cert.expiresAt?new Date(cert.expiresAt).toLocaleDateString():'—')+' · '+(cert.automatic?tr('自动续期已开启','Automatic renewal enabled'):tr('手动续期','Manual renewal')),meta);
         if(cert.lastError)el('span',tr('续期失败：','Renewal failed: ')+cert.lastError,meta,{className:'fleet-error'});
         const actions=el('div',undefined,row,{className:'fleet-certificate-actions'});
         button(tr('立即续期','Renew now'),actions,async()=>{const task=await request('/tasks',{nodeId:server.value,kind:'cert-renew',payload:{name:cert.name},ttlSeconds:1200});output(task);});
+        button(tr('选择并绑定','Select and bind'),actions,()=>{certificateChoice.value=cert.name;name.value=cert.name;});
       }
+      if(!certs.length)empty(feedback,tr('此子服务器尚无托管证书','No managed certificates on this server'),tr('可以先不选择 TLS 入站，独立申请证书。','Issue a certificate without selecting a TLS inbound first.'));
+      syncBindButton();
+      if(!targetItems.length)el('p',tr('此子服务器还没有 TLS 入站；可以先申请证书，之后创建并绑定入站。','This server has no TLS inbound yet. Issue a certificate now, then create and bind an inbound.'),feedback,{className:'fleet-hint'});
     }
-    target.onchange=()=>{const inbound=targetItems.find(item=>item.id===target.value);if(!inbound)return;if(inbound.tlsServerName)domain.value=inbound.tlsServerName;if(!name.value&&domain.value)name.value=domain.value.toLowerCase().replace(/^\*\./,'wildcard-').replace(/[^a-z0-9._-]/g,'-');};
-    const submit=button(tr('在此子服务器申请证书并绑定','Issue and bind on this server'),box,async()=>{
-      if(!server.value||!target.value)throw new Error(tr('请选择子服务器和 TLS 入站。','Select a child server and TLS inbound.'));
+    function syncBindButton(){const caps=currentNode?.status?.capabilities||[];bindButton.disabled=!(caps.includes('cert-bind')&&targetItems.length>0&&target.value&&certificateChoice.value);}
+    certificateChoice.onchange=syncBindButton;
+    target.onchange=()=>{const inbound=targetItems.find(item=>item.id===target.value);if(inbound){if(inbound.tlsServerName)domain.value=inbound.tlsServerName;if(!name.value&&domain.value)name.value=domain.value.toLowerCase().replace(/^\*\./,'wildcard-').replace(/[^a-z0-9._-]/g,'-');}syncBindButton();};
+    const submit=button(tr('在此子服务器申请证书','Issue certificate on this server'),box,async()=>{
+      if(!server.value)throw new Error(tr('请选择子服务器。','Select a child server.'));
       if(!name.value.trim()||!domain.value.trim())throw new Error(tr('请填写证书名称和域名。','Enter a certificate name and domain.'));
-      const result=await request('/nodes/'+encodeURIComponent(server.value)+'/certificates/issue',{name:name.value.trim(),domain:domain.value.trim(),dns:dns.value,automatic:automatic.checked,inboundId:target.value});
+      const payload={name:name.value.trim(),domain:domain.value.trim(),dns:dns.value,automatic:automatic.checked};if(target.value)payload.inboundId=target.value;
+      const result=await request('/nodes/'+encodeURIComponent(server.value)+'/certificates/issue',payload);
       output(result);if(result.publishError)output(tr('证书任务已排队，但节点配置发布失败：','Certificate task was queued, but publishing the node configuration failed: ')+result.publishError,true);
     },true);
-    server.onchange=()=>{submit.disabled=!fleet.nodes.find(node=>node.id===server.value)?.status?.capabilities?.includes('cert-issue');refreshNode().catch(error=>output(error.message,true));};
-    if(!fleet.nodes.find(node=>node.id===server.value)?.status?.capabilities?.includes('cert-issue'))submit.disabled=true;
+    dnsFields.hidden=true;dns.onchange=()=>{dnsFields.hidden=dns.value!=='dns_cf';};
+    saveCredentials=button(tr('加密保存到此子服务器','Encrypt and save on this server'),dnsFields,async()=>{
+      if(!server.value||!currentNode)throw new Error(tr('请选择在线子服务器。','Select an available child server.'));
+      const publicKey=currentNode.encryptionPublicKey||currentNode.status?.encryptionPublicKey||'';
+      if(!publicKey||!currentNode.status?.capabilities?.includes('cert-credentials'))throw new Error(tr('此子服务器尚未就绪，请先升级并等待重新连接。','This server is not ready. Upgrade it and wait for it to reconnect.'));
+      if(!dnsToken.value.trim())throw new Error(tr('请输入 Cloudflare API Token。','Enter a Cloudflare API token.'));
+      const taskId=newTaskID(),credentials={cloudflareToken:dnsToken.value.trim(),cloudflareAccountId:dnsAccount.value.trim(),cloudflareZoneId:dnsZone.value.trim()},encrypted=await encryptCredentials(server.value,publicKey,taskId,credentials),result=await request('/nodes/'+encodeURIComponent(server.value)+'/certificates/dns-credentials',{taskId:taskId,payload:encrypted});
+      dnsToken.value='';dnsAccount.value='';dnsZone.value='';output(result);credentialState.textContent=tr('凭据加密任务已发送；完成后会保存在子服务器本地。','Encrypted credentials task sent; they will be saved on the child server when it completes.');
+    });
+    server.onchange=()=>{dnsToken.value='';dnsAccount.value='';dnsZone.value='';submit.disabled=!fleet.nodes.find(node=>node.id===server.value)?.status?.capabilities?.includes('cert-issue');refreshNode().catch(error=>output(error.message,true));};
+    submit.disabled=!fleet.nodes.find(node=>node.id===server.value)?.status?.capabilities?.includes('cert-issue');
     refreshNode().catch(error=>output(error.message,true));
   }
 

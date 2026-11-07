@@ -102,7 +102,7 @@ func (n *nodeRuntime) Snapshot() fleet.Status {
 			logs[i] = line[:2048]
 		}
 	}
-	details := map[string]any{"system": stats, "coreVersion": m.coreVersion(), "platform": runtime.GOOS, "startedAt": started, "logs": logs, "cpuHistory": history, "totals": totals, "outboundTraffic": outboundTraffic, "vpngate": makeVPNGateView(m), "sidecars": sidecarStatus, "managedCertificates": n.managedCertificates()}
+	details := map[string]any{"system": stats, "coreVersion": m.coreVersion(), "platform": runtime.GOOS, "startedAt": started, "logs": logs, "cpuHistory": history, "totals": totals, "outboundTraffic": outboundTraffic, "vpngate": makeVPNGateView(m), "sidecars": sidecarStatus, "managedCertificates": n.managedCertificates(), "cloudflareCredentialsConfigured": n.cloudflareCredentialsConfigured()}
 	if status.Running {
 		if traffic, err := m.coreGet("/traffic"); err == nil {
 			details["traffic"] = traffic
@@ -619,6 +619,37 @@ func (n *nodeRuntime) Execute(ctx context.Context, t fleet.Task) (json.RawMessag
 			return nil, err
 		}
 		return n.issueNodeCertificate(ctx, request)
+	case "cert-bind":
+		var request struct {
+			Name      string `json:"name"`
+			InboundID string `json:"inboundId"`
+		}
+		if err := json.Unmarshal(t.Payload, &request); err != nil {
+			return nil, err
+		}
+		return n.bindNodeCertificate(request.Name, request.InboundID)
+	case "cert-credentials":
+		if !t.Encrypted {
+			return nil, errors.New("Cloudflare credentials must be delivered as an encrypted task")
+		}
+		var credentials fleetDNSCredentials
+		if err := json.Unmarshal(t.Payload, &credentials); err != nil {
+			return nil, errors.New("invalid Cloudflare credential payload")
+		}
+		credentials, err := normalizeFleetDNSCredentials(credentials)
+		if err != nil {
+			return nil, err
+		}
+		if credentials.empty() {
+			return nil, errors.New("enter a Cloudflare API token or account and zone IDs")
+		}
+		n.certificateMu.Lock()
+		err = saveNodeDNSCredentials(n.manager.dataDir, credentials)
+		n.certificateMu.Unlock()
+		if err != nil {
+			return nil, errors.New("could not save Cloudflare credentials on this node")
+		}
+		return json.Marshal(map[string]bool{"cloudflareCredentialsConfigured": true})
 	case "cert-renew":
 		var request struct {
 			Name string `json:"name"`

@@ -18,10 +18,11 @@ type testRuntime struct {
 	mu       sync.Mutex
 	calls    int
 	revision uint64
+	lastTask fleet.Task
 }
 
 func (r *testRuntime) Snapshot() fleet.Status {
-	return fleet.Status{Version: "test", Protocol: 1, Capabilities: []string{"collect-status", "apply-state"}}
+	return fleet.Status{Version: "test", Protocol: 1, Capabilities: []string{"collect-status", "apply-state", "cert-credentials"}}
 }
 func (r *testRuntime) Apply(_ context.Context, s fleet.DesiredState) error {
 	r.mu.Lock()
@@ -30,10 +31,11 @@ func (r *testRuntime) Apply(_ context.Context, s fleet.DesiredState) error {
 	r.revision = s.Revision
 	return nil
 }
-func (r *testRuntime) Execute(_ context.Context, _ fleet.Task) (json.RawMessage, error) {
+func (r *testRuntime) Execute(_ context.Context, task fleet.Task) (json.RawMessage, error) {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 	r.calls++
+	r.lastTask = task
 	return json.RawMessage(`{"running":true}`), nil
 }
 func TestFleetThreeNodesEnrollPollExecuteAndRestartReceipt(t *testing.T) {
@@ -52,6 +54,9 @@ func TestFleetThreeNodesEnrollPollExecuteAndRestartReceipt(t *testing.T) {
 		cfg, err := Enroll(context.Background(), dir, server.URL, store.Identity.Public(), token, "node")
 		if err != nil {
 			t.Fatal(err)
+		}
+		if cfg.Encryption.Public() == "" || store.Node(cfg.NodeID).EncryptionPublicKey != cfg.Encryption.Public() {
+			t.Fatal("signed enrollment did not register the node encryption key")
 		}
 		runtime := &testRuntime{}
 		a, err := New(dir, runtime)

@@ -652,8 +652,17 @@ func (a *App) handleFleet(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		id := parts[1]
-		if len(parts) == 4 && parts[2] == "certificates" && parts[3] == "issue" {
-			a.handleFleetNodeCertificateIssue(w, r, id)
+		if len(parts) == 4 && parts[2] == "certificates" {
+			switch parts[3] {
+			case "issue":
+				a.handleFleetNodeCertificateIssue(w, r, id)
+			case "bind":
+				a.handleFleetNodeCertificateBind(w, r, id)
+			case "dns-credentials":
+				a.handleFleetNodeDNSCredentials(w, r, id)
+			default:
+				http.NotFound(w, r)
+			}
 			return
 		}
 		if len(parts) == 2 {

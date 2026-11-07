@@ -44,7 +44,9 @@ type fleetCertificate struct {
 const fleetCertificateFile = "fleet-certificates.json"
 
 type fleetDNSCredentials struct {
-	CloudflareToken string `json:"cloudflareToken,omitempty"`
+	CloudflareToken     string `json:"cloudflareToken,omitempty"`
+	CloudflareAccountID string `json:"cloudflareAccountId,omitempty"`
+	CloudflareZoneID    string `json:"cloudflareZoneId,omitempty"`
 }
 
 type fleetCertificateRequest struct {
@@ -242,12 +244,27 @@ func (f *fleetConsole) acquireCertificate(ctx context.Context, c fleetCertificat
 	return acquireFleetCertificate(ctx, f.dataDir, c, renew, credentials)
 }
 
+func normalizeFleetDNSCredentials(credentials fleetDNSCredentials) (fleetDNSCredentials, error) {
+	credentials.CloudflareToken = strings.TrimSpace(credentials.CloudflareToken)
+	credentials.CloudflareAccountID = strings.TrimSpace(credentials.CloudflareAccountID)
+	credentials.CloudflareZoneID = strings.TrimSpace(credentials.CloudflareZoneID)
+	if len(credentials.CloudflareToken) > 4096 || len(credentials.CloudflareAccountID) > 256 || len(credentials.CloudflareZoneID) > 256 {
+		return fleetDNSCredentials{}, errors.New("Cloudflare credentials are too long")
+	}
+	return credentials, nil
+}
+
+func (credentials fleetDNSCredentials) empty() bool {
+	return credentials.CloudflareToken == "" && credentials.CloudflareAccountID == "" && credentials.CloudflareZoneID == ""
+}
+
 func acquireFleetCertificate(ctx context.Context, dataDir string, c fleetCertificate, renew bool, credentials fleetDNSCredentials) (fleetCertificate, error) {
 	ctx, cancel := context.WithTimeout(ctx, 10*time.Minute)
 	defer cancel()
-	credentials.CloudflareToken = strings.TrimSpace(credentials.CloudflareToken)
-	if len(credentials.CloudflareToken) > 4096 {
-		return c, errors.New("Cloudflare API token is too long")
+	var err error
+	credentials, err = normalizeFleetDNSCredentials(credentials)
+	if err != nil {
+		return c, err
 	}
 	if !fleet.SafeName(c.Name) || (!fleetDomainPattern.MatchString(c.Domain) && net.ParseIP(c.Domain) == nil) {
 		return c, errors.New("invalid certificate identity")
@@ -255,7 +272,7 @@ func acquireFleetCertificate(ctx context.Context, dataDir string, c fleetCertifi
 	if c.DNS != "" && c.DNS != "dns_cf" {
 		return c, errors.New("supported DNS challenge is dns_cf")
 	}
-	if c.DNS != "dns_cf" && credentials.CloudflareToken != "" {
+	if c.DNS != "dns_cf" && !credentials.empty() {
 		return c, errors.New("Cloudflare credentials require the dns_cf challenge")
 	}
 	if !renew && c.DNS == "dns_cf" && credentials.CloudflareToken == "" && os.Getenv("CF_Token") == "" {
@@ -310,12 +327,16 @@ func acquireFleetCertificate(ctx context.Context, dataDir string, c fleetCertifi
 			if detail == "" {
 				detail = err.Error()
 			}
-			secret := credentials.CloudflareToken
-			if secret == "" {
-				secret = os.Getenv("CF_Token")
+			secrets := []string{credentials.CloudflareToken, credentials.CloudflareAccountID, credentials.CloudflareZoneID}
+			for i, variable := range []string{"CF_Token", "CF_Account_ID", "CF_Zone_ID"} {
+				if secrets[i] == "" {
+					secrets[i] = os.Getenv(variable)
+				}
 			}
-			if secret != "" {
-				detail = strings.ReplaceAll(detail, secret, "[redacted]")
+			for _, secret := range secrets {
+				if secret != "" {
+					detail = strings.ReplaceAll(detail, secret, "[redacted]")
+				}
 			}
 			if len(detail) > 3000 {
 				detail = detail[len(detail)-3000:]
@@ -327,6 +348,12 @@ func acquireFleetCertificate(ctx context.Context, dataDir string, c fleetCertifi
 	issueEnv := map[string]string{}
 	if credentials.CloudflareToken != "" {
 		issueEnv["CF_Token"] = credentials.CloudflareToken
+	}
+	if credentials.CloudflareAccountID != "" {
+		issueEnv["CF_Account_ID"] = credentials.CloudflareAccountID
+	}
+	if credentials.CloudflareZoneID != "" {
+		issueEnv["CF_Zone_ID"] = credentials.CloudflareZoneID
 	}
 	if err := run(issueEnv, args...); err != nil {
 		return c, err

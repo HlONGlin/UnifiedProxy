@@ -24,7 +24,7 @@ type Heartbeat struct {
 
 var ErrUpgradePending = errors.New("verified upgrade is awaiting restart and health verification")
 
-var TaskKinds = []string{"apply-state", "collect-status", "test-egress", "kernel-switch", "geo-update", "cert-issue", "cert-renew", "agent-upgrade", "purge", "core-control", "traffic-reset", "vpngate-install", "vpngate-reconnect", "outbound-delay"}
+var TaskKinds = []string{"apply-state", "collect-status", "test-egress", "kernel-switch", "geo-update", "cert-issue", "cert-renew", "cert-bind", "cert-credentials", "agent-upgrade", "purge", "core-control", "traffic-reset", "vpngate-install", "vpngate-reconnect", "outbound-delay"}
 
 type DesiredState struct {
 	NodeID       string          `json:"nodeId"`
@@ -88,6 +88,7 @@ type Task struct {
 	Kind           string          `json:"kind"`
 	IdempotencyKey string          `json:"idempotencyKey"`
 	Payload        json.RawMessage `json:"payload,omitempty"`
+	Encrypted      bool            `json:"encrypted,omitempty"`
 	CreatedAt      time.Time       `json:"createdAt"`
 	ExpiresAt      time.Time       `json:"expiresAt"`
 	LeaseUntil     time.Time       `json:"leaseUntil,omitempty"`
@@ -104,18 +105,19 @@ type Result struct {
 }
 
 type Status struct {
-	PublicIP     string           `json:"publicIP,omitempty"`
-	Version      string           `json:"version"`
-	Protocol     int              `json:"protocol"`
-	Capabilities []string         `json:"capabilities"`
-	OS           string           `json:"os"`
-	Arch         string           `json:"arch"`
-	Running      bool             `json:"running"`
-	Revision     uint64           `json:"revision"`
-	Digest       string           `json:"digest"`
-	Traffic      map[string]Usage `json:"traffic,omitempty"`
-	Details      json.RawMessage  `json:"details,omitempty"`
-	Error        string           `json:"error,omitempty"`
+	PublicIP            string           `json:"publicIP,omitempty"`
+	Version             string           `json:"version"`
+	Protocol            int              `json:"protocol"`
+	Capabilities        []string         `json:"capabilities"`
+	OS                  string           `json:"os"`
+	Arch                string           `json:"arch"`
+	Running             bool             `json:"running"`
+	Revision            uint64           `json:"revision"`
+	Digest              string           `json:"digest"`
+	EncryptionPublicKey string           `json:"encryptionPublicKey,omitempty"`
+	Traffic             map[string]Usage `json:"traffic,omitempty"`
+	Details             json.RawMessage  `json:"details,omitempty"`
+	Error               string           `json:"error,omitempty"`
 }
 
 type Usage struct {
@@ -142,14 +144,16 @@ type PollResponse struct {
 	Digest   string `json:"digest"`
 }
 type Enrollment struct {
-	Token     string `json:"token"`
-	PublicKey string `json:"publicKey"`
-	Name      string `json:"name"`
+	Token               string `json:"token"`
+	PublicKey           string `json:"publicKey"`
+	EncryptionPublicKey string `json:"encryptionPublicKey,omitempty"`
+	Name                string `json:"name"`
 }
 type EnrollmentResponse struct {
-	NodeID    string `json:"nodeId"`
-	PublicKey string `json:"publicKey"`
-	Protocol  int    `json:"protocol"`
+	NodeID              string `json:"nodeId"`
+	PublicKey           string `json:"publicKey"`
+	EncryptionPublicKey string `json:"encryptionPublicKey,omitempty"`
+	Protocol            int    `json:"protocol"`
 }
 
 func Supports(capabilities []string, kind string) bool {
@@ -159,4 +163,8 @@ func Supports(capabilities []string, kind string) bool {
 		}
 	}
 	return false
+}
+
+func RequiresEncryptedTaskPayload(kind string) bool {
+	return kind == "cert-credentials"
 }

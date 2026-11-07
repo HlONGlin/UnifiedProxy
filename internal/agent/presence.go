@@ -55,6 +55,7 @@ func (a *Agent) address() string {
 
 func (a *Agent) snapshot() fleet.Status {
 	status := a.Runtime.Snapshot()
+	status.EncryptionPublicKey = a.Client.Config.Encryption.Public()
 	if ip := a.address(); ip != "" {
 		status.PublicIP = ip
 	}

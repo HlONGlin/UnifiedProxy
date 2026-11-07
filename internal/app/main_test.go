@@ -1146,11 +1146,14 @@ func TestRealityFallbackLimitsRender(t *testing.T) {
 }
 
 func TestTLSInboundRequiresCertificateAndPrivateKey(t *testing.T) {
-	err := validateInbound(Inbound{Type: "vless", TLS: true})
+	if err := validateInbound(Inbound{Type: "vless", TLS: true, Enabled: false}); err != nil {
+		t.Fatalf("disabled TLS inbound should be stageable before certificate binding: %v", err)
+	}
+	err := validateInbound(Inbound{Type: "vless", TLS: true, Enabled: true})
 	if err == nil {
 		t.Fatal("expected TLS listener without certificate to be rejected")
 	}
-	if err := validateInbound(Inbound{Type: "vless", TLS: true, Certificate: "cert.pem", PrivateKey: "key.pem"}); err != nil {
+	if err := validateInbound(Inbound{Type: "vless", TLS: true, Enabled: true, Certificate: "cert.pem", PrivateKey: "key.pem"}); err != nil {
 		t.Fatalf("valid TLS listener rejected: %v", err)
 	}
 }

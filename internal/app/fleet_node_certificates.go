@@ -2,6 +2,7 @@ package app
 
 import (
 	"context"
+	"encoding/hex"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -12,12 +13,14 @@ import (
 	"strings"
 	"time"
 
+	"github.com/hlonglin/unifiedproxy/internal/control"
 	"github.com/hlonglin/unifiedproxy/internal/fleet"
 )
 
 const (
 	nodeCertificateReferencePrefix = "__NODE_CERT_DIR__/"
 	nodeCertificateRegistryFile    = "managed-certificates.json"
+	nodeDNSCredentialsFile         = "cloudflare-credentials.json"
 )
 
 type nodeCertificateIssueRequest struct {
@@ -126,6 +129,43 @@ func saveNodeManagedCertificates(dataDir string, certificates map[string]nodeMan
 	return fleet.WriteJSON(nodeManagedCertificatesPath(dataDir), certificates)
 }
 
+func nodeDNSCredentialsPath(dataDir string) string {
+	return filepath.Join(dataDir, "acme", nodeDNSCredentialsFile)
+}
+
+func readNodeDNSCredentials(dataDir string) (fleetDNSCredentials, error) {
+	var credentials fleetDNSCredentials
+	err := fleet.ReadJSON(nodeDNSCredentialsPath(dataDir), &credentials)
+	if errors.Is(err, os.ErrNotExist) {
+		return credentials, nil
+	}
+	if err != nil {
+		return fleetDNSCredentials{}, err
+	}
+	return normalizeFleetDNSCredentials(credentials)
+}
+
+func saveNodeDNSCredentials(dataDir string, credentials fleetDNSCredentials) error {
+	credentials, err := normalizeFleetDNSCredentials(credentials)
+	if err != nil {
+		return err
+	}
+	if credentials.empty() {
+		if err = os.Remove(nodeDNSCredentialsPath(dataDir)); errors.Is(err, os.ErrNotExist) {
+			return nil
+		}
+		return err
+	}
+	dir := filepath.Dir(nodeDNSCredentialsPath(dataDir))
+	if err = os.MkdirAll(dir, 0700); err != nil {
+		return err
+	}
+	if err = os.Chmod(dir, 0700); err != nil {
+		return err
+	}
+	return fleet.WriteJSON(nodeDNSCredentialsPath(dataDir), credentials)
+}
+
 func certificateDomainCovers(domain, hostname string) bool {
 	domain = strings.ToLower(strings.TrimSuffix(strings.TrimSpace(domain), "."))
 	hostname = strings.ToLower(strings.TrimSuffix(strings.TrimSpace(hostname), "."))
@@ -153,10 +193,6 @@ func (n *nodeRuntime) issueNodeCertificate(ctx context.Context, request nodeCert
 	if strings.HasPrefix(request.Domain, "*.") && request.DNS != "dns_cf" {
 		return nil, errors.New("wildcard certificates require Cloudflare DNS validation")
 	}
-	if request.InboundID == "" {
-		return nil, errors.New("a TLS inbound is required")
-	}
-
 	if request.TLSServerName != "" && !certificateDomainCovers(request.Domain, request.TLSServerName) {
 		return nil, fmt.Errorf("certificate domain %q does not cover inbound SNI %q", request.Domain, request.TLSServerName)
 	}
@@ -176,9 +212,16 @@ func (n *nodeRuntime) issueNodeCertificate(ctx context.Context, request nodeCert
 		}
 	}
 
+	credentials := fleetDNSCredentials{}
+	if request.DNS == "dns_cf" {
+		credentials, err = readNodeDNSCredentials(n.manager.dataDir)
+		if err != nil {
+			return nil, err
+		}
+	}
 	issued, err := acquireFleetCertificate(ctx, n.manager.dataDir, fleetCertificate{
 		Name: request.Name, Domain: request.Domain, DNS: request.DNS, Automatic: request.Automatic,
-	}, false, fleetDNSCredentials{})
+	}, false, credentials)
 	if err != nil {
 		return nil, err
 	}
@@ -193,7 +236,7 @@ func (n *nodeRuntime) issueNodeCertificate(ctx context.Context, request nodeCert
 	metadata.Automatic = request.Automatic
 	metadata.ExpiresAt = issued.ExpiresAt
 	metadata.LastError = ""
-	if !containsString(metadata.InboundIDs, request.InboundID) {
+	if request.InboundID != "" && !containsString(metadata.InboundIDs, request.InboundID) {
 		metadata.InboundIDs = append(metadata.InboundIDs, request.InboundID)
 	}
 	certificates[request.Name] = metadata
@@ -217,6 +260,11 @@ func (n *nodeRuntime) managedCertificates() []nodeManagedCertificate {
 	return result
 }
 
+func (n *nodeRuntime) cloudflareCredentialsConfigured() bool {
+	credentials, err := readNodeDNSCredentials(n.manager.dataDir)
+	return err == nil && !credentials.empty()
+}
+
 func (n *nodeRuntime) renewNodeCertificate(ctx context.Context, name string) (json.RawMessage, error) {
 	n.certificateMu.Lock()
 	defer n.certificateMu.Unlock()
@@ -228,9 +276,13 @@ func (n *nodeRuntime) renewNodeCertificate(ctx context.Context, name string) (js
 	if !ok {
 		return nil, errors.New("unknown node-local certificate")
 	}
+	credentials, err := readNodeDNSCredentials(n.manager.dataDir)
+	if err != nil {
+		return nil, err
+	}
 	updated, err := acquireFleetCertificate(ctx, n.manager.dataDir, fleetCertificate{
 		Name: metadata.Name, Domain: metadata.Domain, DNS: metadata.DNS, Automatic: metadata.Automatic,
-	}, true, fleetDNSCredentials{})
+	}, true, credentials)
 	if err != nil {
 		metadata.LastError = err.Error()
 		certificates[name] = metadata
@@ -247,6 +299,30 @@ func (n *nodeRuntime) renewNodeCertificate(ctx context.Context, name string) (js
 		metadata.LastError = err.Error()
 		certificates[name] = metadata
 		_ = saveNodeManagedCertificates(n.manager.dataDir, certificates)
+		return nil, err
+	}
+	return json.Marshal(metadata)
+}
+
+func (n *nodeRuntime) bindNodeCertificate(name, inboundID string) (json.RawMessage, error) {
+	if !fleet.SafeName(name) || inboundID == "" {
+		return nil, errors.New("invalid certificate binding")
+	}
+	n.certificateMu.Lock()
+	defer n.certificateMu.Unlock()
+	certificates, err := readNodeManagedCertificates(n.manager.dataDir)
+	if err != nil {
+		return nil, err
+	}
+	metadata, ok := certificates[name]
+	if !ok {
+		return nil, errors.New("unknown node-local certificate")
+	}
+	if !containsString(metadata.InboundIDs, inboundID) {
+		metadata.InboundIDs = append(metadata.InboundIDs, inboundID)
+	}
+	certificates[name] = metadata
+	if err = saveNodeManagedCertificates(n.manager.dataDir, certificates); err != nil {
 		return nil, err
 	}
 	return json.Marshal(metadata)
@@ -330,11 +406,6 @@ func (a *App) handleFleetNodeCertificateIssue(w http.ResponseWriter, r *http.Req
 		writeJSON(w, http.StatusBadRequest, apiResponse{Message: "wildcard certificates require Cloudflare DNS validation"})
 		return
 	}
-	if request.InboundID == "" {
-		writeJSON(w, http.StatusBadRequest, apiResponse{Message: "a TLS inbound is required"})
-		return
-	}
-
 	f := a.fleet
 	f.mu.Lock()
 	node := f.store.Node(nodeID)
@@ -348,64 +419,77 @@ func (a *App) handleFleetNodeCertificateIssue(w http.ResponseWriter, r *http.Req
 		writeJSON(w, http.StatusConflict, apiResponse{Message: "upgrade this child server to enable local certificate management"})
 		return
 	}
-	editor, err := f.editor(nodeID)
-	if err != nil {
-		f.mu.Unlock()
-		writeJSON(w, http.StatusBadRequest, apiResponse{Message: err.Error()})
-		return
-	}
-	editor.manager.mu.Lock()
-	previous := copyState(editor.manager.state)
-	inboundIndex := -1
-	for i := range editor.manager.state.Inbounds {
-		inbound := editor.manager.state.Inbounds[i]
-		if inbound.ID == request.InboundID {
-			inboundIndex = i
-			if !inboundLoadsCertificate(inbound) || inbound.Reality.Enabled {
-				err = errors.New("target is not a standard TLS inbound")
-			} else if inbound.TLSServerName != "" && !certificateDomainCovers(request.Domain, inbound.TLSServerName) {
-				err = fmt.Errorf("certificate domain %q does not cover inbound SNI %q", request.Domain, inbound.TLSServerName)
+	var editor *App
+	var previous State
+	var err error
+	if request.InboundID != "" {
+		editor, err = f.editor(nodeID)
+		if err != nil {
+			f.mu.Unlock()
+			writeJSON(w, http.StatusBadRequest, apiResponse{Message: err.Error()})
+			return
+		}
+		editor.manager.mu.Lock()
+		previous = copyState(editor.manager.state)
+		inboundIndex := -1
+		for i := range editor.manager.state.Inbounds {
+			inbound := editor.manager.state.Inbounds[i]
+			if inbound.ID == request.InboundID {
+				inboundIndex = i
+				if !inboundLoadsCertificate(inbound) || inbound.Reality.Enabled {
+					err = errors.New("target is not a standard TLS inbound")
+				} else if inbound.TLSServerName != "" && !certificateDomainCovers(request.Domain, inbound.TLSServerName) {
+					err = fmt.Errorf("certificate domain %q does not cover inbound SNI %q", request.Domain, inbound.TLSServerName)
+				}
+				break
 			}
-			break
+		}
+		if inboundIndex < 0 && err == nil {
+			err = errors.New("unknown TLS inbound")
+		}
+		if err == nil {
+			inbound := &editor.manager.state.Inbounds[inboundIndex]
+			request.TLSServerName = inbound.TLSServerName
+			inbound.Certificate = nodeCertificateReference(request.Name, ".crt")
+			inbound.PrivateKey = nodeCertificateReference(request.Name, ".key")
+			inbound.CertificateMode = "file"
+			err = editor.manager.saveLocked()
+		}
+		editor.manager.mu.Unlock()
+		if err != nil {
+			f.mu.Unlock()
+			writeJSON(w, http.StatusBadRequest, apiResponse{Message: err.Error()})
+			return
 		}
 	}
-	if inboundIndex < 0 && err == nil {
-		err = errors.New("unknown TLS inbound")
-	}
-	if err == nil {
-		inbound := &editor.manager.state.Inbounds[inboundIndex]
-		request.TLSServerName = inbound.TLSServerName
-		inbound.Certificate = nodeCertificateReference(request.Name, ".crt")
-		inbound.PrivateKey = nodeCertificateReference(request.Name, ".key")
-		inbound.CertificateMode = "file"
-		err = editor.manager.saveLocked()
-	}
-	if err != nil {
-		editor.manager.mu.Unlock()
-		f.mu.Unlock()
-		writeJSON(w, http.StatusBadRequest, apiResponse{Message: err.Error()})
-		return
-	}
-	editor.manager.mu.Unlock()
 
 	payload, err := json.Marshal(request)
 	if err != nil {
-		editor.manager.mu.Lock()
-		editor.manager.state = previous
-		_ = editor.manager.saveLocked()
-		editor.manager.mu.Unlock()
+		if editor != nil {
+			editor.manager.mu.Lock()
+			editor.manager.state = previous
+			_ = editor.manager.saveLocked()
+			editor.manager.mu.Unlock()
+		}
 		f.mu.Unlock()
 		writeJSON(w, http.StatusBadRequest, apiResponse{Message: err.Error()})
 		return
 	}
 	task, err := f.store.Enqueue(nodeID, "cert-issue", fleet.ID(), payload, 20*time.Minute)
 	if err != nil {
-		editor.manager.mu.Lock()
-		editor.manager.state = previous
-		_ = editor.manager.saveLocked()
-		editor.manager.mu.Unlock()
+		if editor != nil {
+			editor.manager.mu.Lock()
+			editor.manager.state = previous
+			_ = editor.manager.saveLocked()
+			editor.manager.mu.Unlock()
+		}
 		f.mu.Unlock()
 		writeJSON(w, http.StatusBadRequest, apiResponse{Message: err.Error()})
+		return
+	}
+	if editor == nil {
+		f.mu.Unlock()
+		writeJSON(w, http.StatusAccepted, apiResponse{OK: true, Data: map[string]any{"task": task}})
 		return
 	}
 	desired, publishErr := f.publish(nodeID, editor, nil)
@@ -419,4 +503,165 @@ func (a *App) handleFleetNodeCertificateIssue(w http.ResponseWriter, r *http.Req
 		return
 	}
 	writeJSON(w, http.StatusAccepted, apiResponse{OK: true, Data: map[string]any{"task": task, "revision": desired.Revision}})
+}
+
+func nodeManagedCertificateFromStatus(node *control.Node, name string) (nodeManagedCertificate, bool) {
+	if node == nil || !fleet.SafeName(name) {
+		return nodeManagedCertificate{}, false
+	}
+	var details struct {
+		ManagedCertificates []nodeManagedCertificate `json:"managedCertificates"`
+	}
+	if json.Unmarshal(node.Status.Details, &details) != nil {
+		return nodeManagedCertificate{}, false
+	}
+	for _, certificate := range details.ManagedCertificates {
+		if certificate.Name == name {
+			return certificate, true
+		}
+	}
+	return nodeManagedCertificate{}, false
+}
+
+func (a *App) handleFleetNodeCertificateBind(w http.ResponseWriter, r *http.Request, nodeID string) {
+	if r.Method != http.MethodPost {
+		writeJSON(w, http.StatusMethodNotAllowed, apiResponse{})
+		return
+	}
+	var request struct {
+		Name      string `json:"name"`
+		InboundID string `json:"inboundId"`
+	}
+	if err := decodeJSON(r, &request); err != nil {
+		writeJSON(w, http.StatusBadRequest, apiResponse{Message: err.Error()})
+		return
+	}
+	if !fleet.SafeName(request.Name) || request.InboundID == "" {
+		writeJSON(w, http.StatusBadRequest, apiResponse{Message: "certificate and TLS inbound are required"})
+		return
+	}
+	f := a.fleet
+	f.mu.Lock()
+	node := f.store.Node(nodeID)
+	if node == nil || node.Revoked {
+		f.mu.Unlock()
+		writeJSON(w, http.StatusNotFound, apiResponse{Message: "unknown or revoked child server"})
+		return
+	}
+	certificate, ok := nodeManagedCertificateFromStatus(node, request.Name)
+	if !ok {
+		f.mu.Unlock()
+		writeJSON(w, http.StatusConflict, apiResponse{Message: "certificate is not available on this child server yet"})
+		return
+	}
+	if !fleet.Supports(node.Status.Capabilities, "cert-bind") {
+		f.mu.Unlock()
+		writeJSON(w, http.StatusConflict, apiResponse{Message: "upgrade this child server to enable local certificate binding"})
+		return
+	}
+	editor, err := f.editor(nodeID)
+	if err != nil {
+		f.mu.Unlock()
+		writeJSON(w, http.StatusBadRequest, apiResponse{Message: err.Error()})
+		return
+	}
+	editor.manager.mu.Lock()
+	previous := copyState(editor.manager.state)
+	inboundIndex := -1
+	for i := range editor.manager.state.Inbounds {
+		inbound := editor.manager.state.Inbounds[i]
+		if inbound.ID != request.InboundID {
+			continue
+		}
+		inboundIndex = i
+		if !inboundLoadsCertificate(inbound) || inbound.Reality.Enabled {
+			err = errors.New("target is not a standard TLS inbound")
+		} else if inbound.TLSServerName != "" && !certificateDomainCovers(certificate.Domain, inbound.TLSServerName) {
+			err = fmt.Errorf("certificate domain %q does not cover inbound SNI %q", certificate.Domain, inbound.TLSServerName)
+		}
+		break
+	}
+	if inboundIndex < 0 && err == nil {
+		err = errors.New("unknown TLS inbound")
+	}
+	if err == nil {
+		inbound := &editor.manager.state.Inbounds[inboundIndex]
+		inbound.Certificate = nodeCertificateReference(request.Name, ".crt")
+		inbound.PrivateKey = nodeCertificateReference(request.Name, ".key")
+		inbound.CertificateMode = "file"
+		err = editor.manager.saveLocked()
+	}
+	editor.manager.mu.Unlock()
+	if err != nil {
+		f.mu.Unlock()
+		writeJSON(w, http.StatusBadRequest, apiResponse{Message: err.Error()})
+		return
+	}
+	taskPayload, err := json.Marshal(struct {
+		Name      string `json:"name"`
+		InboundID string `json:"inboundId"`
+	}{request.Name, request.InboundID})
+	if err != nil {
+		f.mu.Unlock()
+		writeJSON(w, http.StatusInternalServerError, apiResponse{Message: "could not encode certificate binding"})
+		return
+	}
+	bindTask, err := f.store.Enqueue(nodeID, "cert-bind", fleet.ID(), taskPayload, 20*time.Minute)
+	if err != nil {
+		editor.manager.mu.Lock()
+		editor.manager.state = previous
+		_ = editor.manager.saveLocked()
+		editor.manager.mu.Unlock()
+		f.mu.Unlock()
+		writeJSON(w, http.StatusConflict, apiResponse{Message: err.Error()})
+		return
+	}
+	desired, publishErr := f.publish(nodeID, editor, nil)
+	f.mu.Unlock()
+	if publishErr != nil {
+		writeJSON(w, http.StatusAccepted, apiResponse{OK: true, Data: map[string]any{"task": bindTask, "publishError": publishErr.Error()}})
+		return
+	}
+	if err = a.refreshFleetSubscriptions(); err != nil {
+		writeJSON(w, http.StatusAccepted, apiResponse{OK: true, Data: map[string]any{"task": bindTask, "revision": desired.Revision, "warning": err.Error()}})
+		return
+	}
+	writeJSON(w, http.StatusAccepted, apiResponse{OK: true, Data: map[string]any{"task": bindTask, "revision": desired.Revision}})
+}
+
+func (a *App) handleFleetNodeDNSCredentials(w http.ResponseWriter, r *http.Request, nodeID string) {
+	if r.Method != http.MethodPost {
+		writeJSON(w, http.StatusMethodNotAllowed, apiResponse{})
+		return
+	}
+	var request struct {
+		TaskID  string          `json:"taskId"`
+		Payload json.RawMessage `json:"payload"`
+	}
+	if err := decodeJSON(r, &request); err != nil {
+		writeJSON(w, http.StatusBadRequest, apiResponse{Message: err.Error()})
+		return
+	}
+	if len(request.TaskID) != 48 {
+		writeJSON(w, http.StatusBadRequest, apiResponse{Message: "invalid task ID"})
+		return
+	}
+	if _, err := hex.DecodeString(request.TaskID); err != nil {
+		writeJSON(w, http.StatusBadRequest, apiResponse{Message: "invalid task ID"})
+		return
+	}
+	if err := fleet.ValidateEncryptedTaskPayload(request.Payload); err != nil {
+		writeJSON(w, http.StatusBadRequest, apiResponse{Message: err.Error()})
+		return
+	}
+	if a.fleet == nil {
+		writeJSON(w, http.StatusNotFound, apiResponse{Message: "fleet control is unavailable"})
+		return
+	}
+	task, err := a.fleet.store.EnqueueEncrypted(nodeID, request.TaskID, "cert-credentials", request.Payload, 20*time.Minute)
+	if err != nil {
+		writeJSON(w, http.StatusConflict, apiResponse{Message: err.Error()})
+		return
+	}
+	writeJSON(w, http.StatusAccepted, apiResponse{OK: true, Data: map[string]any{"taskId": task.ID, "kind": task.Kind, "status": task.Status}})
 }

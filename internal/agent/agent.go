@@ -25,6 +25,7 @@ type Receipt struct {
 	Key          string        `json:"key"`
 	Kind         string        `json:"kind"`
 	Payload      string        `json:"payload"`
+	Encrypted    bool          `json:"encrypted,omitempty"`
 	ExpiresAt    time.Time     `json:"expiresAt"`
 	Result       *fleet.Result `json:"result,omitempty"`
 	Acknowledged bool          `json:"acknowledged"`
@@ -88,7 +89,7 @@ func (a *Agent) Process(ctx context.Context, t fleet.Task) fleet.Result {
 		return result
 	}
 	if old := a.journal.Receipts[t.ID]; old != nil {
-		if old.Key != t.IdempotencyKey || old.Kind != t.Kind || old.Payload != string(t.Payload) {
+		if old.Key != t.IdempotencyKey || old.Kind != t.Kind || old.Encrypted != t.Encrypted || old.Payload != string(t.Payload) {
 			result.Error = "task ID reused with different content"
 			return result
 		}
@@ -106,7 +107,7 @@ func (a *Agent) Process(ctx context.Context, t fleet.Task) fleet.Result {
 	}
 	for id, old := range a.journal.Receipts {
 		if old.Key == t.IdempotencyKey && id != t.ID {
-			if old.Kind != t.Kind || old.Payload != string(t.Payload) {
+			if old.Kind != t.Kind || old.Encrypted != t.Encrypted || old.Payload != string(t.Payload) {
 				result.Error = "idempotency key conflict"
 				return result
 			}
@@ -126,7 +127,7 @@ func (a *Agent) Process(ctx context.Context, t fleet.Task) fleet.Result {
 		result.Error = "receipt cache full"
 		return result
 	}
-	a.journal.Receipts[t.ID] = &Receipt{Key: t.IdempotencyKey, Kind: t.Kind, Payload: string(t.Payload), ExpiresAt: t.ExpiresAt}
+	a.journal.Receipts[t.ID] = &Receipt{Key: t.IdempotencyKey, Kind: t.Kind, Payload: string(t.Payload), Encrypted: t.Encrypted, ExpiresAt: t.ExpiresAt}
 	if err := a.save(); err != nil {
 		result.Error = "persist execution intent: " + err.Error()
 		return result
@@ -136,20 +137,41 @@ func (a *Agent) Process(ctx context.Context, t fleet.Task) fleet.Result {
 		result.Error = "unsupported task kind"
 	} else {
 		var err error
+		runtimeTask := t
+		var plaintext []byte
+		if t.Encrypted {
+			if !fleet.RequiresEncryptedTaskPayload(t.Kind) {
+				err = errors.New("encrypted payload is not allowed for this task kind")
+			} else {
+				plaintext, err = fleet.DecryptTaskPayload(a.Client.Config.Encryption, t.NodeID, t.ID, t.Kind, t.Payload)
+				if err == nil {
+					runtimeTask.Payload = plaintext
+				}
+			}
+		} else if fleet.RequiresEncryptedTaskPayload(t.Kind) {
+			err = errors.New("task payload must be encrypted for this task kind")
+		}
 		if t.Kind == "apply-state" {
-			var s fleet.DesiredState
-			if err = json.Unmarshal(t.Payload, &s); err == nil {
-				err = s.Validate()
-			}
-			if err == nil && s.NodeID != t.NodeID {
-				err = errors.New("desired-state node mismatch")
-			}
-			if err == nil {
-				err = a.Runtime.Apply(ctx, s)
+			if err != nil {
+				result.Error = err.Error()
+			} else {
+				var s fleet.DesiredState
+				if err = json.Unmarshal(runtimeTask.Payload, &s); err == nil {
+					err = s.Validate()
+				}
+				if err == nil && s.NodeID != t.NodeID {
+					err = errors.New("desired-state node mismatch")
+				}
+				if err == nil {
+					err = a.Runtime.Apply(ctx, s)
+				}
 			}
 		} else {
-			result.Data, err = a.Runtime.Execute(ctx, t)
+			if err == nil {
+				result.Data, err = a.Runtime.Execute(ctx, runtimeTask)
+			}
 		}
+		clear(plaintext)
 		if errors.Is(err, fleet.ErrUpgradePending) {
 			result.Status = "pending-restart"
 		} else if err != nil {

@@ -2499,7 +2499,7 @@ func validateInbound(inbound Inbound) error {
 			}
 		}
 	}
-	if (inbound.Type == "hysteria2" || inbound.Type == "tuic") && (inbound.Certificate == "" || inbound.PrivateKey == "") {
+	if inbound.Enabled && (inbound.Type == "hysteria2" || inbound.Type == "tuic") && (inbound.Certificate == "" || inbound.PrivateKey == "") {
 		return fmt.Errorf("%s 入口必须配置证书和私钥", inbound.Type)
 	}
 	if inbound.Type == "hysteria2" {
@@ -2558,8 +2558,8 @@ func validateInbound(inbound Inbound) error {
 		}
 	}
 	hasCertificate := inbound.Certificate != "" && inbound.PrivateKey != ""
-	if inbound.TLS && !hasCertificate {
-		return fmt.Errorf("TLS 入口需要同时配置证书和私钥")
+	if inbound.Enabled && inbound.TLS && !hasCertificate {
+		return fmt.Errorf("TLS 入口需要同时配置证书和私钥；可先保存为停用状态，再从子服务器证书管理中绑定证书")
 	}
 	if inbound.ClientAuthType != "" && !containsString([]string{"request", "require-any", "verify-if-given", "require-and-verify"}, inbound.ClientAuthType) {
 		return fmt.Errorf("mTLS Client Auth Type 无效: %s", inbound.ClientAuthType)
@@ -2567,7 +2567,7 @@ func validateInbound(inbound Inbound) error {
 	if (inbound.ClientAuthType == "verify-if-given" || inbound.ClientAuthType == "require-and-verify") && inbound.ClientAuthCert == "" {
 		return fmt.Errorf("mTLS %s 必须配置客户端 CA 证书", inbound.ClientAuthType)
 	}
-	if inbound.ECHKey != "" && !hasCertificate {
+	if inbound.Enabled && inbound.ECHKey != "" && !hasCertificate {
 		return fmt.Errorf("ECH 需要同时配置证书和私钥")
 	}
 	// TLSServerName is panel-only: Mihomo listeners present a certificate and
@@ -2577,10 +2577,10 @@ func validateInbound(inbound Inbound) error {
 		return fmt.Errorf("SNI 只能填写域名，不能包含空格或 / @ : ? # & 等字符: %s", inbound.TLSServerName)
 	}
 	hasSecureTransport := hasCertificate || inbound.ShadowTLS.Enabled || inbound.RestTLS.Enabled || inbound.JLS.Enabled || inbound.TrojanSS.Enabled || inbound.Reality.Enabled || inbound.TLSMirror.Enabled || inbound.AllowInsecure
-	if inbound.Type == "anytls" && !hasSecureTransport {
+	if inbound.Type == "anytls" && !hasSecureTransport && !(inbound.TLS && !inbound.Enabled) {
 		return fmt.Errorf("AnyTLS 必须配置证书、ShadowTLS、RestTLS，或明确启用 Allow Insecure")
 	}
-	if inbound.Type == "trojan" && !hasSecureTransport {
+	if inbound.Type == "trojan" && !hasSecureTransport && !(inbound.TLS && !inbound.Enabled) {
 		return fmt.Errorf("Trojan 必须配置证书、Reality、ShadowTLS、RestTLS、JLS、Trojan SS，或明确启用 Allow Insecure")
 	}
 	if inbound.JLS.Enabled {
@@ -4341,7 +4341,7 @@ func validateTrustTunnel(inbound Inbound) error {
 	settings := inbound.TrustTunnel
 	// trusttunnel.New bails out with "disallow using TrustTunnel without
 	// certificates config" when the pair is missing.
-	if inbound.Certificate == "" || inbound.PrivateKey == "" {
+	if inbound.Enabled && (inbound.Certificate == "" || inbound.PrivateKey == "") {
 		return fmt.Errorf("TrustTunnel 入口必须配置证书和私钥")
 	}
 	networks := splitList(settings.Network)

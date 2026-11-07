@@ -18,17 +18,18 @@ import (
 )
 
 type Node struct {
-	ID           string              `json:"id"`
-	Name         string              `json:"name"`
-	Address      string              `json:"address"`
-	SeenIP       string              `json:"seenIP,omitempty"`
-	PublicKey    string              `json:"publicKey,omitempty"`
-	CreatedAt    time.Time           `json:"createdAt"`
-	LastSeen     time.Time           `json:"lastSeen"`
-	Revoked      bool                `json:"revoked"`
-	NeedsUpgrade bool                `json:"needsUpgrade"`
-	Status       fleet.Status        `json:"status"`
-	Desired      *fleet.DesiredState `json:"desired,omitempty"`
+	ID                  string              `json:"id"`
+	Name                string              `json:"name"`
+	Address             string              `json:"address"`
+	SeenIP              string              `json:"seenIP,omitempty"`
+	PublicKey           string              `json:"publicKey,omitempty"`
+	EncryptionPublicKey string              `json:"encryptionPublicKey,omitempty"`
+	CreatedAt           time.Time           `json:"createdAt"`
+	LastSeen            time.Time           `json:"lastSeen"`
+	Revoked             bool                `json:"revoked"`
+	NeedsUpgrade        bool                `json:"needsUpgrade"`
+	Status              fleet.Status        `json:"status"`
+	Desired             *fleet.DesiredState `json:"desired,omitempty"`
 }
 
 func (n *Node) EffectiveAddress() string {
@@ -209,6 +210,11 @@ func (s *Store) Enroll(e fleet.Enrollment) (*Node, error) {
 	if err != nil || len(pub) != 32 {
 		return nil, errors.New("invalid node public key")
 	}
+	if e.EncryptionPublicKey != "" {
+		if err := fleet.ValidateEncryptionPublicKey(e.EncryptionPublicKey); err != nil {
+			return nil, err
+		}
+	}
 	var out *Node
 	err = s.change(func(d *diskState) error {
 		h := tokenHash(e.Token)
@@ -232,6 +238,7 @@ func (s *Store) Enroll(e fleet.Enrollment) (*Node, error) {
 		}
 		if n.PublicKey != e.PublicKey {
 			n.Status = fleet.Status{}
+			n.EncryptionPublicKey = ""
 			n.LastSeen = time.Time{}
 			n.SeenIP = ""
 			for _, task := range d.Tasks {
@@ -241,6 +248,13 @@ func (s *Store) Enroll(e fleet.Enrollment) (*Node, error) {
 			}
 		}
 		n.PublicKey = e.PublicKey
+		if e.EncryptionPublicKey != "" {
+			if n.EncryptionPublicKey != e.EncryptionPublicKey {
+				cancelEncryptedTasksForNode(d, id)
+			}
+			n.EncryptionPublicKey = e.EncryptionPublicKey
+			n.Status.EncryptionPublicKey = e.EncryptionPublicKey
+		}
 		n.Revoked = false
 		if n.Name == "" {
 			n.Name = e.Name
@@ -398,7 +412,11 @@ func (s *Store) Tasks() []*fleet.Task {
 	defer s.mu.Unlock()
 	out := make([]*fleet.Task, 0, len(s.disk.Tasks))
 	for _, t := range s.disk.Tasks {
-		out = append(out, clone(t))
+		copy := clone(t)
+		if copy.Encrypted {
+			copy.Payload = nil
+		}
+		out = append(out, copy)
 	}
 	sort.Slice(out, func(i, j int) bool { return out[i].CreatedAt.Before(out[j].CreatedAt) })
 	return out
@@ -406,6 +424,10 @@ func (s *Store) Tasks() []*fleet.Task {
 func (s *Store) Audits() []Audit { s.mu.Lock(); defer s.mu.Unlock(); return clone(s.disk.Audit) }
 
 func queue(d *diskState, id, kind, key string, payload json.RawMessage, ttl time.Duration) (*fleet.Task, error) {
+	return queueWithID(d, "", id, kind, key, payload, ttl, false)
+}
+
+func queueWithID(d *diskState, taskID, id, kind, key string, payload json.RawMessage, ttl time.Duration, encrypted bool) (*fleet.Task, error) {
 	n := d.Nodes[id]
 	if n == nil || n.Revoked {
 		return nil, errors.New("unknown or revoked node")
@@ -415,10 +437,26 @@ func queue(d *diskState, id, kind, key string, payload json.RawMessage, ttl time
 	}
 	for _, t := range d.Tasks {
 		if t.NodeID == id && t.IdempotencyKey == key {
-			if t.Kind != kind || string(t.Payload) != string(payload) {
+			if t.Kind != kind || t.Encrypted != encrypted || string(t.Payload) != string(payload) {
 				return nil, errors.New("idempotency key conflicts with existing task")
 			}
 			return t, nil
+		}
+	}
+	if encrypted && (!fleet.RequiresEncryptedTaskPayload(kind) || n.EncryptionPublicKey == "" || !fleet.Supports(n.Status.Capabilities, kind)) {
+		return nil, errors.New("node is not ready for encrypted credential delivery")
+	}
+	if fleet.RequiresEncryptedTaskPayload(kind) && !encrypted {
+		return nil, errors.New("task payload must be encrypted")
+	}
+	if taskID == "" {
+		taskID = fleet.ID()
+	} else {
+		if !fleet.SafeName(taskID) {
+			return nil, errors.New("invalid task ID")
+		}
+		if d.Tasks[taskID] != nil {
+			return nil, errors.New("task ID already exists")
 		}
 	}
 	if ttl <= 0 || ttl > 24*time.Hour {
@@ -442,7 +480,7 @@ func queue(d *diskState, id, kind, key string, payload json.RawMessage, ttl time
 			return nil, errors.New("task queue full")
 		}
 	}
-	t := &fleet.Task{ID: fleet.ID(), NodeID: id, Kind: kind, IdempotencyKey: key, Payload: payload, CreatedAt: time.Now().UTC(), ExpiresAt: time.Now().Add(ttl), Status: "pending"}
+	t := &fleet.Task{ID: taskID, NodeID: id, Kind: kind, IdempotencyKey: key, Payload: payload, Encrypted: encrypted, CreatedAt: time.Now().UTC(), ExpiresAt: time.Now().Add(ttl), Status: "pending"}
 	d.Tasks[t.ID] = t
 	audit(d, "task-queued:"+kind, id)
 	return t, nil
@@ -452,8 +490,32 @@ func (s *Store) Enqueue(id, kind, key string, payload json.RawMessage, ttl time.
 	if !fleet.Supports(fleet.TaskKinds, kind) {
 		return nil, errors.New("unknown task kind")
 	}
+	if fleet.RequiresEncryptedTaskPayload(kind) {
+		return nil, errors.New("task payload must be encrypted")
+	}
 	var out *fleet.Task
 	err := s.change(func(d *diskState) error { t, err := queue(d, id, kind, key, payload, ttl); out = clone(t); return err })
+	if err == nil {
+		s.notify()
+	}
+	return out, err
+}
+
+func (s *Store) EnqueueEncrypted(id, taskID, kind string, payload json.RawMessage, ttl time.Duration) (*fleet.Task, error) {
+	if !fleet.Supports(fleet.TaskKinds, kind) || !fleet.RequiresEncryptedTaskPayload(kind) {
+		return nil, errors.New("task kind does not accept encrypted credentials")
+	}
+	if err := fleet.ValidateEncryptedTaskPayload(payload); err != nil {
+		return nil, err
+	}
+	var out *fleet.Task
+	err := s.change(func(d *diskState) error {
+		task, err := queueWithID(d, taskID, id, kind, taskID, payload, ttl, true)
+		if err == nil {
+			out = clone(task)
+		}
+		return err
+	})
 	if err == nil {
 		s.notify()
 	}
@@ -543,14 +605,38 @@ func checkIdentity(n *Node, key []string) error {
 	}
 	return nil
 }
+
+func cancelEncryptedTasksForNode(d *diskState, nodeID string) {
+	for _, task := range d.Tasks {
+		if task.NodeID != nodeID || !task.Encrypted || (task.Status != "pending" && task.Status != "leased") {
+			continue
+		}
+		task.Status = "cancelled"
+		task.LeaseUntil = time.Time{}
+	}
+}
+
 func (s *Store) UpdateStatus(id string, status fleet.Status, key ...string) error {
-	return s.change(func(d *diskState) error {
+	keyChanged := false
+	err := s.change(func(d *diskState) error {
 		n := d.Nodes[id]
 		if err := checkIdentity(n, key); err != nil {
 			return err
 		}
 		if len(status.Capabilities) > 50 || len(status.Traffic) > 50000 {
 			return errors.New("oversized status")
+		}
+		if status.EncryptionPublicKey != "" {
+			if err := fleet.ValidateEncryptionPublicKey(status.EncryptionPublicKey); err != nil {
+				return err
+			}
+			if n.EncryptionPublicKey != status.EncryptionPublicKey {
+				keyChanged = true
+				cancelEncryptedTasksForNode(d, id)
+			}
+			n.EncryptionPublicKey = status.EncryptionPublicKey
+		} else {
+			status.EncryptionPublicKey = n.EncryptionPublicKey
 		}
 		n.Status = status
 		n.Status.PublicIP = fleet.PublicIP(status.PublicIP)
@@ -561,6 +647,10 @@ func (s *Store) UpdateStatus(id string, status fleet.Status, key ...string) erro
 		n.LastSeen = time.Now().UTC()
 		return reconcileDesired(d, id, false)
 	})
+	if err == nil && keyChanged {
+		s.notify()
+	}
+	return err
 }
 
 // Heartbeat updates presence only, so a slow task cannot erase fresh runtime data.

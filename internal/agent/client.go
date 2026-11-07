@@ -20,10 +20,11 @@ import (
 const ConfigFile = "agent.json"
 
 type Config struct {
-	ControlURL string         `json:"controlURL"`
-	ControlKey string         `json:"controlKey"`
-	NodeID     string         `json:"nodeId"`
-	Identity   fleet.Identity `json:"identity"`
+	ControlURL string                   `json:"controlURL"`
+	ControlKey string                   `json:"controlKey"`
+	NodeID     string                   `json:"nodeId"`
+	Identity   fleet.Identity           `json:"identity"`
+	Encryption fleet.EncryptionIdentity `json:"encryption"`
 }
 
 func LoadConfig(dir string) (Config, error) {
@@ -35,6 +36,15 @@ func LoadConfig(dir string) (Config, error) {
 	if err = c.Validate(); err != nil {
 		return c, err
 	}
+	if c.Encryption.PrivateKey == "" {
+		c.Encryption, err = fleet.NewEncryptionIdentity()
+		if err != nil {
+			return c, err
+		}
+		if err = fleet.WriteJSON(filepath.Join(dir, ConfigFile), c); err != nil {
+			return c, fmt.Errorf("save node encryption identity: %w", err)
+		}
+	}
 	return c, nil
 }
 func (c Config) Validate() error {
@@ -45,6 +55,12 @@ func (c Config) Validate() error {
 		return errors.New("invalid enrollment identity")
 	}
 	_, err := c.Identity.Key()
+	if err != nil {
+		return err
+	}
+	if c.Encryption.PrivateKey != "" {
+		_, err = c.Encryption.Key()
+	}
 	return err
 }
 
@@ -130,13 +146,17 @@ func Enroll(ctx context.Context, dir, url, key, token, name string) (Config, err
 	if err != nil {
 		return Config{}, err
 	}
-	cfg := Config{ControlURL: strings.TrimRight(url, "/"), ControlKey: key, Identity: identity}
-	client := &Client{Config: cfg}
-	var response fleet.EnrollmentResponse
-	if err = client.request(ctx, "/fleet/v1/enroll", fleet.Fingerprint(identity.Public()), fleet.Enrollment{Token: strings.TrimSpace(token), PublicKey: identity.Public(), Name: name}, &response); err != nil {
+	encryption, err := fleet.NewEncryptionIdentity()
+	if err != nil {
 		return Config{}, err
 	}
-	if response.PublicKey != key || response.Protocol != fleet.ProtocolVersion || !fleet.SafeName(response.NodeID) {
+	cfg := Config{ControlURL: strings.TrimRight(url, "/"), ControlKey: key, Identity: identity, Encryption: encryption}
+	client := &Client{Config: cfg}
+	var response fleet.EnrollmentResponse
+	if err = client.request(ctx, "/fleet/v1/enroll", fleet.Fingerprint(identity.Public()), fleet.Enrollment{Token: strings.TrimSpace(token), PublicKey: identity.Public(), EncryptionPublicKey: encryption.Public(), Name: name}, &response); err != nil {
+		return Config{}, err
+	}
+	if response.PublicKey != key || (response.EncryptionPublicKey != "" && response.EncryptionPublicKey != encryption.Public()) || response.Protocol != fleet.ProtocolVersion || !fleet.SafeName(response.NodeID) {
 		return Config{}, errors.New("enrollment response does not match trusted controller")
 	}
 	cfg.NodeID = response.NodeID
