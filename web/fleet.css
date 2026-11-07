@@ -59,6 +59,68 @@
 @media(max-width:600px){.fleet-workspace .fleet-block{padding:18px}.fleet-stats{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.fleet-stats .fleet-stat{padding:12px 16px}.fleet-stat strong{font-size:26px}.fleet-tabs{gap:4px}.fleet-tabs button{padding:8px 12px}.fleet-list-tools{align-items:stretch}.fleet-list-tools>.fleet-field{flex:1 1 100%}.fleet-form-grid{grid-template-columns:1fr;gap:0}.fleet-task summary{gap:8px}.fleet-task time{flex-basis:100%;margin-inline-start:20px}.fleet-dialog-body{padding:18px}.fleet-dialog-head{padding:14px 18px}.fleet-dialog-actions>button{flex:1}.fleet-target-status{display:none}.fleet-target-control select{max-width:150px;min-width:0}.fleet-heading .fleet-toolbar{width:100%}.fleet-heading .primary-btn{flex:1}.fleet-node-facts{gap:10px;font-size:12px}}
 @media(prefers-reduced-motion:reduce){.fleet-workspace *,.fleet-dialog *{scroll-behavior:auto!important;transition:none!important}}
 @media(max-width:600px){.fleet-workspace button,.fleet-dialog button{min-height:44px}.fleet-workspace input:not([type=checkbox]),.fleet-workspace select,.fleet-dialog input{font-size:16px}}
-.fleet-certificate-list{display:grid;gap:8px;margin:16px 0}.fleet-certificate-item{display:flex;align-items:center;justify-content:space-between;gap:16px;min-width:0;padding:12px;border:1px solid var(--hairline-strong);border-radius:6px}.fleet-certificate-meta{display:grid;gap:3px;min-width:0}.fleet-certificate-meta span{color:var(--ink-muted);font-size:12px;overflow-wrap:anywhere}.fleet-certificate-actions{display:flex;flex:none;gap:8px}.fleet-certificate-actions button{margin:0!important}.fleet-certificate-auto{align-self:center;min-height:40px}.fleet-certificate-bindings{display:grid;gap:10px}.fleet-certificate-binding{display:grid;grid-template-columns:minmax(140px,1fr) minmax(120px,.8fr) minmax(180px,1.2fr) auto;align-items:end;gap:12px;padding:12px;border:1px solid var(--hairline);border-radius:6px}.fleet-certificate-binding .fleet-field{margin:0}.fleet-certificate-remove{margin:0 0 14px!important}.fleet-certificate-binding .fleet-certificate-remove{margin-bottom:14px!important}.fleet-certificate-bindings>.outline-btn{justify-self:start;margin:8px 0 16px}.fleet-certificate-bindings[hidden],.fleet-certificate-item[hidden]{display:none!important}.fleet-certificate-auto input{width:16px;height:16px;accent-color:var(--primary)}.fleet-certificate-list:empty{margin:0}
-@media(max-width:700px){.fleet-certificate-item{align-items:flex-start;flex-direction:column}.fleet-certificate-actions{width:100%}.fleet-certificate-actions button{flex:1}.fleet-certificate-binding{grid-template-columns:1fr}.fleet-certificate-binding .fleet-certificate-remove{margin:0!important}}
-.fleet-certificate-binding .fleet-certificate-remove{margin:0!important}
+.fleet-certificate-workbench{display:grid;gap:18px}
+.fleet-certificate-toolbar{display:grid;grid-template-columns:minmax(220px,1fr) minmax(180px,auto) auto;align-items:end;gap:16px;padding:18px;border:1px solid var(--hairline-strong);border-radius:var(--rounded-lg);background:var(--surface-2)}
+.fleet-certificate-toolbar .fleet-field{margin:0}
+.fleet-certificate-server-state{display:grid;gap:2px;min-width:0;padding:0 2px 8px}
+.fleet-certificate-server-state span{color:var(--ink-muted);font-size:12px}
+.fleet-certificate-server-state strong{display:flex;align-items:center;gap:8px;font-size:14px;font-weight:600;overflow-wrap:anywhere}
+.fleet-certificate-server-state strong:before{content:'';flex:none;width:9px;height:9px;border-radius:50%;background:var(--ink-muted)}
+.fleet-certificate-server-state[data-state=online] strong:before{background:var(--semantic-success)}
+.fleet-certificate-server-state[data-state=pending] strong:before{background:var(--semantic-warning)}
+.fleet-certificate-server-state[data-state=error] strong:before{background:var(--semantic-danger)}
+.fleet-certificate-refresh{margin-bottom:14px!important;white-space:nowrap}
+.fleet-certificate-card-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+.fleet-certificate-panel{min-width:0;padding:20px;border:1px solid var(--hairline-strong);border-radius:var(--rounded-lg);background:var(--surface-1)}
+.fleet-certificate-panel-binding{grid-column:1/-1}
+.fleet-certificate-panel-head{display:grid;gap:4px;margin-bottom:14px}
+.fleet-certificate-panel-head h4,.fleet-certificate-list-head h4{font-size:15px;font-weight:650;margin:0;color:var(--ink)}
+.fleet-certificate-panel-head .fleet-hint,.fleet-certificate-list-head .fleet-hint{margin:0;font-size:12px;line-height:1.6}
+.fleet-certificate-form-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 14px}
+.fleet-certificate-form-wide{grid-column:1/-1}
+.fleet-certificate-form-grid .fleet-field{margin-bottom:14px}
+.fleet-certificate-panel-actions{display:flex;align-items:center;flex-wrap:wrap;gap:10px;margin-top:2px}
+.fleet-certificate-panel-actions>button{margin:0!important}
+.fleet-certificate-credential-state{margin:0 0 14px;padding:10px 12px;border:1px solid var(--hairline);border-radius:var(--rounded-md);background:var(--surface-2);color:var(--ink);font-size:13px}
+.fleet-certificate-panel-dns.is-idle{background:var(--surface-2)}
+.fleet-certificate-list-section{display:grid;gap:14px;padding:20px;border:1px solid var(--hairline-strong);border-radius:var(--rounded-lg);background:var(--surface-1)}
+.fleet-certificate-list-head{display:grid;grid-template-columns:minmax(0,1fr) minmax(220px,1fr);align-items:start;gap:8px 20px}
+.fleet-certificate-list-head>div{display:flex;align-items:center;flex-wrap:wrap;gap:8px}
+.fleet-certificate-list-head>.fleet-hint{margin:0}
+.fleet-certificate-count{display:inline-flex;align-items:center;min-height:24px;padding:1px 9px;border-radius:var(--rounded-full);background:var(--primary-soft);color:var(--ink);font-size:12px;font-weight:500}
+.fleet-certificate-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px;margin:0;min-width:0}
+.fleet-certificate-list:empty{display:none}
+.fleet-certificate-list>.fleet-hint,.fleet-certificate-list>.fleet-empty{grid-column:1/-1;margin:0}
+.fleet-certificate-list>.fleet-hint{order:-1;padding:12px 14px;border:1px solid var(--hairline);border-radius:var(--rounded-md);background:var(--surface-2)}
+.fleet-certificate-card{display:flex;flex-direction:column;gap:14px;min-width:0;padding:16px;border:1px solid var(--hairline-strong);border-radius:var(--rounded-lg);background:var(--surface-1)}
+.fleet-certificate-card-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;min-width:0}
+.fleet-certificate-card-identity{display:grid;gap:3px;min-width:0}
+.fleet-certificate-card-identity strong{font-size:15px;overflow-wrap:anywhere}
+.fleet-certificate-card-identity code{padding:0;border:0;background:transparent;color:var(--ink-muted);font:12px/1.5 var(--font-mono);overflow-wrap:anywhere}
+.fleet-certificate-badge{flex:none;padding:3px 9px;border-radius:var(--rounded-full);background:var(--surface-3);color:var(--ink-muted);font-size:11px;font-weight:600;line-height:1.5}
+.fleet-certificate-badge[data-state=auto]{background:color-mix(in srgb,var(--semantic-success) 14%,transparent);color:var(--success-ink)}
+.fleet-certificate-badge[data-state=error]{background:color-mix(in srgb,var(--semantic-danger) 14%,transparent);color:var(--danger-ink)}
+.fleet-certificate-facts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:0}
+.fleet-certificate-fact{min-width:0;padding:10px 12px;border:1px solid var(--hairline);border-radius:var(--rounded-md);background:var(--surface-2)}
+.fleet-certificate-fact dt{color:var(--ink-muted);font-size:11px;line-height:1.5}
+.fleet-certificate-fact dd{margin:2px 0 0;color:var(--ink);font-size:13px;font-weight:600;line-height:1.5;overflow-wrap:anywhere}
+.fleet-certificate-fact dd[data-state=warning]{color:var(--warning-ink)}
+.fleet-certificate-fact dd[data-state=danger]{color:var(--danger-ink)}
+.fleet-certificate-card-error{margin:0;padding:10px 12px;border:1px solid var(--semantic-danger);border-radius:var(--rounded-md);font-size:12px;overflow-wrap:anywhere}
+.fleet-certificate-card-actions{margin-top:auto;padding-top:2px}
+.fleet-certificate-card-actions button{flex:1 1 120px}
+.fleet-certificate-auto{align-self:center;min-height:40px}
+.fleet-certificate-bindings{display:grid;gap:10px}
+.fleet-certificate-binding{display:grid;grid-template-columns:minmax(140px,1fr) minmax(120px,.8fr) minmax(180px,1.2fr) auto;align-items:end;gap:12px;padding:12px;border:1px solid var(--hairline);border-radius:var(--rounded-md)}
+.fleet-certificate-binding .fleet-field{margin:0}
+.fleet-certificate-remove{margin:0 0 14px!important}
+.fleet-certificate-binding .fleet-certificate-remove{margin-bottom:14px!important}
+.fleet-certificate-bindings>.outline-btn{justify-self:start;margin:8px 0 16px}
+.fleet-certificate-bindings[hidden],.fleet-certificate-item[hidden]{display:none!important}
+.fleet-certificate-auto input{width:16px;height:16px;accent-color:var(--primary)}
+.fleet-certificate-item{display:flex;align-items:center;justify-content:space-between;gap:16px;min-width:0;padding:14px;border:1px solid var(--hairline-strong);border-radius:var(--rounded-md);background:var(--surface-1)}
+.fleet-certificate-meta{display:grid;gap:3px;min-width:0}.fleet-certificate-meta span{color:var(--ink-muted);font-size:12px;overflow-wrap:anywhere}
+.fleet-certificate-actions{display:flex;flex:none;flex-wrap:wrap;gap:8px}.fleet-certificate-actions button{margin:0!important}
+@media(max-width:900px){.fleet-certificate-toolbar{grid-template-columns:minmax(0,1fr) auto}.fleet-certificate-server{grid-column:1/-1}.fleet-certificate-card-grid{grid-template-columns:1fr}.fleet-certificate-panel-binding{grid-column:auto}.fleet-certificate-list-head{grid-template-columns:1fr}}
+@media(max-width:700px){.fleet-certificate-form-grid{grid-template-columns:1fr}.fleet-certificate-form-wide{grid-column:auto}.fleet-certificate-binding{grid-template-columns:1fr}.fleet-certificate-binding .fleet-certificate-remove{margin:0!important}.fleet-certificate-item{align-items:flex-start;flex-direction:column}.fleet-certificate-actions{width:100%}.fleet-certificate-actions button{flex:1}}
+@media(max-width:600px){.fleet-certificate-toolbar,.fleet-certificate-panel,.fleet-certificate-list-section{padding:16px}.fleet-certificate-toolbar{grid-template-columns:1fr}.fleet-certificate-server-state,.fleet-certificate-refresh{grid-column:auto}.fleet-certificate-refresh{width:100%;margin-bottom:0!important}.fleet-certificate-list{grid-template-columns:1fr}.fleet-certificate-panel-actions>button{width:100%}}
