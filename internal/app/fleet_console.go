@@ -228,6 +228,12 @@ func (f *fleetConsole) publish(id string, app *App, sidecars []fleet.Sidecar) (*
 		if !inboundLoadsCertificate(*in) || in.Certificate == "" || in.PrivateKey == "" {
 			continue
 		}
+		if _, local, err := nodeCertificateReferenceName(*in); err != nil {
+			return nil, fmt.Errorf("invalid node-local certificate for %s: %w", in.Name, err)
+		} else if local {
+			in.CertificateMode = "file"
+			continue
+		}
 		cert, key := []byte(in.Certificate), []byte(in.PrivateKey)
 		if !strings.Contains(in.Certificate, "-----BEGIN") {
 			var err error
@@ -646,6 +652,10 @@ func (a *App) handleFleet(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		id := parts[1]
+		if len(parts) == 4 && parts[2] == "certificates" && parts[3] == "issue" {
+			a.handleFleetNodeCertificateIssue(w, r, id)
+			return
+		}
 		if len(parts) == 2 {
 			if r.Method == "GET" {
 				n := f.store.Node(id)

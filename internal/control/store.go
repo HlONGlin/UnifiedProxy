@@ -615,7 +615,11 @@ func (s *Store) Claim(id string, now time.Time, key ...string) ([]fleet.Task, er
 			}
 			t.Attempts++
 			t.Status = "leased"
-			t.LeaseUntil = now.Add(2 * time.Minute)
+			lease := 2 * time.Minute
+			if t.Kind == "cert-issue" || t.Kind == "cert-renew" {
+				lease = 15 * time.Minute
+			}
+			t.LeaseUntil = now.Add(lease)
 			out = append(out, *clone(t))
 			break
 		}

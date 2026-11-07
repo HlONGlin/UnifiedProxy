@@ -51,7 +51,7 @@ LABEL org.opencontainers.image.title="UnifiedProxy" \
       org.opencontainers.image.version="${UNIFIEDPROXY_VERSION}"
 
 RUN apt-get update \
-    && apt-get install -y --no-install-recommends ca-certificates tzdata \
+    && apt-get install -y --no-install-recommends ca-certificates curl socat tzdata \
     && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /opt/unifiedproxy

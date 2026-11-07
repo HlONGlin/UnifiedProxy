@@ -24,12 +24,13 @@ import (
 )
 
 type nodeRuntime struct {
-	manager      *CoreManager
-	mu           sync.Mutex
-	applied      *fleet.DesiredState
-	sidecars     *agent.Sidecars
-	sidecarError string
-	cleared      bool
+	manager       *CoreManager
+	mu            sync.Mutex
+	applied       *fleet.DesiredState
+	sidecars      *agent.Sidecars
+	sidecarError  string
+	cleared       bool
+	certificateMu sync.Mutex
 }
 type applyTransaction struct {
 	State   State               `json:"state"`
@@ -101,7 +102,7 @@ func (n *nodeRuntime) Snapshot() fleet.Status {
 			logs[i] = line[:2048]
 		}
 	}
-	details := map[string]any{"system": stats, "coreVersion": m.coreVersion(), "platform": runtime.GOOS, "startedAt": started, "logs": logs, "cpuHistory": history, "totals": totals, "outboundTraffic": outboundTraffic, "vpngate": makeVPNGateView(m), "sidecars": sidecarStatus}
+	details := map[string]any{"system": stats, "coreVersion": m.coreVersion(), "platform": runtime.GOOS, "startedAt": started, "logs": logs, "cpuHistory": history, "totals": totals, "outboundTraffic": outboundTraffic, "vpngate": makeVPNGateView(m), "sidecars": sidecarStatus, "managedCertificates": n.managedCertificates()}
 	if status.Running {
 		if traffic, err := m.coreGet("/traffic"); err == nil {
 			details["traffic"] = traffic
@@ -308,6 +309,9 @@ func (n *nodeRuntime) Apply(ctx context.Context, desired fleet.DesiredState) err
 					}
 				}
 			}
+		}
+		if err := resolveNodeCertificateReference(m.dataDir, in); err != nil {
+			return err
 		}
 		in.Certificate = strings.ReplaceAll(in.Certificate, "__FLEET_CERT_DIR__", filepath.ToSlash(bundle))
 		in.PrivateKey = strings.ReplaceAll(in.PrivateKey, "__FLEET_CERT_DIR__", filepath.ToSlash(bundle))
@@ -609,13 +613,38 @@ func (n *nodeRuntime) Execute(ctx context.Context, t fleet.Task) (json.RawMessag
 		n.mu.Lock()
 		defer n.mu.Unlock()
 		return nil, n.manager.updateGeofiles(ctx)
+	case "cert-issue":
+		var request nodeCertificateIssueRequest
+		if err := json.Unmarshal(t.Payload, &request); err != nil {
+			return nil, err
+		}
+		return n.issueNodeCertificate(ctx, request)
 	case "cert-renew":
-		// Certificate acquisition runs centrally; this task revalidates the
-		// distributed pair and reloads it without opening an ACME client on nodes.
+		var request struct {
+			Name string `json:"name"`
+		}
+		if err := json.Unmarshal(t.Payload, &request); err != nil {
+			return nil, err
+		}
+		if request.Name != "" {
+			return n.renewNodeCertificate(ctx, request.Name)
+		}
+		localCertificates := n.managedCertificates()
+		if len(localCertificates) > 0 {
+			results := make([]json.RawMessage, 0, len(localCertificates))
+			for _, certificate := range localCertificates {
+				result, err := n.renewNodeCertificate(ctx, certificate.Name)
+				if err != nil {
+					return nil, err
+				}
+				results = append(results, result)
+			}
+			return json.Marshal(results)
+		}
 		n.mu.Lock()
 		defer n.mu.Unlock()
-		if n.applied == nil {
-			return nil, errors.New("no managed certificates")
+		if n.applied == nil || len(n.applied.Certificates) == 0 {
+			return nil, errors.New("certificate name required")
 		}
 		for _, c := range n.applied.Certificates {
 			if _, err := tls.X509KeyPair([]byte(c.Certificate), []byte(c.PrivateKey)); err != nil {

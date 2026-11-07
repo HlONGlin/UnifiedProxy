@@ -183,6 +183,7 @@ func (a *App) initializeFleet(ctx context.Context, dir string) error {
 	}
 	a.nodeRuntime = n
 	go n.supervise(ctx)
+	go n.renewManagedCertificates(ctx)
 	worker, err := agent.New(dir, n)
 	if err != nil {
 		return err

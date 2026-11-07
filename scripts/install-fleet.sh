@@ -5,8 +5,8 @@ role="${1:-}"; binary="${2:-}"; checksum="${3:-}"
 [[ "$role" == control || "$role" == node ]] || { echo 'Usage: install-fleet.sh control|node BINARY SHA256' >&2; exit 1; }
 [[ $EUID -eq 0 ]] || { echo 'Run as root' >&2; exit 1; }
 [[ -f "$binary" && "$checksum" =~ ^[a-fA-F0-9]{64}$ ]] || { echo 'Binary and SHA256 are required' >&2; exit 1; }
-for dependency in systemctl sha256sum install tar xz; do
-  command -v "$dependency" >/dev/null || { echo "Missing $dependency; install systemd, coreutils, tar and xz-utils first." >&2; exit 1; }
+for dependency in systemctl sha256sum install tar xz socat; do
+  command -v "$dependency" >/dev/null || { echo "Missing $dependency; install systemd, coreutils, tar, xz-utils and socat first." >&2; exit 1; }
 done
 printf '%s  %s\n' "$checksum" "$binary" | sha256sum --check --strict
 install_dir="${UNIFIEDPROXY_FLEET_INSTALL_DIR:-/usr/local/unifiedproxy-${role}}"

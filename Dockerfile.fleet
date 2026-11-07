@@ -11,7 +11,7 @@ RUN CGO_ENABLED=0 GOOS=$TARGETOS GOARCH=$TARGETARCH go build -trimpath -ldflags=
 
 FROM debian:bookworm-slim AS base
 LABEL org.opencontainers.image.licenses="GPL-3.0-only"
-RUN apt-get update && apt-get install -y --no-install-recommends ca-certificates tzdata tar xz-utils && rm -rf /var/lib/apt/lists/*
+RUN apt-get update && apt-get install -y --no-install-recommends ca-certificates curl socat tzdata tar xz-utils && rm -rf /var/lib/apt/lists/*
 WORKDIR /opt/unifiedproxy
 COPY LICENSE NOTICE /usr/share/licenses/unifiedproxy/
 COPY licenses/UnifiedProxy-MIT.txt /usr/share/licenses/unifiedproxy/

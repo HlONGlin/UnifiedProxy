@@ -211,6 +211,8 @@ func singboxTLSBlock(inbound Inbound, server string, force bool) map[string]any 
 		}
 		tls["reality"] = reality
 		tls["utls"] = map[string]any{"enabled": true, "fingerprint": valueOr(inbound.Reality.Fingerprint, "chrome")}
+	} else if inbound.Type == "anytls" {
+		tls["utls"] = map[string]any{"enabled": true, "fingerprint": valueOr(inbound.TLSFingerprint, "chrome")}
 	}
 	return tls
 }

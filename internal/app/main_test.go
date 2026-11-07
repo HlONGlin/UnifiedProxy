@@ -552,7 +552,7 @@ func TestSingboxSubscriptionProducer(t *testing.T) {
 		{Inbound: Inbound{Name: "tj", Type: "trojan", Port: 443, Enabled: true, GRPCServiceName: "gsvc", TLS: true, TLSServerName: "t.com"}, Client: Client{Name: "u", Password: "tp", Enabled: true}},
 		{Inbound: Inbound{Name: "hy", Type: "hysteria2", Port: 8443, Enabled: true, TLSServerName: "hy.com", Hysteria: HysteriaSettings{Obfs: "salamander", ObfsPassword: "o"}}, Client: Client{Name: "u", Password: "hp", Enabled: true}},
 		{Inbound: Inbound{Name: "tu", Type: "tuic", Port: 8444, Enabled: true, TLSServerName: "tu.com", TUIC: TUICSettings{CongestionController: "bbr"}}, Client: Client{Name: "u", UUID: "uuid-3", Password: "tup", Enabled: true}},
-		{Inbound: Inbound{Name: "at", Type: "anytls", Port: 8445, Enabled: true, TLSServerName: "at.com"}, Client: Client{Name: "u", Password: "ap", Enabled: true}},
+		{Inbound: Inbound{Name: "at", Type: "anytls", Port: 8445, Enabled: true, TLSServerName: "at.com", TLSFingerprint: "firefox", AllowInsecure: true}, Client: Client{Name: "u", Password: "ap", Enabled: true}},
 		{Inbound: Inbound{Name: "sk", Type: "socks", Port: 1080, Enabled: true}, Client: Client{Name: "u", Username: "su", Password: "skp", Enabled: true}},
 		{Inbound: Inbound{Name: "mi", Type: "mieru", Port: 9000, Enabled: true, Mieru: MieruSettings{Transport: "TCP"}}, Client: Client{Name: "u", Username: "mu", Password: "mp", Enabled: true}},
 		{Inbound: Inbound{Name: "xh", Type: "vless", Port: 8080, Enabled: true, XHTTP: XHTTPSettings{Enabled: true}}, Client: Client{Name: "u", UUID: "uuid-x", Enabled: true}},
@@ -609,8 +609,11 @@ func TestSingboxSubscriptionProducer(t *testing.T) {
 	if tu["type"] != "tuic" || tu["uuid"] != "uuid-3" || tu["password"] != "tup" || tu["congestion_control"] != "bbr" || tu["udp_relay_mode"] != "native" {
 		t.Fatalf("unexpected tuic outbound: %#v", tu)
 	}
-	if at := byTag["at-u"]; at["type"] != "anytls" || at["password"] != "ap" || !obj(at["tls"])["enabled"].(bool) {
+	if at := byTag["at-u"]; at["type"] != "anytls" || at["password"] != "ap" || !obj(at["tls"])["enabled"].(bool) || obj(at["tls"])["server_name"] != "at.com" || obj(at["tls"])["insecure"] != true || obj(obj(at["tls"])["utls"])["fingerprint"] != "firefox" {
 		t.Fatalf("unexpected anytls outbound: %#v", byTag["at-u"])
+	}
+	if got := obj(singboxTLSBlock(Inbound{Type: "anytls"}, "srv.example", true)["utls"])["fingerprint"]; got != "chrome" {
+		t.Fatalf("default anytls uTLS fingerprint = %v, want chrome", got)
 	}
 	if sk := byTag["sk-u"]; sk["type"] != "socks" || sk["version"] != "5" || sk["username"] != "su" || sk["password"] != "skp" {
 		t.Fatalf("unexpected socks outbound: %#v", byTag["sk-u"])

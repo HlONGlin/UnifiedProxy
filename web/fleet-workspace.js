@@ -139,11 +139,11 @@ window.UPFleetWorkspace = function ({request, load, selectTarget, hostSettings, 
     const actions=el('div',undefined,heading,{className:'fleet-toolbar'});button(t('refresh'),actions,load);button(tr('＋ 添加子服务器','＋ Add child server'),actions,addServer,true);
     const feedback=el('div',undefined,root,{id:'fleet-feedback',className:'fleet-feedback',hidden:true,role:'status'});feedback.setAttribute('aria-live','polite');if(notice)output(notice.data,notice.error);
     const tabs=el('nav',undefined,root,{className:'fleet-tabs','aria-label':tr('舰队工作区','Fleet workspace')});
-    for(const [key,label] of [['nodes',tr('子服务器','Servers')],['tasks',tr('任务记录','Task history')],['subscriptions',t('subscriptions')],['backup',tr('备份与迁移','Backup & migration')],['maintenance',tr('主机维护','Host maintenance')],['advanced',tr('高级配置','Advanced')]]) {
+    for(const [key,label] of [['certificates',tr('证书管理','Certificates')],['nodes',tr('子服务器','Servers')],['tasks',tr('任务记录','Task history')],['subscriptions',t('subscriptions')],['backup',tr('备份与迁移','Backup & migration')],['maintenance',tr('主机维护','Host maintenance')],['advanced',tr('高级配置','Advanced')]]) {
       const b=button(label,tabs,()=>go(key));b.dataset.fleetTab=key;if(key===ui.tab)b.setAttribute('aria-current','page');
     }
     const content=el('div',undefined,root,{id:'fleet-content'});
-    ({nodes:renderNodes,tasks:renderTasks,subscriptions:renderSubscriptions,backup:renderBackup,maintenance:renderMaintenance,advanced:renderAdvanced})[ui.tab](content);
+    ({nodes:renderNodes,certificates:renderCertificates,tasks:renderTasks,subscriptions:renderSubscriptions,backup:renderBackup,maintenance:renderMaintenance,advanced:renderAdvanced})[ui.tab](content);
   }
   function renderNodes(content) {
     const stats=el('div',undefined,content,{className:'fleet-stats'});
@@ -225,7 +225,7 @@ window.UPFleetWorkspace = function ({request, load, selectTarget, hostSettings, 
       if(kind.value==='agent-upgrade'){inputs.url=field(fields,tr('已验证的更新包 HTTPS 地址','Verified update HTTPS URL'),'','url');inputs.sha256=field(fields,'SHA256');}
       if(kind.value==='quota'){inputs.username=field(fields,t('username'));inputs.total=field(fields,tr('总流量（GB，0 为不限）','Total traffic (GB, 0 = unlimited)'),'0','number');inputs.total.min='0';inputs.total.step='any';inputs.expiryTime=field(fields,tr('到期时间（留空为不限）','Expiry (empty = unlimited)'),'','datetime-local');}
       if(kind.value.startsWith('core-'))payloadHint.textContent=tr('控制选中子服务器上的 Mihomo 进程。','Control the Mihomo process on the selected child servers.');
-      if(kind.value==='cert-renew')payloadHint.textContent=tr('重新校验并加载主机已下发的证书。需要申请或续期证书时，请进入“主机维护”。','Revalidates and reloads certificates distributed by the host. Issue or renew certificates in Host maintenance.');
+      if(kind.value==='cert-renew')payloadHint.textContent=tr('对该节点的本地托管证书执行续期；日常使用请在“证书管理”中选择证书。','Renew the selected child server local certificate. Use Certificates to choose a specific certificate.');
       if(kind.value==='defaults')payloadHint.textContent=tr('会将主机全局默认的出口、路由和核心基础设置覆盖到选中节点。','Replaces selected nodes’ outbounds, routing and core basics with host global defaults.');
       if(kind.value==='inbound')inputs.inbound=codeEditor(fields,tr('入站对象（高级操作）','Inbound object (advanced)'),{});
     };kind.onchange=configure;configure();
@@ -251,6 +251,7 @@ window.UPFleetWorkspace = function ({request, load, selectTarget, hostSettings, 
     const list=root.querySelector('#fleet-tasks');if(!list)return;const opened=new Set(Array.from(list.querySelectorAll('details[open]')).map(d=>d.dataset.taskId));list.replaceChildren();
     const tasks=(fleet.tasks||[]).slice(-30).reverse();if(!tasks.length){empty(list,tr('还没有执行过任务','No tasks yet'),tr('提交巡检或批量操作后，会在这里显示进度。','Submitted checks and batch actions appear here.'));return;}
     const taskNames={'apply-state':tr('应用节点配置','Apply node configuration'),'purge':tr('停止服务并吊销节点','Stop services and revoke node'),'core-control':tr('控制代理内核','Control proxy core'),'traffic-reset':tr('重置流量','Reset traffic'),'vpngate-install':tr('安装 VPNGate 出口','Install VPNGate outbound'),'vpngate-reconnect':tr('重连 VPNGate','Reconnect VPNGate')};
+    taskNames['cert-issue']=tr('在子服务器申请证书','Issue certificate on child server');taskNames['cert-renew']=tr('续期子服务器证书','Renew child server certificate');
     taskNames['outbound-delay']=tr('测试出口延迟','Test outbound delay');
     for(const task of tasks){const box=el('details',undefined,list,{className:'fleet-task'});box.dataset.taskId=task.id;box.open=opened.has(task.id);const head=el('summary',undefined,box);el('strong',taskNames[task.kind]||t(task.kind),head);el('span',(fleet.nodes||[]).find(n=>n.id===task.nodeId)?.name||task.nodeId,head);
       const status=task.result?.status||task.status;el('span',({pending:tr('排队中','Queued'),queued:tr('排队中','Queued'),leased:tr('执行中','Running'),running:tr('执行中','Running'),succeeded:tr('已完成','Completed'),success:tr('已完成','Completed'),done:tr('已完成','Completed'),failed:tr('失败','Failed'),expired:tr('已过期','Expired'),unsupported:tr('节点不支持','Unsupported'),superseded:tr('已被新配置替代','Superseded'),cancelled:tr('已取消','Cancelled')})[status]||status,head,{className:'fleet-task-status'});el('time',formatTime(task.createdAt),head);
@@ -276,10 +277,60 @@ window.UPFleetWorkspace = function ({request, load, selectTarget, hostSettings, 
     const dav=details(content,tr('WebDAV 远程备份','WebDAV remote backup')),davURL=field(dav,'WebDAV URL','','url');davURL.placeholder='https://backup.example/fleet-backup.json';const user=field(dav,t('username')),pass=field(dav,t('password'),'','password');pass.autocomplete='new-password';
     const credentials=()=>({url:davURL.value,username:user.value,password:pass.value});button(t('uploadBackup'),dav,async()=>output(await request('/backup',{action:'upload',webdav:credentials()})));button(tr('从 WebDAV 恢复','Restore from WebDAV'),dav,async()=>{if(await upConfirm(tr('从远程备份替换当前舰队数据？','Replace current fleet data with the remote backup?'),{danger:true})){output(await request('/backup',{action:'download',webdav:credentials()}));await load();}});
   }
-  function renderMaintenance(content) {
-    const identity=block(content,tr('主机身份','Host identity'),tr('子服务器使用公钥确认主机身份；请通过可信渠道核对。日常使用不需要修改它。','Child servers use this public key to verify the host. Confirm it over a trusted channel.'));
-    el('code',fleet.publicKey,identity,{className:'fleet-command'});button(tr('复制公钥','Copy public key'),identity,async()=>{await copyText(fleet.publicKey);output(tr('主机公钥已复制','Host public key copied'));});
-    const cert=block(content,t('certificates'),tr('集中管理证书并下发给绑定的子服务器。','Manage certificates centrally and distribute them to bound child servers.'));
+  function renderCertificates(content) {
+    const nodes=(fleet.nodes||[]).filter(node=>!node.revoked),box=block(content,tr('子服务器证书','Child server certificates'),tr('证书和 ACME 凭据保存在所选子服务器本地。HTTP 验证需要开放 80 端口；Cloudflare DNS 验证要求在该子服务器服务环境中预先配置 CF_Token。','Certificates and ACME credentials stay on the selected child server. HTTP validation needs port 80 open. Cloudflare DNS validation requires CF_Token to be configured in that server service environment.'));
+    if(!nodes.length){empty(box,tr('暂无可用子服务器','No child servers available'),tr('添加并接入子服务器后，可在这里单独申请和续期证书。','Add and connect a child server to manage its certificates here.'));return;}
+    const nodeOptions=[['',tr('选择子服务器…','Select a child server…')],...nodes.map(node=>[node.id,node.name])];
+    const server=pick(box,tr('子服务器','Child server'),nodeOptions,nodes[0].id),fields=el('div',undefined,box,{className:'fleet-two-columns'});
+    const target=pick(fields,tr('TLS 入站','TLS inbound'),[['',tr('正在读取…','Loading…')]],'');
+    const name=field(fields,tr('证书名称','Certificate name'));
+    const domain=field(fields,tr('证书域名','Certificate domain'));
+    const dns=pick(fields,tr('验证方式','Challenge'),[['',tr('HTTP 验证（需开放 80 端口）','HTTP challenge (port 80 required)')],['dns_cf',tr('Cloudflare DNS（凭据在子服务器配置）','Cloudflare DNS (credentials configured on child)')]],'');
+    const autoWrap=el('label',undefined,fields,{className:'fleet-check fleet-certificate-auto'}),automatic=el('input',undefined,autoWrap,{type:'checkbox',checked:true});el('span',tr('自动续期','Renew automatically'),autoWrap);
+    const feedback=el('div',undefined,box,{className:'fleet-certificate-list'});
+    let targetItems=[],generation=0;
+    const refresh=button(tr('刷新子服务器证书','Refresh child certificates'),box,async()=>{await refreshNode();});
+    async function refreshNode(){
+      const version=++generation;targetItems=[];target.replaceChildren();el('option',tr('正在读取…','Loading…'),target,{value:''});feedback.replaceChildren();
+      if(!server.value){el('option',tr('先选择子服务器','Select a child server first'),target,{value:''});return;}
+      let detail;
+      try{detail=await request('/nodes/'+encodeURIComponent(server.value));}catch(error){if(version===generation){target.replaceChildren();el('option',error.message,target,{value:''});}throw error;}
+      if(version!==generation||server.value!==detail.id)return;
+      const model=detail.draft||detail.desired?.model||{};
+      targetItems=(model.inbounds||[]).filter(item=>!item.reality?.enabled&&(item.tls||['hysteria2','hysteria2-realm','tuic','trusttunnel'].includes(String(item.type).toLowerCase())));
+      target.replaceChildren();el('option',tr('选择 TLS 入站…','Select a TLS inbound…'),target,{value:''});
+      for(const item of targetItems)el('option',(item.name||item.type||item.id)+(item.port?' · '+item.port:'')+' · '+item.id,target,{value:item.id});
+      if(!targetItems.length)el('option',tr('此子服务器没有可绑定的 TLS 入站','No TLS inbounds on this server'),target,{value:''});
+      const caps=detail.status?.capabilities||[];
+      if(!caps.includes('cert-issue'))el('p',tr('请先升级此子服务器，再使用本地证书管理。','Upgrade this child server to enable local certificate management.'),feedback,{className:'fleet-hint'});
+      const certs=detail.status?.details?.managedCertificates||[];
+      if(!certs.length)empty(feedback,tr('此子服务器尚无托管证书','No managed certificates on this server'),tr('申请后，证书文件、私钥和续期配置只保存在此子服务器。','Issued certificate files, private keys and renewal settings stay on this server.'));
+      for(const cert of certs){
+        const row=el('div',undefined,feedback,{className:'fleet-certificate-item'}),meta=el('div',undefined,row,{className:'fleet-certificate-meta'});
+        el('strong',cert.name,meta);el('span',cert.domain+' · '+tr('到期','Expires')+' '+(cert.expiresAt?new Date(cert.expiresAt).toLocaleDateString():'—')+' · '+(cert.automatic?tr('自动续期已开启','Automatic renewal enabled'):tr('手动续期','Manual renewal')),meta);
+        if(cert.lastError)el('span',tr('续期失败：','Renewal failed: ')+cert.lastError,meta,{className:'fleet-error'});
+        const actions=el('div',undefined,row,{className:'fleet-certificate-actions'});
+        button(tr('立即续期','Renew now'),actions,async()=>{const task=await request('/tasks',{nodeId:server.value,kind:'cert-renew',payload:{name:cert.name},ttlSeconds:1200});output(task);});
+      }
+    }
+    target.onchange=()=>{const inbound=targetItems.find(item=>item.id===target.value);if(!inbound)return;if(inbound.tlsServerName)domain.value=inbound.tlsServerName;if(!name.value&&domain.value)name.value=domain.value.toLowerCase().replace(/^\*\./,'wildcard-').replace(/[^a-z0-9._-]/g,'-');};
+    const submit=button(tr('在此子服务器申请证书并绑定','Issue and bind on this server'),box,async()=>{
+      if(!server.value||!target.value)throw new Error(tr('请选择子服务器和 TLS 入站。','Select a child server and TLS inbound.'));
+      if(!name.value.trim()||!domain.value.trim())throw new Error(tr('请填写证书名称和域名。','Enter a certificate name and domain.'));
+      const result=await request('/nodes/'+encodeURIComponent(server.value)+'/certificates/issue',{name:name.value.trim(),domain:domain.value.trim(),dns:dns.value,automatic:automatic.checked,inboundId:target.value});
+      output(result);if(result.publishError)output(tr('证书任务已排队，但节点配置发布失败：','Certificate task was queued, but publishing the node configuration failed: ')+result.publishError,true);
+    },true);
+    server.onchange=()=>{submit.disabled=!fleet.nodes.find(node=>node.id===server.value)?.status?.capabilities?.includes('cert-issue');refreshNode().catch(error=>output(error.message,true));};
+    if(!fleet.nodes.find(node=>node.id===server.value)?.status?.capabilities?.includes('cert-issue'))submit.disabled=true;
+    refreshNode().catch(error=>output(error.message,true));
+  }
+
+  function renderMaintenance(content, certificatesOnly=false) {
+    if(!certificatesOnly){
+      const identity=block(content,tr('主机身份','Host identity'),tr('子服务器使用公钥确认主机身份；请通过可信渠道核对。日常使用不需要修改它。','Child servers use this public key to verify the host. Confirm it over a trusted channel.'));
+      el('code',fleet.publicKey,identity,{className:'fleet-command'});button(tr('复制公钥','Copy public key'),identity,async()=>{await copyText(fleet.publicKey);output(tr('主机公钥已复制','Host public key copied'));});
+    }
+    const cert=block(content,tr('控制端托管证书','Control host certificates'),tr('此处保留控制端托管的兼容证书。子服务器请使用左侧“证书管理”，证书会在各节点本地申请和续期。','This section retains control-host certificates for compatibility. Use Certificates for child servers; those certificates are issued and renewed locally.'));
     const certificateList=el('div',undefined,cert,{className:'fleet-certificate-list'}),certificateNames=el('datalist',undefined,cert,{id:'fleet-certificate-names'});
     const listRefresh=button(tr('刷新证书列表','Refresh certificates'),cert,loadCertificates);
     const operation=pick(cert,tr('操作','Operation'),[['issue',tr('申请新证书','Issue a certificate')],['renew',tr('续期证书','Renew a certificate')],['import',tr('导入证书','Import a certificate')],['bind',tr('绑定到节点','Bind to a server')]],'issue');
@@ -287,7 +338,8 @@ window.UPFleetWorkspace = function ({request, load, selectTarget, hostSettings, 
     const fields=el('div',undefined,cert,{className:'fleet-two-columns'});
     const domain=field(fields,tr('域名','Domain'));
     const dns=pick(fields,tr('DNS 验证','DNS challenge'),[['',tr('HTTP 验证（需要开放 80 端口）','HTTP challenge (port 80 must be open)')],['dns_cf','Cloudflare DNS']],'');
-    const automaticWrap=el('label',undefined,fields,{className:'fleet-check fleet-certificate-auto'}),automatic=el('input',undefined,automaticWrap,{type:'checkbox'});el('span',tr('自动续期','Renew automatically'),automaticWrap);
+    const dnsToken=field(fields,tr('Cloudflare API Token'),'','password',tr('需要 DNS 编辑权限。仅用于签发；acme.sh 会保存在控制端用于续期。','Requires DNS edit permission. Used for issuance; acme.sh stores it on the control host for renewals.'));dnsToken.autocomplete='new-password';
+    const automaticWrap=el('label',undefined,fields,{className:'fleet-check fleet-certificate-auto'}),automatic=el('input',undefined,automaticWrap,{type:'checkbox',checked:true});el('span',tr('自动续期','Renew automatically'),automaticWrap);
     const material=el('div',undefined,cert,{className:'fleet-two-columns'});
     const certificate=field(material,tr('证书 PEM','Certificate PEM'),'','textarea'),privateKey=field(material,tr('私钥 PEM','Private key PEM'),'','textarea');certificate.spellcheck=false;privateKey.spellcheck=false;
     const bindingEditor=el('div',undefined,cert,{className:'fleet-certificate-bindings'}),bindingRows=[];
@@ -299,7 +351,7 @@ window.UPFleetWorkspace = function ({request, load, selectTarget, hostSettings, 
       node.value=binding.nodeId||'';kind.value=binding.sidecarId?'sidecar':'inbound';const targetID=binding.sidecarId||binding.inboundId||'';
       const entry={row,node,kind,target,generation:0};bindingRows.push(entry);
       const remove=button(tr('移除此绑定','Remove binding'),row,()=>{const index=bindingRows.indexOf(entry);if(index>=0)bindingRows.splice(index,1);row.remove();});remove.classList.add('fleet-certificate-remove');
-      const refreshTargets=async()=>{const generation=++entry.generation;target.replaceChildren();el('option',node.value?tr('正在读取…','Loading…'):tr('先选择节点','Select a server first'),target,{value:''});if(!node.value)return;const selectedNode=node.value;try{const detail=await nodeDetail(selectedNode);if(generation!==entry.generation||selectedNode!==node.value)return;const model=detail.draft||detail.desired?.model||{},items=kind.value==='sidecar'?(detail.desired?.sidecars||[]).filter(item=>String(item.kind).toLowerCase()==='naive'):(model.inbounds||[]);target.replaceChildren();el('option',tr('选择目标…','Select a target…'),target,{value:''});for(const item of items)el('option',`${item.name||item.kind||item.id}${item.port?` · ${item.port}`:''} · ${item.id}`,target,{value:item.id});if(!items.length)el('option',tr('此节点没有可绑定的目标','No eligible targets on this server'),target,{value:''});}catch(error){if(generation===entry.generation){target.replaceChildren();el('option',error.message,target,{value:''});}}};
+      const refreshTargets=async()=>{const generation=++entry.generation;target.replaceChildren();el('option',node.value?tr('正在读取…','Loading…'):tr('先选择节点','Select a server first'),target,{value:''});if(!node.value)return;const selectedNode=node.value;try{const detail=await nodeDetail(selectedNode);if(generation!==entry.generation||selectedNode!==node.value)return;const model=detail.draft||detail.desired?.model||{},items=kind.value==='sidecar'?(detail.desired?.sidecars||[]).filter(item=>String(item.kind).toLowerCase()==='naive'):(model.inbounds||[]).filter(item=>!item.reality?.enabled&&(item.tls||['hysteria2','hysteria2-realm','tuic','trusttunnel'].includes(String(item.type).toLowerCase())));target.replaceChildren();el('option',tr('选择目标…','Select a target…'),target,{value:''});for(const item of items)el('option',`${item.name||item.kind||item.id}${item.port?` · ${item.port}`:''} · ${item.id}`,target,{value:item.id});if(!items.length)el('option',tr('此节点没有可绑定的 TLS 目标','No TLS targets on this server'),target,{value:''});}catch(error){if(generation===entry.generation){target.replaceChildren();el('option',error.message,target,{value:''});}}};
       node.onchange=refreshTargets;kind.onchange=refreshTargets;
       if(node.value)refreshTargets().then(()=>{if(targetID)target.value=targetID;});
     }
@@ -307,24 +359,24 @@ window.UPFleetWorkspace = function ({request, load, selectTarget, hostSettings, 
     const submit=button(t('issue'),cert,async()=>{
       if(!name.value.trim())throw new Error(tr('请填写证书名称。','Enter a certificate name.'));
       const action=operation.value,payload={name:name.value.trim()};
-      if(action==='issue'){if(!domain.value.trim())throw new Error(tr('申请证书时必须填写域名。','Enter a domain to issue a certificate.'));payload.domain=domain.value.trim();payload.dns=dns.value;payload.automatic=automatic.checked;}
+      if(action==='issue'){if(!domain.value.trim())throw new Error(tr('申请证书时必须填写域名。','Enter a domain to issue a certificate.'));payload.domain=domain.value.trim();payload.dns=dns.value;payload.automatic=automatic.checked;if(dns.value==='dns_cf'){if(!dnsToken.value.trim())throw new Error(tr('请输入 Cloudflare API Token。','Enter a Cloudflare API token.'));payload.dnsCredentials={cloudflareToken:dnsToken.value.trim()};dnsToken.value='';}if(bindingRows.length)payload.bindings=bindingRows.map(({node,kind,target})=>{if(!node.value||!target.value)throw new Error(tr('每个绑定都需要选择节点和目标。','Choose a server and target for each binding.'));return kind.value==='sidecar'?{nodeId:node.value,sidecarId:target.value}:{nodeId:node.value,inboundId:target.value};});}
       if(action==='import'){payload.domain=domain.value.trim();payload.certificate=certificate.value;payload.privateKey=privateKey.value;payload.automatic=automatic.checked;if(!payload.certificate.trim()||!payload.privateKey.trim())throw new Error(tr('请填写证书和私钥 PEM。','Enter both certificate and private key PEM.'));if(payload.automatic&&!payload.domain)throw new Error(tr('自动续期需要填写域名。','A domain is required for automatic renewal.'));}
       if(action==='bind'){payload.bindings=bindingRows.map(({node,kind,target})=>{if(!node.value||!target.value)throw new Error(tr('每个绑定都需要选择节点和目标。','Choose a server and target for each binding.'));return kind.value==='sidecar'?{nodeId:node.value,sidecarId:target.value}:{nodeId:node.value,inboundId:target.value};});}
       const result=await request('/certificates/'+action,payload);output(result);await loadCertificates();
     });
     function syncCertificateForm(){
       const action=operation.value,isIssue=action==='issue',isImport=action==='import',isBind=action==='bind';
-      domain.parentElement.hidden=action==='renew'||isBind;domain.required=isIssue;dns.parentElement.hidden=!isIssue;automaticWrap.hidden=action==='renew'||isBind;material.hidden=!isImport;bindingEditor.hidden=!isBind;
+      domain.parentElement.hidden=action==='renew'||isBind;domain.required=isIssue;dns.parentElement.hidden=!isIssue;dnsToken.parentElement.hidden=!isIssue||dns.value!=='dns_cf';dnsToken.required=isIssue&&dns.value==='dns_cf';automaticWrap.hidden=action==='renew'||isBind;material.hidden=!isImport;bindingEditor.hidden=!(isIssue||isBind);
       certificate.required=isImport;privateKey.required=isImport;submit.textContent=t(({issue:'issue',renew:'renew',import:'importCert',bind:'bind'})[action]);
     }
-    operation.onchange=syncCertificateForm;syncCertificateForm();
+    operation.onchange=()=>{if(operation.value==='import')automatic.checked=false;else if(operation.value==='issue')automatic.checked=true;syncCertificateForm();};dns.onchange=syncCertificateForm;syncCertificateForm();
     async function loadCertificates(){
       const items=await request('/certificates');certificateList.replaceChildren();certificateNames.replaceChildren();
       if(!items.length)empty(certificateList,tr('暂无托管证书','No managed certificates'),tr('申请或导入证书后，可在这里续期或管理绑定。','Issue or import a certificate to renew it or manage its bindings here.'));
       for(const item of items){
         el('option',undefined,certificateNames,{value:item.name});
         const row=el('div',undefined,certificateList,{className:'fleet-certificate-item'}),meta=el('div',undefined,row,{className:'fleet-certificate-meta'});
-        el('strong',item.name,meta);el('span',`${item.domain||tr('未指定域名','No domain')} · ${tr('到期','Expires')} ${item.expiresAt?new Date(item.expiresAt).toLocaleDateString():'—'} · ${item.bindings?.length||0} ${tr('个绑定','bindings')}`,meta);
+        el('strong',item.name,meta);el('span',`${item.domain||tr('未指定域名','No domain')} · ${tr('到期','Expires')} ${item.expiresAt?new Date(item.expiresAt).toLocaleDateString():'—'} · ${item.bindings?.length||0} ${tr('个绑定','bindings')}`,meta);if(item.automatic)el('span',tr('自动续期已开启','Automatic renewal enabled'),meta);if(item.lastError)el('span',tr('续期失败：','Renewal failed: ')+item.lastError,meta,{className:'fleet-error'});
         const actions=el('div',undefined,row,{className:'fleet-certificate-actions'});
         const focusForm=()=>{cert.scrollIntoView({block:'start',behavior:'smooth'});setTimeout(()=>{operation.focus();},0);};
         const renew=button(tr('续期','Renew'),actions,()=>{operation.value='renew';name.value=item.name;syncCertificateForm();focusForm();});renew.disabled=!item.domain;if(!item.domain)renew.title=tr('该证书未配置域名，无法续期','Renewal is unavailable because this certificate has no domain');
@@ -333,6 +385,7 @@ window.UPFleetWorkspace = function ({request, load, selectTarget, hostSettings, 
       listRefresh.disabled=false;
     }
     loadCertificates().catch(error=>output(error.message,true));
+    if(certificatesOnly)return;
     const update=block(content,t('updateControl'),tr('先检查可用版本，再执行更新。子服务器升级在“任务记录”中操作。','Check the release before updating. Upgrade child servers from Task history.'));
     const updateJSON=codeEditor(details(update,tr('更新包信息','Update package details')),tr('更新参数','Update parameters'),{url:'',sha256:''});
     button(t('checkUpdate'),update,async()=>{const info=await request('/update/check');updateJSON.value=JSON.stringify({url:info.url,sha256:info.sha256},null,2);output(info);});button(t('updateControl'),update,async()=>{if(await upConfirm(tr('更新主机控制端？服务会短暂重启。','Update the host control panel? It will briefly restart.'),{danger:true}))output(await request('/update',JSON.parse(updateJSON.value)));});
