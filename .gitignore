@@ -7,6 +7,9 @@ dist/
 unifiedproxy.exe
 unifiedproxy.exe~
 mihomo.exe
+manager.exe
+agent.exe
+*.exe~
 .gocache/
 .gomodcache/
 .runtime-*/
@@ -17,3 +20,6 @@ cookies.txt
 web/static/
 scratch/
 __pycache__/
+.opencode/
+scripts/.tmp_*.sh
+scripts/acceptance/*.json
