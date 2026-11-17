@@ -1,18 +1,52 @@
 #!/usr/bin/env bash
-# UnifiedProxy: install the node, enroll once and start its systemd service.
+# UnifiedProxy: install the node, enroll once and start its systemd/OpenRC service.
 set +x
 set -Eeuo pipefail
 umask 077
 
 control=""; control_key=""; node_id=""; version="latest"; token_stdin=0; replace_existing=0; replace_binding=0; already_enrolled=0
 install_dir="${UNIFIEDPROXY_FLEET_INSTALL_DIR:-/usr/local/unifiedproxy-node}"
-work_dir=""; token=""; restart_on_failure=0; lock_fd=""
+work_dir=""; token=""; restart_on_failure=0; lock_fd=""; service_manager=""; service_name=unifiedproxy-node
 info() { printf '[UnifiedProxy] %s\n' "$*"; }
 die() { printf '[UnifiedProxy] ERROR: %s\n' "$*" >&2; exit 1; }
+service_active() {
+  if [[ "$service_manager" == systemd ]]; then systemctl is-active --quiet "$service_name"
+  else rc-service "$service_name" status >/dev/null 2>&1
+  fi
+}
+service_stop() {
+  if [[ "$service_manager" == systemd ]]; then systemctl stop "$service_name"
+  else rc-service "$service_name" stop
+  fi
+}
+service_start() {
+  if [[ "$service_manager" == systemd ]]; then systemctl start "$service_name"
+  else rc-service "$service_name" start
+  fi
+}
+service_restart() {
+  if [[ "$service_manager" == systemd ]]; then systemctl restart "$service_name"
+  else rc-service "$service_name" restart
+  fi
+}
+detect_service_manager() {
+  local requested="${UNIFIEDPROXY_SERVICE_MANAGER:-}"
+  if [[ -n "$requested" ]]; then
+    [[ "$requested" == systemd || "$requested" == openrc ]] || die 'UNIFIEDPROXY_SERVICE_MANAGER must be systemd or openrc.'
+    service_manager="$requested"
+  elif command -v systemctl >/dev/null 2>&1 && systemctl show-environment >/dev/null 2>&1; then
+    service_manager=systemd
+  elif command -v rc-service >/dev/null 2>&1 && command -v rc-update >/dev/null 2>&1 && [[ -x /sbin/openrc-run ]]; then
+    service_manager=openrc
+  else
+    die 'This automatic installer requires a running Linux systemd or Alpine OpenRC; use manual enrollment for Docker or other init systems.'
+  fi
+  export UNIFIEDPROXY_SERVICE_MANAGER="$service_manager"
+}
 cleanup() {
   local result=$?
   token=""
-  if [[ $result -ne 0 && $restart_on_failure -eq 1 ]]; then systemctl start unifiedproxy-node >/dev/null 2>&1 || true; fi
+  if [[ $result -ne 0 && $restart_on_failure -eq 1 ]]; then service_start >/dev/null 2>&1 || true; fi
   [[ -z "$work_dir" ]] || rm -rf -- "$work_dir"
   return "$result"
 }
@@ -39,27 +73,35 @@ done
 [[ "$node_id" =~ ^[A-Za-z0-9_-]+$ && ${#node_id} -le 128 ]] || die 'Invalid node ID.'
 token="$(head -c 4097)"
 [[ -n "$token" && ${#token} -le 4096 && "$token" =~ ^[a-fA-F0-9]+$ ]] || die 'Invalid or missing enrollment token. Generate a fresh command in the host panel.'
-command -v systemctl >/dev/null || die 'This automatic installer requires systemd; use manual enrollment for Docker or other init systems.'
-systemctl show-environment >/dev/null 2>&1 || die 'systemd is not running on this host.'
+detect_service_manager
 [[ ! -L "$install_dir" ]] || die 'Refusing to use a symlinked node installation directory.'
 mkdir -p "$install_dir"
-command -v flock >/dev/null || die 'The flock command is required to serialize node enrollment.'
-[[ ! -L "$install_dir/.enrollment.lock" ]] || die 'Refusing to use a symlinked enrollment lock.'
-exec {lock_fd}>"$install_dir/.enrollment.lock"
-flock -n "$lock_fd" || die 'Another node enrollment is already in progress.'
 
 missing=0
-for dependency in curl python3 sha256sum tar gzip xz install openssl; do command -v "$dependency" >/dev/null || missing=1; done
+for dependency in curl python3 sha256sum tar gzip xz install openssl flock socat; do command -v "$dependency" >/dev/null || missing=1; done
+if [[ "$service_manager" == openrc ]]; then
+  for dependency in rc-service rc-update setsid; do command -v "$dependency" >/dev/null || missing=1; done
+  if [[ -f /etc/alpine-release && ! -x /etc/init.d/dcron ]]; then missing=1; fi
+fi
 if [[ $missing -eq 1 ]]; then
   info 'Installing dependencies...'
   if command -v apt-get >/dev/null; then
     apt-get update -y </dev/null
-    DEBIAN_FRONTEND=noninteractive apt-get install -y ca-certificates curl python3 coreutils tar gzip xz-utils openssl </dev/null
+    DEBIAN_FRONTEND=noninteractive apt-get install -y ca-certificates curl python3 coreutils tar gzip xz-utils openssl util-linux socat cron </dev/null
   elif command -v dnf >/dev/null || command -v yum >/dev/null; then
     if command -v dnf >/dev/null; then package_manager=dnf; else package_manager=yum; fi
-    "$package_manager" install -y ca-certificates curl python3 coreutils tar gzip xz openssl </dev/null
-  else die 'Install curl, python3, coreutils, tar, gzip, xz and openssl, then run the command again.'; fi
+    "$package_manager" install -y ca-certificates curl python3 coreutils tar gzip xz openssl util-linux socat cronie </dev/null
+  elif command -v apk >/dev/null; then
+    apk add --no-cache ca-certificates curl python3 coreutils tar gzip xz openssl util-linux-misc socat dcron </dev/null
+  else die 'Install curl, python3, coreutils, tar, gzip, xz, openssl, util-linux, socat and a cron daemon, then run the command again.'; fi
 fi
+for dependency in curl python3 sha256sum tar gzip xz install openssl flock socat; do command -v "$dependency" >/dev/null || die "Missing required command: $dependency"; done
+if [[ "$service_manager" == openrc ]]; then
+  for dependency in rc-service rc-update setsid; do command -v "$dependency" >/dev/null || die "Missing OpenRC command: $dependency"; done
+fi
+[[ ! -L "$install_dir/.enrollment.lock" ]] || die 'Refusing to use a symlinked enrollment lock.'
+exec {lock_fd}>"$install_dir/.enrollment.lock"
+flock -n "$lock_fd" || die 'Another node enrollment is already in progress.'
 python3 - "$control" "$control_key" <<'PY'
 import base64, sys, urllib.parse
 url=urllib.parse.urlsplit(sys.argv[1])
@@ -172,16 +214,16 @@ fi
 
 if [[ $replace_binding -eq 1 ]]; then
   restart_on_failure=0
-  systemctl stop unifiedproxy-node || die 'Could not stop the existing node service; existing data was retained.'
+  service_stop || die 'Could not stop the existing node service; existing data was retained.'
   [[ ! -L "$data_dir" ]] || die 'Refusing to remove a symlinked node data directory.'
   [[ ! -L "$install_dir/backups" ]] || die 'Refusing to remove a symlinked node backups directory.'
   rm -rf -- "$data_dir" "$install_dir/backups"
   mkdir -m 700 -- "$data_dir"
   info 'Old host binding, node settings, inbounds, client data, identities and local backups were erased.'
   info 'The old host will retain its node card as offline until it is removed there.'
-elif systemctl is-active --quiet unifiedproxy-node; then
+elif service_active; then
   restart_on_failure=1
-  systemctl stop unifiedproxy-node
+  service_stop
 fi
 if [[ -f "$data_dir/state.json" ]]; then
   backup="$install_dir/backups/pre-enroll-$(date +%Y%m%d-%H%M%S)-$$.tar.gz"
@@ -205,8 +247,8 @@ if [[ $already_enrolled -eq 0 ]]; then
 else
   info 'Existing Fleet identity and binding were kept; the new enrollment token was not used.'
 fi
-systemctl restart unifiedproxy-node
-systemctl is-active --quiet unifiedproxy-node || die 'Node startup failed; inspect journalctl -u unifiedproxy-node.'
+service_restart
+service_active || die "Node startup failed; inspect $([[ "$service_manager" == systemd ]] && printf 'journalctl -u unifiedproxy-node' || printf 'rc-service unifiedproxy-node status and /var/log/unifiedproxy-node.log')."
 restart_on_failure=0
 if [[ $already_enrolled -eq 1 ]]; then
   info 'Node updated and started. Return to the host panel and wait for its heartbeat.'

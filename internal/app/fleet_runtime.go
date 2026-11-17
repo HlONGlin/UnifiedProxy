@@ -57,7 +57,7 @@ func (n *nodeRuntime) Snapshot() fleet.Status {
 	if n.applied != nil && n.sidecars != nil {
 		sidecarStatus = n.sidecars.Status(n.applied.Sidecars)
 	}
-	if runtime.GOOS != "linux" || !fleetServicePattern.MatchString(os.Getenv("UNIFIEDPROXY_SERVICE_NAME")) {
+	if !fleetServiceAvailable(os.Getenv("UNIFIEDPROXY_SERVICE_NAME")) {
 		capabilities := []string{}
 		for _, kind := range status.Capabilities {
 			if kind != "agent-upgrade" {

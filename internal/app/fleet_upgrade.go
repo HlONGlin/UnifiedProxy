@@ -24,21 +24,82 @@ import (
 )
 
 type fleetUpgrade struct {
-	Executable string    `json:"executable"`
-	SHA256     string    `json:"sha256"`
-	Service    string    `json:"service"`
-	HealthURL  string    `json:"healthURL"`
-	HealthRoot string    `json:"healthRoot,omitempty"`
-	TLSName    string    `json:"tlsName,omitempty"`
-	TaskID     string    `json:"taskId,omitempty"`
-	Status     string    `json:"status"`
-	Error      string    `json:"error,omitempty"`
-	WorkerUnit string    `json:"workerUnit,omitempty"`
-	StartedAt  time.Time `json:"startedAt,omitempty"`
-	Phase      string    `json:"phase,omitempty"`
+	Executable     string    `json:"executable"`
+	SHA256         string    `json:"sha256"`
+	Service        string    `json:"service"`
+	ServiceManager string    `json:"serviceManager,omitempty"`
+	HealthURL      string    `json:"healthURL"`
+	HealthRoot     string    `json:"healthRoot,omitempty"`
+	TLSName        string    `json:"tlsName,omitempty"`
+	TaskID         string    `json:"taskId,omitempty"`
+	Status         string    `json:"status"`
+	Error          string    `json:"error,omitempty"`
+	WorkerUnit     string    `json:"workerUnit,omitempty"`
+	StartedAt      time.Time `json:"startedAt,omitempty"`
+	Phase          string    `json:"phase,omitempty"`
 }
 
-var fleetServicePattern = regexp.MustCompile(`^unifiedproxy-(control|node)[a-zA-Z0-9_.-]*[.]service$`)
+var (
+	fleetServicePattern    = regexp.MustCompile(`^unifiedproxy-(control|node)[a-zA-Z0-9_.-]*$`)
+	fleetWorkerUnitPattern = regexp.MustCompile(`^unifiedproxy-upgrade-[a-f0-9]{16}[.]service$`)
+)
+
+type fleetServiceTarget struct {
+	Name    string
+	Manager string
+}
+
+func resolveFleetService(service string) (fleetServiceTarget, error) {
+	service = strings.TrimSpace(service)
+	if !fleetServicePattern.MatchString(service) || strings.Contains(service, "..") {
+		return fleetServiceTarget{}, errors.New("UNIFIEDPROXY_SERVICE_NAME must name an installed UnifiedProxy control/node service")
+	}
+	manager := strings.ToLower(strings.TrimSpace(os.Getenv("UNIFIEDPROXY_SERVICE_MANAGER")))
+	if manager == "" {
+		if strings.HasSuffix(service, ".service") {
+			manager = "systemd"
+		} else {
+			manager = "openrc"
+		}
+	}
+	switch manager {
+	case "systemd":
+		if !strings.HasSuffix(service, ".service") {
+			return fleetServiceTarget{}, errors.New("systemd service names must end in .service")
+		}
+	case "openrc":
+		if strings.HasSuffix(service, ".service") {
+			return fleetServiceTarget{}, errors.New("OpenRC service names must not end in .service")
+		}
+	default:
+		return fleetServiceTarget{}, errors.New("UNIFIEDPROXY_SERVICE_MANAGER must be systemd or openrc")
+	}
+	return fleetServiceTarget{Name: service, Manager: manager}, nil
+}
+
+func fleetServiceCommand(action string, target fleetServiceTarget) (string, []string, error) {
+	switch target.Manager {
+	case "systemd":
+		switch action {
+		case "start", "stop", "restart", "is-active":
+			return "systemctl", []string{action, target.Name}, nil
+		}
+	case "openrc":
+		if action == "is-active" {
+			action = "status"
+		}
+		switch action {
+		case "start", "stop", "restart", "status":
+			return "rc-service", []string{target.Name, action}, nil
+		}
+	}
+	return "", nil, fmt.Errorf("unsupported service manager action %q for %s", action, target.Manager)
+}
+
+func fleetServiceAvailable(service string) bool {
+	target, err := resolveFleetService(service)
+	return err == nil && runtime.GOOS == "linux" && (target.Manager == "systemd" || target.Manager == "openrc")
+}
 
 func executableDigest(path string) (string, error) {
 	file, err := os.Open(path)
@@ -55,11 +116,11 @@ func executableDigest(path string) (string, error) {
 
 func startFleetUpgrade(dir string, settings Settings, taskID string) error {
 	if runtime.GOOS != "linux" {
-		return errors.New("automatic upgrade requires Linux systemd")
+		return errors.New("automatic upgrade requires Linux systemd or OpenRC")
 	}
-	service := os.Getenv("UNIFIEDPROXY_SERVICE_NAME")
-	if !fleetServicePattern.MatchString(service) {
-		return errors.New("UNIFIEDPROXY_SERVICE_NAME must name an installed UnifiedProxy control/node systemd service")
+	target, err := resolveFleetService(os.Getenv("UNIFIEDPROXY_SERVICE_NAME"))
+	if err != nil {
+		return err
 	}
 	host, port, err := net.SplitHostPort(settings.PanelListen)
 	if err != nil {
@@ -84,7 +145,8 @@ func startFleetUpgrade(dir string, settings Settings, taskID string) error {
 	if pending.Status != "staged" {
 		return errors.New("no staged upgrade")
 	}
-	pending.Service = service
+	pending.Service = target.Name
+	pending.ServiceManager = target.Manager
 	pending.TaskID = taskID
 	pending.HealthURL = "http://" + net.JoinHostPort(host, port) + "/fleet/v1/health"
 	if settings.PanelCertFile != "" || settings.PanelKeyFile != "" {
@@ -112,7 +174,10 @@ func startFleetUpgrade(dir string, settings Settings, taskID string) error {
 		pending.HealthURL = "https://" + net.JoinHostPort(host, port) + "/fleet/v1/health"
 	}
 	pending.Status = "pending-restart"
-	pending.WorkerUnit = "unifiedproxy-upgrade-" + fleet.ID()[:16] + ".service"
+	pending.WorkerUnit = ""
+	if target.Manager == "systemd" {
+		pending.WorkerUnit = "unifiedproxy-upgrade-" + fleet.ID()[:16] + ".service"
+	}
 	pending.StartedAt = time.Now().UTC()
 	pending.Phase = "scheduled"
 	if err = fleet.WriteJSON(path, pending); err != nil {
@@ -120,14 +185,21 @@ func startFleetUpgrade(dir string, settings Settings, taskID string) error {
 	}
 	ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
 	defer cancel()
-	// A transient unit survives stopping the application's own control group.
-	// Do not wait for the oneshot job: it stops that group during the update.
-	cmd := exec.CommandContext(ctx, "systemd-run", "--quiet", "--collect", "--no-block", "--unit="+pending.WorkerUnit, "--property=Type=oneshot", pending.Executable, "upgrade-worker", "--data-dir", dir)
+	var cmd *exec.Cmd
+	if target.Manager == "systemd" {
+		// A transient unit survives stopping the application's own control group.
+		// Do not wait for the oneshot job: it stops that group during the update.
+		cmd = exec.CommandContext(ctx, "systemd-run", "--quiet", "--collect", "--no-block", "--unit="+pending.WorkerUnit, "--property=Type=oneshot", pending.Executable, "upgrade-worker", "--data-dir", dir)
+	} else {
+		// OpenRC has no transient units. setsid detaches the worker from the
+		// service's process group so rc-service stop cannot terminate it.
+		cmd = exec.CommandContext(ctx, "setsid", "-f", pending.Executable, "upgrade-worker", "--data-dir", dir)
+	}
 	cmd.Stdout = io.Discard
 	cmd.Stderr = io.Discard
 	if err = cmd.Run(); err != nil {
 		pending.Status = "failed"
-		pending.Error = "cannot schedule systemd update worker"
+		pending.Error = "cannot schedule " + target.Manager + " update worker"
 		_ = fleet.WriteJSON(path, pending)
 		return err
 	}
@@ -154,9 +226,14 @@ func runFleetUpgradeWorker(ctx context.Context, dir string) (resultErr error) {
 	if err != nil {
 		return err
 	}
-	if runtime.GOOS != "linux" || !fleetServicePattern.MatchString(p.Service) || filepath.Clean(self) != filepath.Clean(p.Executable) || p.Status != "pending-restart" {
+	target, err := resolveFleetService(p.Service)
+	if err != nil || runtime.GOOS != "linux" || filepath.Clean(self) != filepath.Clean(p.Executable) || p.Status != "pending-restart" {
 		return errors.New("invalid update worker context")
 	}
+	if p.ServiceManager != "" && p.ServiceManager != target.Manager {
+		return errors.New("invalid update worker service manager")
+	}
+	p.ServiceManager = target.Manager
 	u, err := http.NewRequestWithContext(ctx, "GET", p.HealthURL, nil)
 	if err != nil {
 		return err
@@ -257,10 +334,29 @@ func runFleetUpgradeWorker(ctx context.Context, dir string) (resultErr error) {
 	return rollback(errors.New("candidate health verification timed out"))
 }
 
+func fleetWorkerActive(name string) bool {
+	if !fleetWorkerUnitPattern.MatchString(name) {
+		return false
+	}
+	job, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+	cmd := exec.CommandContext(job, "systemctl", "is-active", name)
+	cmd.Stdout, cmd.Stderr = io.Discard, io.Discard
+	return cmd.Run() == nil
+}
+
 func fleetSystemService(action, name string) error {
+	target, err := resolveFleetService(name)
+	if err != nil {
+		return err
+	}
+	command, args, err := fleetServiceCommand(action, target)
+	if err != nil {
+		return err
+	}
 	job, cancel := context.WithTimeout(context.Background(), 45*time.Second)
 	defer cancel()
-	cmd := exec.CommandContext(job, "systemctl", action, name)
+	cmd := exec.CommandContext(job, command, args...)
 	cmd.Stdout, cmd.Stderr = io.Discard, io.Discard
 	return cmd.Run()
 }
@@ -279,10 +375,14 @@ func recoverFleetUpgrade(dir string) error {
 	if p.Status != "pending-restart" || (!p.StartedAt.IsZero() && time.Since(p.StartedAt) < 10*time.Minute) {
 		return nil
 	}
-	if runtime.GOOS != "linux" || !fleetServicePattern.MatchString(p.Service) || !filepath.IsAbs(p.Executable) {
+	target, err := resolveFleetService(p.Service)
+	if err != nil || runtime.GOOS != "linux" || !filepath.IsAbs(p.Executable) {
 		return errors.New("invalid upgrade recovery context")
 	}
-	if regexp.MustCompile(`^unifiedproxy-upgrade-[a-f0-9]{16}[.]service$`).MatchString(p.WorkerUnit) && fleetSystemService("is-active", p.WorkerUnit) == nil {
+	if p.ServiceManager != "" && p.ServiceManager != target.Manager {
+		return errors.New("invalid upgrade recovery service manager")
+	}
+	if target.Manager == "systemd" && fleetWorkerActive(p.WorkerUnit) {
 		return nil
 	}
 	if p.Phase == "backed-up" || p.Phase == "verifying" {

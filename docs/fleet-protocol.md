@@ -47,7 +47,7 @@ report：状态；result：taskId/status/error/data。重绑后原公钥不能�
 前端将脚本链接、控制源站、公钥、节点 ID、主机正式版本与 token 组合为一条 Bash 命令。
 先完整下载脚本再执行，下载失败即停止；token 通过标准输入交给脚本与 `agent join`，
 不使用 URL token 或常驻服务参数。脚本自动安装、校验发布包、配置缺失内核、接入并启动
-systemd。复制的命令含 token，可能保存在终端历史中；15 分钟到期或单次接入后不能再用于新绑定。
+systemd 或 Alpine OpenRC 服务。复制的命令含 token，可能保存在终端历史中；15 分钟到期或单次接入后不能再用于新绑定。
 
 ### 公网地址与独立心跳
 

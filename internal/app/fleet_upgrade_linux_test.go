@@ -54,3 +54,32 @@ func TestFleetUpgradeRecoveryAfterWorkerInterrupted(t *testing.T) {
 		})
 	}
 }
+
+func TestFleetWorkerActiveUsesSystemdWorkerUnit(t *testing.T) {
+	dir := t.TempDir()
+	commands := filepath.Join(dir, "commands")
+	logPath := filepath.Join(dir, "worker-log")
+	shim := []byte("#!/bin/sh\nprintf '%s' \"$*\" > \"$UP_WORKER_LOG\"\nexit 0\n")
+	if err := os.Mkdir(commands, 0700); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(commands, "systemctl"), shim, 0755); err != nil {
+		t.Fatal(err)
+	}
+	t.Setenv("PATH", commands+string(os.PathListSeparator)+os.Getenv("PATH"))
+	t.Setenv("UP_WORKER_LOG", logPath)
+	worker := "unifiedproxy-upgrade-0123456789abcdef.service"
+	if !fleetWorkerActive(worker) {
+		t.Fatal("active worker was not detected")
+	}
+	logged, err := os.ReadFile(logPath)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if string(logged) != "is-active "+worker {
+		t.Fatalf("unexpected systemctl invocation: %q", logged)
+	}
+	if fleetWorkerActive("unifiedproxy-node.service") {
+		t.Fatal("non-worker service was accepted as an active worker")
+	}
+}

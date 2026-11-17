@@ -125,12 +125,50 @@ func TestAcmeInstallUsesNoEmailBootstrap(t *testing.T) {
 	}
 }
 
+func TestFleetInstallersSupportAlpineOpenRC(t *testing.T) {
+	files := map[string][]string{
+		"scripts/install-node.sh": {
+			`apk add --no-cache`,
+			`rc-service "$service_name" status`,
+			`rc-service "$service_name" restart`,
+			`/etc/init.d/dcron`,
+			`UNIFIEDPROXY_SERVICE_MANAGER`,
+		},
+		"scripts/install-fleet.sh": {
+			`/etc/init.d`,
+			`/etc/periodic/1min`,
+			`rc-update add "unifiedproxy-${role}" default`,
+			`util-linux-misc`,
+			`/etc/init.d/dcron`,
+			`rc-update add dcron default`,
+			`export UNIFIEDPROXY_SERVICE_NAME="unifiedproxy-${role}"`,
+			`export UNIFIEDPROXY_SERVICE_MANAGER="openrc"`,
+		},
+		"web/fleet-workspace.js": {
+			`apk add --no-cache bash curl ca-certificates`,
+			`Alpine OpenRC`,
+		},
+	}
+	for name, required := range files {
+		data, err := os.ReadFile(name)
+		if err != nil {
+			t.Fatal(err)
+		}
+		content := string(data)
+		for _, text := range required {
+			if !strings.Contains(content, text) {
+				t.Errorf("%s is missing Alpine/OpenRC support %q", name, text)
+			}
+		}
+	}
+}
+
 func TestBashScriptsParse(t *testing.T) {
 	bash, err := exec.LookPath("bash")
 	if err != nil {
 		t.Skip("bash is not installed on this host")
 	}
-	command := exec.Command(bash, "-n", "install.sh", "scripts/unifiedproxy.sh", "scripts/install-node.sh", "docker/entrypoint.sh")
+	command := exec.Command(bash, "-n", "install.sh", "scripts/unifiedproxy.sh", "scripts/install-node.sh", "scripts/install-fleet.sh", "docker/entrypoint.sh")
 	if output, err := command.CombinedOutput(); err != nil {
 		t.Fatalf("shell syntax check failed: %v\n%s", err, output)
 	}

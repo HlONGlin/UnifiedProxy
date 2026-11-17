@@ -108,7 +108,7 @@ func stageFleetUpgrade(ctx context.Context, dir, source, checksum string) error 
 		return err
 	}
 	if runtime.GOOS != "linux" {
-		return errors.New("automatic binary replacement requires the Linux systemd installer")
+		return errors.New("automatic binary replacement requires the Linux systemd or OpenRC installer")
 	}
 	// Keep replacement next to the executable for atomic same-volume renames.
 	if err = fleet.WriteFile(executable+".next", b, 0755); err != nil {

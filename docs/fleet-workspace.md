@@ -31,7 +31,7 @@
 5. 点击“复制一键接入命令”，在 Linux 子服务器以 **root** 粘贴整条命令并回车。命令已经包含脚本链接、主机信息和一次性 token，自动下载并校验节点程序，安装缺失的 Mihomo，绑定当前卡片并启动服务；无需再粘贴 token 或手动重启。
 6. 回到主机等待状态刷新，通常不超过 15 秒。在线后点击“管理节点”，进入该服务器仪表盘，再从侧栏打开“入站列表”或“Mihomo 设置”。
 
-一键接入参考 UnifiedProxy v1.6.3 的“卡片生成命令、子主机执行后自动上线”流程，使用现有一次性令牌和签名身份。适用于运行 systemd 的 Linux；执行命令需要 Bash、curl 和 root。Debian/Ubuntu 或 RHEL 系可自动补齐缺少的工具。程序默认位于 `/usr/local/unifiedproxy-node/node`、数据位于 `/usr/local/unifiedproxy-node/data`；新安装的节点管理端口只监听回环地址，日常操作都在主机网页完成。
+一键接入参考 UnifiedProxy v1.6.3 的“卡片生成命令、子主机执行后自动上线”流程，使用现有一次性令牌和签名身份。适用于 systemd Linux（如 Debian/Ubuntu、RHEL 系）和 Alpine OpenRC，并需以 root 执行。Alpine 可直接在 ash 中运行，命令会先通过 `apk` 准备 Bash 和 curl，其余缺失工具由安装器自动补齐；Debian/Ubuntu 或 RHEL 系需已安装 Bash 和 curl，其余依赖由安装器自动补齐。程序默认位于 `/usr/local/unifiedproxy-node/node`、数据位于 `/usr/local/unifiedproxy-node/data`；新安装的节点管理端口只监听回环地址，日常操作都在主机网页完成。
 
 例如主机面板为 `http://203.0.113.10:2053/admin/`，接入地址填写 `http://203.0.113.10:2053`。节点安装、签名接入、配置领取及独立心跳均支持 HTTP；公网 IP、局域网 IP、域名均可。HTTP 不加密传输，使用 HTTPS 可加密脚本下载及节点通信；HTTPS 脚本下载不允许降级到 HTTP。两种方式均保留公钥校验和防重放，但签名不能为 HTTP 下载的安装脚本提供传输保护。节点及 Mihomo 发布包仍通过 HTTPS 下载并校验 SHA256。
 
@@ -39,7 +39,7 @@
 
 创建卡片后仍需自己打开子服务器终端执行命令，网页不会登录 SSH。Docker 或自定义目录请展开“已安装节点 / Docker：手动接入”，使用已包含 token 的手动命令，按实际路径调整，并重启节点容器或进程。安装和手动接入示例见[运行与迁移指南](unifiedproxy-migration.md#接入)。
 
-令牌有效期 15 分钟，仅用一次，命令通过标准输入交给节点程序，token 不出现在下载 URL、节点进程参数或 systemd 服务文件中。**复制的整条命令本身包含 token，可能保留在 shell 历史中，请勿公开分享。** 过期时复制按钮停用，关闭弹窗后重新获取；接入失败可在卡片“获取接入命令”重试，需要新 token 时选择“重新生成接入信息”。
+令牌有效期 15 分钟，仅用一次，命令通过标准输入交给节点程序，token 不出现在下载 URL、节点进程参数或服务文件中。**复制的整条命令本身包含 token，可能保留在 shell 历史中，请勿公开分享。** 过期时复制按钮停用，关闭弹窗后重新获取；接入失败可在卡片“获取接入命令”重试，需要新 token 时选择“重新生成接入信息”。
 
 ## 看懂卡片与操作范围
 
@@ -121,7 +121,7 @@ go test ./...
 go vet ./...
 ```
 
-真实 systemd 的全新安装检查见 `scripts/acceptance/node-bootstrap-systemd.py`，只能在全新、可丢弃的 orca-linux systemd 容器 `/workspace` 中执行。默认使用 TLS 主机，增加 `--http` 可使用容器非回环 HTTP 地址；均使用真实 systemd、节点和固定版本 Mihomo。发布前的节点下载包由本地构建产物提供，发布后增加 `--published` 可验证正式下载包。不要在用户正在使用的服务器运行此验收脚本。
+真实 systemd 的全新安装检查见 `scripts/acceptance/node-bootstrap-systemd.py`，只能在全新、可丢弃的 orca-linux systemd 容器 `/workspace` 中执行。默认使用 TLS 主机，增加 `--http` 可使用容器非回环 HTTP 地址；均使用真实 systemd、节点和固定版本 Mihomo。Alpine 路径由脚本测试与 OpenRC 服务映射测试覆盖；正式发布前仍应在可丢弃的 Alpine 容器中验证 `rc-service` 启停、日志和 `/etc/periodic/1min` 恢复任务。发布前的节点下载包由本地构建产物提供，发布后增加 `--published` 可验证正式下载包。不要在用户正在使用的服务器运行此验收脚本。
 
 浏览器验收启动独立临时主机，使用真实登录、节点登记、令牌签发、模型发布、配额和备份接口；在线心跳与自动识别的界面显示使用明确的模拟数据，不代表已连接真实公网子服务器。另有 Go 集成测试验证真实签名心跳、长任务不中断上报、来源地址回退、身份校验及自动地址订阅。浏览器覆盖十一种现有语言的页面加载、五套配色的十种明暗组合、390px 手机布局、表单草稿保留、地址留空与手动覆盖、订阅范围和文字对比度。截图与结果写入 `dist/fleet-browser/`。
 

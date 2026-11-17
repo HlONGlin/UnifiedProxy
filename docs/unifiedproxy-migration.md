@@ -47,7 +47,7 @@ Agent 的控制 URL 只填源站，例如 `http://203.0.113.10:2053`，不附加
 
 在控制端主机网页的“舰队”页创建子节点后，页面会立即建立节点卡片并签发绑定该节点的
 一次性接入令牌，同时显示一键接入命令。复制整条命令，在 Linux 子主机以 root 粘贴回车，
-自动安装节点与缺失的 Mihomo、接入并启动 systemd 服务，无需另贴 token 或手动重启。
+自动安装节点与缺失的 Mihomo、接入并启动 systemd 或 Alpine OpenRC 服务，无需另贴 token 或手动重启。
 令牌有效期 15 分钟、仅用一次、主机磁盘只保存哈希。卡片可重新生成接入信息用于首次
 接入失败或身份重绑。公钥应从可信页面或 fleet-key 获取，不在连接时自动信任陌生公钥。
 
@@ -137,17 +137,19 @@ sudo bash scripts/install-fleet.sh control ./control-linux-amd64 SHA256
 sudo bash scripts/install-fleet.sh node ./node-linux-amd64 SHA256
 ```
 
-按安装器输出 configure 后启动服务；安装器设置 UNIFIEDPROXY_SERVICE_NAME。面板更新检查
-Release 与平台校验和，再下载候选、验证可运行，交独立 systemd transient unit
-停服/原子换文件/重启/健康检查，失败回退；Agent 的成功回执等健康确认后才发送。
-安装器另外安装每分钟检查的 recovery timer。升级阶段落盘，worker 中断或重启后
+按安装器输出 configure 后启动服务；安装器设置 UNIFIEDPROXY_SERVICE_NAME 和
+UNIFIEDPROXY_SERVICE_MANAGER。面板更新检查 Release 与平台校验和，再下载候选、
+验证可运行。systemd 使用独立 transient unit；Alpine OpenRC 使用 setsid 脱离服务
+进程组的 worker，随后停服/原子换文件/重启/健康检查，失败回退；Agent 的成功回执
+等健康确认后才发送。安装器另外安装每分钟检查的恢复任务：systemd 使用 recovery
+timer，Alpine 使用 /etc/periodic/1min 和 dcron。升级阶段落盘，worker 中断或重启后
 超过十分钟仍未完成时，从独立 recovery 二进制恢复旧程序并发送失败回执。
 它不把未验证的候选程序报为成功。内核和 Geo 数据任务也要求配置验证与健康检查，
 失败恢复原文件；金丝雀只有收到成功回执才推进下一台。
 更新检查默认指向 HlONGlin/UnifiedProxy；UNIFIEDPROXY_RELEASE_REPO 可覆盖为兼容发行仓库。
 只有该仓库发布了对应角色/架构的资产和校验和才能升级；不会退回下载 UnifiedProxy 上游程序。
 32 位 ARM 的自动检查选择兼容所有受支持 CPU 的 armv5 包；可显式指定 linux-armv6/armv7。
-Windows 人工换包，Docker 同数据卷重建镜像；它们不声明 systemd 自动升级能力。
+Windows 人工换包，Docker 同数据卷重建镜像；它们不声明 systemd/OpenRC 自动升级能力。
 Dockerfile.fleet 与 docker-compose.fleet.yml 提供两种角色，Mihomo 使用 core 挂载。
 
 管理员命令通过在线面板登录，不在第二进程并发写 fleet.json：
