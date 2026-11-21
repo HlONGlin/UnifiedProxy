@@ -658,6 +658,8 @@ func (a *App) handleFleet(w http.ResponseWriter, r *http.Request) {
 				a.handleFleetNodeCertificateIssue(w, r, id)
 			case "bind":
 				a.handleFleetNodeCertificateBind(w, r, id)
+			case "delete", "update":
+				a.handleFleetNodeCertificateManage(w, r, id, parts[3])
 			case "dns-credentials":
 				a.handleFleetNodeDNSCredentials(w, r, id)
 			default:

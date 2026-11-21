@@ -45,6 +45,10 @@ func copyState(s State) State {
 	return result
 }
 func (n *nodeRuntime) Snapshot() fleet.Status {
+	// Certificate operations may take n.mu while holding certificateMu.
+	// Read certificate metadata before taking n.mu to keep the lock order consistent.
+	managedCertificates := n.managedCertificates()
+	dnsCredentials := n.dnsCredentialViews()
 	n.mu.Lock()
 	m := n.manager
 	status := fleet.Status{Version: appVersion, Protocol: fleet.ProtocolVersion, Capabilities: append([]string(nil), fleet.TaskKinds...), OS: runtime.GOOS, Arch: runtime.GOARCH, Traffic: map[string]fleet.Usage{}}
@@ -102,7 +106,7 @@ func (n *nodeRuntime) Snapshot() fleet.Status {
 			logs[i] = line[:2048]
 		}
 	}
-	details := map[string]any{"system": stats, "coreVersion": m.coreVersion(), "platform": runtime.GOOS, "startedAt": started, "logs": logs, "cpuHistory": history, "totals": totals, "outboundTraffic": outboundTraffic, "vpngate": makeVPNGateView(m), "sidecars": sidecarStatus, "managedCertificates": n.managedCertificates(), "cloudflareCredentialsConfigured": n.cloudflareCredentialsConfigured()}
+	details := map[string]any{"system": stats, "coreVersion": m.coreVersion(), "platform": runtime.GOOS, "startedAt": started, "logs": logs, "cpuHistory": history, "totals": totals, "outboundTraffic": outboundTraffic, "vpngate": makeVPNGateView(m), "sidecars": sidecarStatus, "managedCertificates": managedCertificates, "cloudflareCredentialsConfigured": len(dnsCredentials) > 0, "cloudflareCredentials": dnsCredentials}
 	if status.Running {
 		if traffic, err := m.coreGet("/traffic"); err == nil {
 			details["traffic"] = traffic
@@ -628,28 +632,21 @@ func (n *nodeRuntime) Execute(ctx context.Context, t fleet.Task) (json.RawMessag
 			return nil, err
 		}
 		return n.bindNodeCertificate(request.Name, request.InboundID)
-	case "cert-credentials":
+	case "cert-delete", "cert-update":
+		var request nodeCertificateManageRequest
+		if err := json.Unmarshal(t.Payload, &request); err != nil {
+			return nil, err
+		}
+		return n.manageNodeCertificate(strings.TrimPrefix(t.Kind, "cert-"), request)
+	case "cert-credentials", "cert-credentials-manage":
 		if !t.Encrypted {
 			return nil, errors.New("Cloudflare credentials must be delivered as an encrypted task")
 		}
-		var credentials fleetDNSCredentials
+		var credentials nodeDNSCredentialRequest
 		if err := json.Unmarshal(t.Payload, &credentials); err != nil {
 			return nil, errors.New("invalid Cloudflare credential payload")
 		}
-		credentials, err := normalizeFleetDNSCredentials(credentials)
-		if err != nil {
-			return nil, err
-		}
-		if credentials.empty() {
-			return nil, errors.New("enter a Cloudflare API token or account and zone IDs")
-		}
-		n.certificateMu.Lock()
-		err = saveNodeDNSCredentials(n.manager.dataDir, credentials)
-		n.certificateMu.Unlock()
-		if err != nil {
-			return nil, errors.New("could not save Cloudflare credentials on this node")
-		}
-		return json.Marshal(map[string]bool{"cloudflareCredentialsConfigured": true})
+		return n.manageDNSCredentials(credentials)
 	case "cert-renew":
 		var request struct {
 			Name string `json:"name"`

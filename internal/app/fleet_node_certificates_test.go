@@ -177,6 +177,40 @@ fi
 	if err != nil || !strings.Contains(string(args), "--renew") || !strings.Contains(string(args), "--force") || !strings.Contains(string(args), "--dns dns_cf") {
 		t.Fatalf("manual renewal did not run on the child: %s, %v", args, err)
 	}
+	// A second account must not replace the original credentials, and renewal must
+	// follow the certificate's selected account rather than a global last-saved token.
+	if _, err = node.manageDNSCredentials(nodeDNSCredentialRequest{Name: "account-b", fleetDNSCredentials: fleetDNSCredentials{CloudflareToken: "account-b-token"}}); err != nil {
+		t.Fatal(err)
+	}
+	t.Setenv("CF_Account_ID", "unrelated-environment-account")
+	t.Setenv("CF_Zone_ID", "unrelated-environment-zone")
+	if _, err = node.issueNodeCertificate(context.Background(), nodeCertificateIssueRequest{Name: "second-cert", Domain: certificate.Domain, DNS: "dns_cf", CredentialName: "account-b"}); err != nil {
+		t.Fatal(err)
+	}
+	usedToken, err = os.ReadFile(tokenPath)
+	if err != nil || string(usedToken) != "account-b-token||" {
+		t.Fatalf("named credential mixed with inherited account: %q %v", usedToken, err)
+	}
+	if _, err = node.renewNodeCertificate(context.Background(), "second-cert"); err != nil {
+		t.Fatal(err)
+	}
+	renewedToken, err = os.ReadFile(renewTokenPath)
+	if err != nil || string(renewedToken) != "account-b-token||" {
+		t.Fatalf("renewal ignored selected credentials: %q %v", renewedToken, err)
+	}
+	if _, err = node.renewNodeCertificate(context.Background(), "edge-cert"); err != nil {
+		t.Fatal(err)
+	}
+	renewedToken, err = os.ReadFile(renewTokenPath)
+	if err != nil || string(renewedToken) != token+"|"+accountID+"|"+zoneID {
+		t.Fatalf("saving another account replaced default credentials: %q %v", renewedToken, err)
+	}
+	args, err = os.ReadFile(argsPath)
+	for _, name := range []string{"edge-cert", "second-cert"} {
+		if err != nil || !strings.Contains(string(args), "--config-home "+filepath.Join(dataDir, "certificates", name, "acme")) {
+			t.Fatalf("ACME state not isolated by certificate: %s %v", args, err)
+		}
+	}
 }
 
 func TestFleetNodeCertificateIssueQueuesLocalOnlyMaterial(t *testing.T) {

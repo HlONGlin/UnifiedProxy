@@ -77,7 +77,8 @@ pending → leased → success/failed/unsupported，另有 expired/cancelled/sup
 未知能力等待升级并标 needsUpgrade。金丝雀成功后逐台释放，失败/过期停止。
 
 任务：apply-state、collect-status、test-egress、kernel-switch、geo-update、
-cert-renew、agent-upgrade、purge、core-control、traffic-reset、vpngate-install、
+cert-issue、cert-renew、cert-bind、cert-delete、cert-update、cert-credentials、
+cert-credentials-manage、agent-upgrade、purge、core-control、traffic-reset、vpngate-install、
 vpngate-reconnect。升级 pending-restart 只是本地状态，健康确认才报告成功。
 
 应用：暂存 → 证书/原生模型核对 → Mihomo -t → 持久事务日志 → 保存 .previous →
@@ -105,8 +106,21 @@ vpngate-reconnect。升级 pending-restart 只是本地状态，健康确认才�
 | GET/POST /backup | 导出；action=restore/upload/download |
 | GET /certificates | 去掉 PEM/私钥的列表 |
 | POST /certificates/import、issue、renew、bind | 证书对象；binding=nodeId+inboundId 或 sidecarId |
+| POST /certificates/delete | name；停止控制端托管并删除本地文件，保留已下发的节点副本 |
+| POST /nodes/{id}/certificates/issue | name/domain/dns/automatic，可选 inboundId、credentialName；在节点本地签发 |
+| POST /nodes/{id}/certificates/bind | name/inboundId；绑定节点本地证书 |
+| POST /nodes/{id}/certificates/update | name/automatic/credentialName；更新节点续期设置 |
+| POST /nodes/{id}/certificates/delete | name；草稿、期望配置或节点实际配置仍引用时拒绝删除 |
+| POST /nodes/{id}/certificates/dns-credentials | taskId/payload/kind；凭据必须经浏览器加密，kind 为 cert-credentials 或 cert-credentials-manage |
 | GET /update/check | 可选 role/platform，指定仓库 Release |
 | GET/POST /update | 状态；url+sha256 |
 
 原有编辑 API 用 X-Fleet-Node 定位节点，成功保存后发布。Agent 支持 join/break-glass，
 独立面板另支持 sidecars、import/merit?nodeId=LEGACY_ID。
+
+Cloudflare 凭据按名称保存在节点本地，旧版单份凭据自动兼容为 `default`。
+`cert-credentials-manage` 密文内容为 name/action/cloudflareToken/cloudflareAccountId/cloudflareZoneId；
+action 为 save（默认）或 delete。被任何托管证书引用的凭据不可删除，可先在续期设置中切换凭据。
+节点状态的 cloudflareCredentials 仅含名称，managedCertificates 含 credentialName 和实际 inboundIds，均不返回 Token 或私钥。
+新增签发按证书隔离 ACME 配置；旧版证书仍可使用原共享配置续期，重新签发后使用隔离配置。
+控制端和子节点均须升级才能使用新增任务；旧节点保留原 cert-credentials 兼容接口。

@@ -18,6 +18,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"regexp"
+	"sort"
 	"strings"
 	"time"
 
@@ -258,6 +259,31 @@ func (credentials fleetDNSCredentials) empty() bool {
 	return credentials.CloudflareToken == "" && credentials.CloudflareAccountID == "" && credentials.CloudflareZoneID == ""
 }
 
+// dns_cf falls back to saved account values even when an environment variable is
+// explicitly empty. Clear those values before applying a selected credential.
+func clearFleetCloudflareCache(configHome string) error {
+	path := filepath.Join(configHome, "account.conf")
+	data, err := os.ReadFile(path)
+	if errors.Is(err, os.ErrNotExist) {
+		return nil
+	}
+	if err != nil {
+		return err
+	}
+	lines := strings.Split(string(data), "\n")
+	kept := make([]string, 0, len(lines))
+	for _, line := range lines {
+		key := strings.TrimSpace(strings.SplitN(line, "=", 2)[0])
+		key = strings.TrimPrefix(strings.TrimPrefix(key, "export "), "SAVED_")
+		switch key {
+		case "CF_Token", "CF_Account_ID", "CF_Zone_ID", "CF_Key", "CF_Email":
+			continue
+		}
+		kept = append(kept, line)
+	}
+	return fleet.WriteFile(path, []byte(strings.Join(kept, "\n")), 0600)
+}
+
 func acquireFleetCertificate(ctx context.Context, dataDir string, c fleetCertificate, renew bool, credentials fleetDNSCredentials) (fleetCertificate, error) {
 	ctx, cancel := context.WithTimeout(ctx, 10*time.Minute)
 	defer cancel()
@@ -271,6 +297,9 @@ func acquireFleetCertificate(ctx context.Context, dataDir string, c fleetCertifi
 	}
 	if c.DNS != "" && c.DNS != "dns_cf" {
 		return c, errors.New("supported DNS challenge is dns_cf")
+	}
+	if strings.HasPrefix(c.Domain, "*.") && c.DNS != "dns_cf" {
+		return c, errors.New("wildcard certificates require Cloudflare DNS validation")
 	}
 	if c.DNS != "dns_cf" && !credentials.empty() {
 		return c, errors.New("Cloudflare credentials require the dns_cf challenge")
@@ -293,6 +322,20 @@ func acquireFleetCertificate(ctx context.Context, dataDir string, c fleetCertifi
 	}
 	if err := os.Chmod(dir, 0700); err != nil {
 		return c, err
+	}
+	// Keep ACME's cached DNS account and domain state separate for each certificate.
+	// Legacy renewals can still use their original shared configuration.
+	isolatedConfig := filepath.Join(dir, "acme")
+	if _, statErr := os.Stat(isolatedConfig); !renew || statErr == nil {
+		if err = os.MkdirAll(isolatedConfig, 0700); err != nil {
+			return c, err
+		}
+		configHome = isolatedConfig
+	}
+	if credentials.CloudflareToken != "" {
+		if err = clearFleetCloudflareCache(configHome); err != nil {
+			return c, err
+		}
 	}
 	args := []string{"--issue", "--server", "letsencrypt", "-d", c.Domain, "--config-home", configHome}
 	if renew {
@@ -348,6 +391,8 @@ func acquireFleetCertificate(ctx context.Context, dataDir string, c fleetCertifi
 	issueEnv := map[string]string{}
 	if credentials.CloudflareToken != "" {
 		issueEnv["CF_Token"] = credentials.CloudflareToken
+		issueEnv["CF_Account_ID"] = credentials.CloudflareAccountID
+		issueEnv["CF_Zone_ID"] = credentials.CloudflareZoneID
 	}
 	if credentials.CloudflareAccountID != "" {
 		issueEnv["CF_Account_ID"] = credentials.CloudflareAccountID
@@ -540,6 +585,7 @@ func (a *App) handleFleetCertificates(w http.ResponseWriter, r *http.Request, ac
 			c.PrivateKey = ""
 			views = append(views, c)
 		}
+		sort.Slice(views, func(i, j int) bool { return views[i].Name < views[j].Name })
 		writeJSON(w, 200, apiResponse{OK: true, Data: views})
 		return
 	}
@@ -560,6 +606,31 @@ func (a *App) handleFleetCertificates(w http.ResponseWriter, r *http.Request, ac
 	if !fleet.SafeName(c.Name) {
 		writeJSON(w, 400, apiResponse{Message: "invalid certificate name"})
 		return
+	}
+	if action == "delete" {
+		if _, ok := certs[c.Name]; !ok {
+			writeJSON(w, 404, apiResponse{Message: "unknown certificate"})
+			return
+		}
+		// Distributed certificates are copied into node configurations. Removing management
+		// leaves those copies working and stops future automatic renewal/distribution.
+		delete(certs, c.Name)
+		if err = f.saveCertificates(certs); err != nil {
+			writeJSON(w, 500, apiResponse{Message: err.Error()})
+			return
+		}
+		if err = os.RemoveAll(filepath.Join(f.dataDir, "certificates", c.Name)); err != nil {
+			writeJSON(w, 500, apiResponse{Message: err.Error()})
+			return
+		}
+		writeJSON(w, 200, apiResponse{OK: true})
+		return
+	}
+	if action == "renew" || action == "bind" {
+		if _, ok := certs[c.Name]; !ok {
+			writeJSON(w, 404, apiResponse{Message: "unknown certificate"})
+			return
+		}
 	}
 	if previous, ok := certs[c.Name]; ok {
 		if c.Bindings == nil {

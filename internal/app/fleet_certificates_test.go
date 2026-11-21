@@ -122,7 +122,7 @@ chmod 0700 "$home/acme.sh"
 	if err != nil {
 		t.Fatal(err)
 	}
-	configHome := filepath.Join(a.manager.dataDir, "acme", "config")
+	configHome := filepath.Join(a.manager.dataDir, "certificates", "issued", "acme")
 	if !strings.Contains(string(args), "--dns dns_cf") || !strings.Contains(string(args), "--config-home "+configHome) {
 		t.Fatalf("ACME issue did not use DNS challenge and persistent config home: %s", args)
 	}
@@ -130,7 +130,7 @@ chmod 0700 "$home/acme.sh"
 	if err != nil {
 		t.Fatal(err)
 	}
-	if !strings.Contains(string(installArgs), "--nocron") || !strings.Contains(string(installArgs), "--config-home "+configHome) {
+	if !strings.Contains(string(installArgs), "--nocron") || !strings.Contains(string(installArgs), "--config-home "+filepath.Join(a.manager.dataDir, "acme", "config")) {
 		t.Fatalf("ACME bootstrap options were incomplete: %s", installArgs)
 	}
 	usedToken, err := os.ReadFile(os.Getenv("ACME_TEST_TOKEN"))

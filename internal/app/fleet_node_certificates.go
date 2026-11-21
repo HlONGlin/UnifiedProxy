@@ -10,6 +10,7 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"sort"
 	"strings"
 	"time"
 
@@ -24,22 +25,24 @@ const (
 )
 
 type nodeCertificateIssueRequest struct {
-	Name          string `json:"name"`
-	Domain        string `json:"domain"`
-	DNS           string `json:"dns,omitempty"`
-	Automatic     bool   `json:"automatic"`
-	InboundID     string `json:"inboundId"`
-	TLSServerName string `json:"tlsServerName,omitempty"`
+	CredentialName string `json:"credentialName,omitempty"`
+	Name           string `json:"name"`
+	Domain         string `json:"domain"`
+	DNS            string `json:"dns,omitempty"`
+	Automatic      bool   `json:"automatic"`
+	InboundID      string `json:"inboundId"`
+	TLSServerName  string `json:"tlsServerName,omitempty"`
 }
 
 type nodeManagedCertificate struct {
-	Name       string    `json:"name"`
-	Domain     string    `json:"domain"`
-	DNS        string    `json:"dns,omitempty"`
-	Automatic  bool      `json:"automatic"`
-	ExpiresAt  time.Time `json:"expiresAt"`
-	InboundIDs []string  `json:"inboundIds,omitempty"`
-	LastError  string    `json:"lastError,omitempty"`
+	CredentialName string    `json:"credentialName,omitempty"`
+	Name           string    `json:"name"`
+	Domain         string    `json:"domain"`
+	DNS            string    `json:"dns,omitempty"`
+	Automatic      bool      `json:"automatic"`
+	ExpiresAt      time.Time `json:"expiresAt"`
+	InboundIDs     []string  `json:"inboundIds,omitempty"`
+	LastError      string    `json:"lastError,omitempty"`
 }
 
 func nodeCertificateReference(name, extension string) string {
@@ -134,15 +137,8 @@ func nodeDNSCredentialsPath(dataDir string) string {
 }
 
 func readNodeDNSCredentials(dataDir string) (fleetDNSCredentials, error) {
-	var credentials fleetDNSCredentials
-	err := fleet.ReadJSON(nodeDNSCredentialsPath(dataDir), &credentials)
-	if errors.Is(err, os.ErrNotExist) {
-		return credentials, nil
-	}
-	if err != nil {
-		return fleetDNSCredentials{}, err
-	}
-	return normalizeFleetDNSCredentials(credentials)
+	profiles, err := readNodeDNSProfiles(dataDir)
+	return profiles["default"], err
 }
 
 func saveNodeDNSCredentials(dataDir string, credentials fleetDNSCredentials) error {
@@ -150,20 +146,93 @@ func saveNodeDNSCredentials(dataDir string, credentials fleetDNSCredentials) err
 	if err != nil {
 		return err
 	}
+	profiles, err := readNodeDNSProfiles(dataDir)
+	if err != nil {
+		return err
+	}
 	if credentials.empty() {
-		if err = os.Remove(nodeDNSCredentialsPath(dataDir)); errors.Is(err, os.ErrNotExist) {
-			return nil
+		delete(profiles, "default")
+	} else {
+		profiles["default"] = credentials
+	}
+	return saveNodeDNSProfiles(dataDir, profiles)
+}
+
+// Accept the original single-credential file and migrate it on the next write.
+func readNodeDNSProfiles(dataDir string) (map[string]fleetDNSCredentials, error) {
+	var stored struct {
+		fleetDNSCredentials
+		Profiles map[string]fleetDNSCredentials `json:"profiles"`
+	}
+	err := fleet.ReadJSON(nodeDNSCredentialsPath(dataDir), &stored)
+	if err != nil && !errors.Is(err, os.ErrNotExist) {
+		return nil, err
+	}
+	if stored.Profiles == nil {
+		stored.Profiles = map[string]fleetDNSCredentials{}
+		if !stored.fleetDNSCredentials.empty() {
+			stored.Profiles["default"] = stored.fleetDNSCredentials
 		}
-		return err
 	}
+	return stored.Profiles, nil
+}
+
+func saveNodeDNSProfiles(dataDir string, profiles map[string]fleetDNSCredentials) error {
 	dir := filepath.Dir(nodeDNSCredentialsPath(dataDir))
-	if err = os.MkdirAll(dir, 0700); err != nil {
+	if err := os.MkdirAll(dir, 0700); err != nil {
 		return err
 	}
-	if err = os.Chmod(dir, 0700); err != nil {
+	if err := os.Chmod(dir, 0700); err != nil {
 		return err
 	}
-	return fleet.WriteJSON(nodeDNSCredentialsPath(dataDir), credentials)
+	return fleet.WriteJSON(nodeDNSCredentialsPath(dataDir), struct {
+		Profiles map[string]fleetDNSCredentials `json:"profiles"`
+	}{profiles})
+}
+
+func nodeCredentialName(name string) string {
+	if name == "" {
+		return "default"
+	}
+	return name
+}
+
+func nodeCertificateCredentials(dataDir, dns, name string) (fleetDNSCredentials, error) {
+	if dns != "dns_cf" {
+		return fleetDNSCredentials{}, nil
+	}
+	profiles, err := readNodeDNSProfiles(dataDir)
+	if err != nil {
+		return fleetDNSCredentials{}, err
+	}
+	credentials, ok := profiles[nodeCredentialName(name)]
+	if !ok && name != "" {
+		return fleetDNSCredentials{}, errors.New("selected Cloudflare credentials no longer exist")
+	}
+	return normalizeFleetDNSCredentials(credentials)
+}
+
+type nodeDNSCredentialView struct {
+	Name string `json:"name"`
+}
+
+func (n *nodeRuntime) dnsCredentialViews() []nodeDNSCredentialView {
+	n.certificateMu.Lock()
+	defer n.certificateMu.Unlock()
+	profiles, err := readNodeDNSProfiles(n.manager.dataDir)
+	if err != nil {
+		return nil
+	}
+	names := make([]string, 0, len(profiles))
+	for name := range profiles {
+		names = append(names, name)
+	}
+	sort.Strings(names)
+	views := make([]nodeDNSCredentialView, 0, len(names))
+	for _, name := range names {
+		views = append(views, nodeDNSCredentialView{Name: name})
+	}
+	return views
 }
 
 func certificateDomainCovers(domain, hostname string) bool {
@@ -212,12 +281,9 @@ func (n *nodeRuntime) issueNodeCertificate(ctx context.Context, request nodeCert
 		}
 	}
 
-	credentials := fleetDNSCredentials{}
-	if request.DNS == "dns_cf" {
-		credentials, err = readNodeDNSCredentials(n.manager.dataDir)
-		if err != nil {
-			return nil, err
-		}
+	credentials, err := nodeCertificateCredentials(n.manager.dataDir, request.DNS, request.CredentialName)
+	if err != nil {
+		return nil, err
 	}
 	issued, err := acquireFleetCertificate(ctx, n.manager.dataDir, fleetCertificate{
 		Name: request.Name, Domain: request.Domain, DNS: request.DNS, Automatic: request.Automatic,
@@ -233,6 +299,7 @@ func (n *nodeRuntime) issueNodeCertificate(ctx context.Context, request nodeCert
 	metadata.Name = request.Name
 	metadata.Domain = request.Domain
 	metadata.DNS = request.DNS
+	metadata.CredentialName = request.CredentialName
 	metadata.Automatic = request.Automatic
 	metadata.ExpiresAt = issued.ExpiresAt
 	metadata.LastError = ""
@@ -254,15 +321,23 @@ func (n *nodeRuntime) managedCertificates() []nodeManagedCertificate {
 		return nil
 	}
 	result := make([]nodeManagedCertificate, 0, len(certificates))
+	n.manager.mu.Lock()
+	defer n.manager.mu.Unlock()
 	for _, certificate := range certificates {
+		certificate.InboundIDs = nil
+		for _, in := range n.manager.state.Inbounds {
+			if stateUsesNodeCertificate(State{Inbounds: []Inbound{in}}, n.manager.dataDir, certificate.Name) {
+				certificate.InboundIDs = append(certificate.InboundIDs, in.ID)
+			}
+		}
 		result = append(result, certificate)
 	}
+	sort.Slice(result, func(i, j int) bool { return result[i].Name < result[j].Name })
 	return result
 }
 
 func (n *nodeRuntime) cloudflareCredentialsConfigured() bool {
-	credentials, err := readNodeDNSCredentials(n.manager.dataDir)
-	return err == nil && !credentials.empty()
+	return len(n.dnsCredentialViews()) > 0
 }
 
 func (n *nodeRuntime) renewNodeCertificate(ctx context.Context, name string) (json.RawMessage, error) {
@@ -276,7 +351,7 @@ func (n *nodeRuntime) renewNodeCertificate(ctx context.Context, name string) (js
 	if !ok {
 		return nil, errors.New("unknown node-local certificate")
 	}
-	credentials, err := readNodeDNSCredentials(n.manager.dataDir)
+	credentials, err := nodeCertificateCredentials(n.manager.dataDir, metadata.DNS, metadata.CredentialName)
 	if err != nil {
 		return nil, err
 	}
@@ -345,7 +420,7 @@ func (n *nodeRuntime) reloadNodeCertificateIfUsed(ctx context.Context, certifica
 	}
 	used := false
 	for _, inbound := range state.Inbounds {
-		if containsString(certificate.InboundIDs, inbound.ID) && filepath.Clean(inbound.Certificate) == filepath.Clean(certPath) {
+		if filepath.Clean(inbound.Certificate) == filepath.Clean(certPath) {
 			used = true
 			break
 		}
@@ -417,6 +492,11 @@ func (a *App) handleFleetNodeCertificateIssue(w http.ResponseWriter, r *http.Req
 	if !fleet.Supports(node.Status.Capabilities, "cert-issue") {
 		f.mu.Unlock()
 		writeJSON(w, http.StatusConflict, apiResponse{Message: "upgrade this child server to enable local certificate management"})
+		return
+	}
+	if request.CredentialName != "" && !fleet.Supports(node.Status.Capabilities, "cert-credentials-manage") {
+		f.mu.Unlock()
+		writeJSON(w, http.StatusConflict, apiResponse{Message: "upgrade this child server to select named Cloudflare credentials"})
 		return
 	}
 	var editor *App
@@ -637,6 +717,7 @@ func (a *App) handleFleetNodeDNSCredentials(w http.ResponseWriter, r *http.Reque
 	var request struct {
 		TaskID  string          `json:"taskId"`
 		Payload json.RawMessage `json:"payload"`
+		Kind    string          `json:"kind,omitempty"`
 	}
 	if err := decodeJSON(r, &request); err != nil {
 		writeJSON(w, http.StatusBadRequest, apiResponse{Message: err.Error()})
@@ -658,7 +739,14 @@ func (a *App) handleFleetNodeDNSCredentials(w http.ResponseWriter, r *http.Reque
 		writeJSON(w, http.StatusNotFound, apiResponse{Message: "fleet control is unavailable"})
 		return
 	}
-	task, err := a.fleet.store.EnqueueEncrypted(nodeID, request.TaskID, "cert-credentials", request.Payload, 20*time.Minute)
+	if request.Kind == "" {
+		request.Kind = "cert-credentials"
+	}
+	if request.Kind != "cert-credentials" && request.Kind != "cert-credentials-manage" {
+		writeJSON(w, 400, apiResponse{Message: "invalid credential task kind"})
+		return
+	}
+	task, err := a.fleet.store.EnqueueEncrypted(nodeID, request.TaskID, request.Kind, request.Payload, 20*time.Minute)
 	if err != nil {
 		writeJSON(w, http.StatusConflict, apiResponse{Message: err.Error()})
 		return
